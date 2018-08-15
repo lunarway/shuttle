@@ -7,9 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/asaskevich/govalidator"
-
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 // ShuttlePlanScript is a ShuttlePlan sub-element
@@ -59,27 +57,29 @@ func (c *ShuttlePlanConfiguration) getPlanConf(planPath string) *ShuttlePlanConf
 
 func fetchPlan(plan string, projectPath string) string {
 	switch {
+	case isMatching("^git://", plan):
+		panic("plan not valid: git is not supported yet")
+	// 	_, err := git.PlainClone("/tmp/foo", false, &git.CloneOptions{
+	// 		URL:      "https://github.com/src-d/go-git",
+	// 		Progress: os.Stdout,
+	// 	})
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	return "/tmp/foo"
+	case isMatching("^http://|^https://", plan):
+		panic("plan not valid: http is not supported yet")
 	case isFilePath(plan, true):
 		return plan
 	case isFilePath(plan, false):
 		return path.Join(projectPath, plan)
-		// case isMatching("^git://", plan):
-		// 	_, err := git.PlainClone("/tmp/foo", false, &git.CloneOptions{
-		// 		URL:      "https://github.com/src-d/go-git",
-		// 		Progress: os.Stdout,
-		// 	})
-		// 	if err != nil {
-		// 		panic(err)
-		// 	}
-		// 	return "/tmp/foo"
-		// case isMatching("^http://|^https://", plan):
+
 	}
 	panic("Unknown plan path '" + plan + "'")
 }
 
 func isFilePath(path string, matchOnlyAbs bool) bool {
-	isFilePath, _ := govalidator.IsFilePath(path)
-	return isFilePath && filepath.IsAbs(path) == matchOnlyAbs
+	return filepath.IsAbs(path) == matchOnlyAbs
 }
 
 func isMatching(r string, content string) bool {
