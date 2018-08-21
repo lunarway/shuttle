@@ -20,7 +20,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/emilingerslev/shuttle/pkg/config"
+	"bitbucket.org/LunarWay/shuttle/pkg/config"
 	"github.com/spf13/cobra"
 )
 

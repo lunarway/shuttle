@@ -1,21 +1,19 @@
-package docker
+package executors
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/exec"
 	"path"
 
-	"github.com/emilingerslev/shuttle/pkg/config"
+	"bitbucket.org/LunarWay/shuttle/pkg/config"
 )
 
 // Build builds the docker image from a shuttle plan
-func Build(plan config.ShuttlePlan, command string, s config.ShuttlePlanScript) {
-	dockerFilePath := path.Join(plan.PlanPath, s.Dockerfile)
-	projectPath := plan.ProjectPath
-	log.Printf("Exec: %s", "docker build -f "+dockerFilePath+" "+projectPath)
+func executeDocker(context ActionExecutionContext) {
+	dockerFilePath := path.Join(context.ScriptContext.Plan.PlanPath, context.Action.Dockerfile)
+	projectPath := context.ScriptContext.Plan.ProjectPath
 	execCmd := exec.Command("docker", "build", "-f", dockerFilePath, projectPath)
 
 	var stdout, stderr []byte
@@ -40,9 +38,15 @@ func Build(plan config.ShuttlePlan, command string, s config.ShuttlePlanScript) 
 	if errStdout != nil || errStderr != nil {
 		log.Fatalf("failed to capture stdout or stderr\n")
 	}
-	outStr, errStr := string(stdout), string(stderr)
-	fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
+	//outStr, errStr := string(stdout), string(stderr)
+	//fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
 
+}
+
+func init() {
+	addExecutor(func(action config.ShuttleAction) bool {
+		return action.Dockerfile != ""
+	}, executeDocker)
 }
 
 func copyAndCapture(w io.Writer, r io.Reader) ([]byte, error) {

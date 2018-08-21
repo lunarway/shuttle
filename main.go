@@ -14,7 +14,9 @@
 
 package main
 
-import "github.com/emilingerslev/shuttle/cmd"
+import (
+	"bitbucket.org/LunarWay/shuttle/cmd"
+)
 
 func main() {
 	cmd.Execute()

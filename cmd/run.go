@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"log"
-
-	"github.com/emilingerslev/shuttle/pkg/plan"
+	"bitbucket.org/LunarWay/shuttle/pkg/executors"
 	"github.com/spf13/cobra"
 )
 
@@ -21,13 +19,13 @@ import (
 
 var runCmd = &cobra.Command{
 	Use:   "run [command]",
-	Short: "Run a plan command",
-	Long:  `Specify which plan command to run`,
+	Short: "Run a plan script",
+	Long:  `Specify which plan script to run`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var commandName = args[0]
 		loadedPlan := getPlan()
-		log.Println(plan.Execute(loadedPlan, commandName))
+		executors.Execute(loadedPlan, commandName, args[1:])
 	},
 }
 
