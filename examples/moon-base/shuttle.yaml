@@ -1,0 +1,4 @@
+plan: '../simple-plan'
+vars:
+  docker:
+    image: earth-united/moon-base

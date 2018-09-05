@@ -1,0 +1,12 @@
+scripts:
+  build:
+    description: Build the docker image
+    args:
+    - name: tag
+      required: true
+    actions:
+    - shell: docker -f $plan/Dockerfile build -t (shuttle get docker.image):$tag
+  test:
+    description: Run test for the project
+    actions:
+    - shell: go test

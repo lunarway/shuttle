@@ -1,7 +1,0 @@
-scripts:
-  build:
-    description: Build the main docker image
-    dockerfile: Dockerfile
-  deploy:
-    description: Deploys code to k8s
-    shell: date
