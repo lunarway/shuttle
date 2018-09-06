@@ -33,6 +33,7 @@
 * lock to git version of plan
   * update on run
   * CI update plan git coupling
+* Temporarily Point to local plan instead of git for local development
 
 ## Less needed features, but still awesome
 
