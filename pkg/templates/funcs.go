@@ -19,6 +19,7 @@ func GetFuncMap() template.FuncMap {
 		"array":       tmplArray,
 		"objectArray": tmplObjectArray,
 		"strConst":    tmplStrConst,
+		"int":         tmplInt,
 	}
 }
 
@@ -53,6 +54,15 @@ func tmplString(path string, input interface{}) string {
 		return ""
 	}
 	return value.(string)
+}
+
+// TODO: Add description
+func tmplInt(path string, input interface{}) int {
+	value := tmplGet(path, input)
+	if value == nil {
+		return 0
+	}
+	return value.(int)
 }
 
 // TODO: Add description

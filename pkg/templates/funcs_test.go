@@ -11,7 +11,7 @@ var input = make(map[string]interface{})
 var data = `
 a: Easy!
 b: 
-  c: '2'
+  c: 2
   h: 'ewff'
 `
 
@@ -33,10 +33,18 @@ func TestTmplStrConst(t *testing.T) {
 }
 
 func TestTmplStr(t *testing.T) {
-	output := tmplString("b.c", input)
+	output := tmplString("b.h", input)
 
-	if output != "2" {
-		t.Errorf("string conversion was incorrect, got: %s, want: %v", output, "2")
+	if output != "ewff" {
+		t.Errorf("string conversion was incorrect, got: %s, want: %v", output, "ewff")
+	}
+}
+
+func TestTmplInt(t *testing.T) {
+	output := tmplInt("b.c", input)
+
+	if output != 2 {
+		t.Errorf("string conversion was incorrect, got: %d, want: %d", output, 2)
 	}
 }
 
@@ -44,8 +52,8 @@ func TestTmpObjArray(t *testing.T) {
 	output := tmplObjectArray("b", input)
 
 	if len(output) == 2 {
-		if !(output[0].Key == "c" && output[0].Value == "2" && output[1].Key == "h" && output[1].Value == "ewff") {
-			t.Errorf("ObjArray didn't match expected values, got: [{%s, %s}, {%s, %s}], want: [{c, 2}, {h, ewff}]", output[0].Key, output[0].Value, output[1].Key, output[1].Value)
+		if !(output[0].Key == "c" && output[0].Value == 2 && output[1].Key == "h" && output[1].Value == "ewff") {
+			t.Errorf("ObjArray didn't match expected values, got: [{%s, %v}, {%s, %s}], want: [{c, 2}, {h, ewff}]", output[0].Key, output[0].Value, output[1].Key, output[1].Value)
 		}
 	} else {
 		t.Errorf("ObjArray didn't match length, got: %s, want: %v", output, 2)
