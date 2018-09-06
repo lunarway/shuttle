@@ -15,12 +15,12 @@ var getCmd = &cobra.Command{
 	Short: "Get a variable value",
 	//Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		loadedPlan := getPlan()
+		context := getProjectContext()
 
 		path := args[0]
 		properties := strings.Split(path, ".")
 
-		response := resolve(loadedPlan.ShuttleConfig.Variables, properties)
+		response := resolve(context.Config.Variables, properties)
 		fmt.Printf(response)
 	},
 }

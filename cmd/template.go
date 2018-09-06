@@ -21,7 +21,7 @@ var templateCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var templateName = args[0]
-		loadedPlan := getPlan()
+		projectContext := getProjectContext()
 
 		namedArgs := map[string]string{}
 		for _, arg := range args[1:] {
@@ -29,7 +29,7 @@ var templateCmd = &cobra.Command{
 			namedArgs[parts[0]] = parts[1]
 		}
 
-		templatePath := path.Join(loadedPlan.PlanPath, templateName)
+		templatePath := path.Join(projectContext.LocalPlanPath, templateName)
 
 		tmpl, err := template.New(templateName).Funcs(tmplFuncs.GetFuncMap()).ParseFiles(templatePath)
 
@@ -39,7 +39,7 @@ var templateCmd = &cobra.Command{
 
 		err = tmpl.Execute(os.Stdout, context{
 			Args: namedArgs,
-			Vars: loadedPlan.ShuttleConfig.Variables,
+			Vars: projectContext.Config.Variables,
 		})
 		if err != nil {
 			panic(err)

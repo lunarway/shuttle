@@ -54,7 +54,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&projectPath, "project", "p", ".", "Project path")
 }
 
-func getPlan() config.ShuttlePlan {
+func getProjectContext() config.ShuttleProjectContext {
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
@@ -62,9 +62,7 @@ func getPlan() config.ShuttlePlan {
 	}
 
 	var fullProjectPath = path.Join(dir, projectPath)
-	var c config.ShuttleConfig
-	c.GetConf(fullProjectPath)
-	var loadedPlan config.ShuttlePlan
-	loadedPlan.Load(fullProjectPath, c)
-	return loadedPlan
+	var c config.ShuttleProjectContext
+	c.Setup(fullProjectPath)
+	return c
 }

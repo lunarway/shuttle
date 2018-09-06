@@ -15,10 +15,10 @@ var lsCmd = &cobra.Command{
 	Short: "List possible commands",
 	//Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		loadedPlan := getPlan()
+		context := getProjectContext()
 		tmpl(os.Stdout, `Available Scripts:{{range $key, $value := .Scripts}}
   {{rpad $key 10 }} {{$value.Description}}{{end}}
-`, loadedPlan.Configuration)
+`, context.Config)
 	},
 }
 
