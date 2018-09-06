@@ -11,7 +11,6 @@ import (
 	"os"
 	"strings"
 
-	"bitbucket.org/LunarWay/shuttle/pkg/ui"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/yaml.v2"
 )
@@ -77,8 +76,6 @@ func fetchPlan(plan string, projectPath string) string {
 	case isMatching("^git://", plan):
 		//panic("plan not valid: git is not supported yet")
 		planPath := path.Join(projectPath, ".shuttle/plan")
-
-		ui.Start()
 
 		if _, err := os.Stat(planPath); err == nil {
 			repo, err := git.PlainOpen(planPath)
