@@ -36,6 +36,7 @@ var templateCmd = &cobra.Command{
 			"string":      templateString,
 			"array":       templateArray,
 			"objectArray": templateObjectArray,
+			"strConst":    templateStringConstant,
 		}).ParseFiles(templatePath)
 
 		if err != nil {
@@ -105,6 +106,12 @@ func templateString(path string, input interface{}) string {
 		return ""
 	}
 	return value.(string)
+}
+
+func templateStringConstant(value string) string {
+	value = strings.Replace(value, ".", "_", -1)
+	value = strings.ToUpper(value)
+	return value
 }
 
 func templateArray(path string, input interface{}) []interface{} {
