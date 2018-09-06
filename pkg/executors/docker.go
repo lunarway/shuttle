@@ -12,8 +12,8 @@ import (
 
 // Build builds the docker image from a shuttle plan
 func executeDocker(context ActionExecutionContext) {
-	dockerFilePath := path.Join(context.ScriptContext.Plan.PlanPath, context.Action.Dockerfile)
-	projectPath := context.ScriptContext.Plan.ProjectPath
+	dockerFilePath := path.Join(context.ScriptContext.Project.LocalPlanPath, context.Action.Dockerfile)
+	projectPath := context.ScriptContext.Project.ProjectPath
 	execCmd := exec.Command("docker", "build", "-f", dockerFilePath, projectPath)
 
 	var stdout, stderr []byte

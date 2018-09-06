@@ -24,8 +24,8 @@ var runCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var commandName = args[0]
-		loadedPlan := getPlan()
-		executors.Execute(loadedPlan, commandName, args[1:])
+		context := getProjectContext()
+		executors.Execute(context, commandName, args[1:])
 	},
 }
 

@@ -10,7 +10,7 @@ import (
 type ScriptExecutionContext struct {
 	ScriptName string
 	Script     config.ShuttlePlanScript
-	Plan       config.ShuttlePlan
+	Project    config.ShuttleProjectContext
 	Args       map[string]string
 }
 
@@ -22,8 +22,8 @@ type ActionExecutionContext struct {
 }
 
 // Execute is the command executor for the plan files
-func Execute(p config.ShuttlePlan, command string, args []string) {
-	script := p.Configuration.Scripts[command]
+func Execute(p config.ShuttleProjectContext, command string, args []string) {
+	script := p.Plan.Scripts[command]
 
 	namedArgs := map[string]string{}
 	for i, argSpec := range script.Args {
@@ -36,7 +36,7 @@ func Execute(p config.ShuttlePlan, command string, args []string) {
 	scriptContext := ScriptExecutionContext{
 		ScriptName: command,
 		Script:     script,
-		Plan:       p,
+		Project:    p,
 		Args:       namedArgs,
 	}
 

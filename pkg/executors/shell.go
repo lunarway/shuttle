@@ -20,12 +20,16 @@ func executeShell(context ActionExecutionContext) {
 	for name, value := range context.ScriptContext.Args {
 		execCmd.Env = append(execCmd.Env, fmt.Sprintf("%s=%s", name, value))
 	}
-	execCmd.Env = append(execCmd.Env, fmt.Sprintf("plan=%s", context.ScriptContext.Plan.PlanPath))
+	execCmd.Env = append(execCmd.Env, fmt.Sprintf("plan=%s", context.ScriptContext.Project.LocalPlanPath))
+	execCmd.Env = append(execCmd.Env, fmt.Sprintf("tmp=%s", context.ScriptContext.Project.TempDirectoryPath))
+	execCmd.Env = append(execCmd.Env, fmt.Sprintf("project=%s", context.ScriptContext.Project.ProjectPath))
+	execCmd.Dir = context.ScriptContext.Project.ProjectPath
 
 	var stdout, stderr []byte
 	var errStdout, errStderr error
 	stdoutIn, _ := execCmd.StdoutPipe()
 	stderrIn, _ := execCmd.StderrPipe()
+
 	execCmd.Start()
 
 	go func() {

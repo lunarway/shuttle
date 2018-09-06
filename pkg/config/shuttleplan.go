@@ -40,42 +40,32 @@ type ShuttlePlanConfiguration struct {
 // ShuttlePlan struct describes a plan
 type ShuttlePlan struct {
 	ProjectPath   string
-	ShuttleConfig ShuttleConfig
-	PlanPath      string
-	Dockerfile    string
+	LocalPlanPath string
 	Configuration ShuttlePlanConfiguration
 }
 
 // Load loads a plan from project path and shuttle config
-func (p *ShuttlePlan) Load(projectPath string, shuttleConfig ShuttleConfig) *ShuttlePlan {
-	p.PlanPath = fetchPlan(shuttleConfig.Plan, projectPath)
-	p.ProjectPath = projectPath
-	p.ShuttleConfig = shuttleConfig
-	p.Dockerfile = path.Join(p.PlanPath, "Dockerfile")
-	p.Configuration.getPlanConf(p.PlanPath)
-	return p
-}
-
-func (c *ShuttlePlanConfiguration) getPlanConf(planPath string) *ShuttlePlanConfiguration {
+func (p *ShuttlePlanConfiguration) Load(planPath string) *ShuttlePlanConfiguration {
 	var configPath = path.Join(planPath, "plan.yaml")
 	//log.Printf("configpath: %s", configPath)
 	yamlFile, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
 	}
-	err = yaml.Unmarshal(yamlFile, c)
+	err = yaml.Unmarshal(yamlFile, p)
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
 	}
 
-	return c
+	return p
 }
 
-func fetchPlan(plan string, projectPath string) string {
+// FetchPlan so it exists locally and return path to that plan
+func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string) string {
 	switch {
 	case isMatching("^git://", plan):
 		//panic("plan not valid: git is not supported yet")
-		planPath := path.Join(projectPath, ".shuttle/plan")
+		planPath := path.Join(localShuttleDirectoryPath, "plan")
 
 		if _, err := os.Stat(planPath); err == nil {
 			repo, err := git.PlainOpen(planPath)
