@@ -8,12 +8,11 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-
 type DynamicYaml = map[string]interface{}
 
 // ShuttleConfig describes the actual config for each project
 type ShuttleConfig struct {
-	Plan string `yaml:"plan"`
+	Plan      string      `yaml:"plan"`
 	Variables DynamicYaml `yaml:"vars"`
 }
 

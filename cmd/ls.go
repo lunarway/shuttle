@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"io"
-	"text/template"
-	"strings"
-	"os"
 	"fmt"
+	"io"
+	"os"
+	"strings"
+	"text/template"
+
+	"github.com/spf13/cobra"
 )
 
 var lsCmd = &cobra.Command{
@@ -15,7 +16,7 @@ var lsCmd = &cobra.Command{
 	//Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		loadedPlan := getPlan()
-		tmpl(os.Stdout,`Available Scripts:{{range $key, $value := .Scripts}}
+		tmpl(os.Stdout, `Available Scripts:{{range $key, $value := .Scripts}}
   {{rpad $key 10 }} {{$value.Description}}{{end}}
 `, loadedPlan.Configuration)
 	},
@@ -25,19 +26,19 @@ func init() {
 	rootCmd.AddCommand(lsCmd)
 }
 
-var templateFuncs = template.FuncMap{
-	"trim":                    strings.TrimSpace,
+var lsTemplateFuncs = template.FuncMap{
+	"trim": strings.TrimSpace,
 	//"trimRightSpace":          trimRightSpace,
 	//"trimTrailingWhitespaces": trimRightSpace,
 	//"appendIfNotPresent":      appendIfNotPresent,
-	"rpad":                    rpad,
+	"rpad": rpad,
 	//"gt":                      Gt,
 	//"eq":                      Eq,
 }
 
 func tmpl(w io.Writer, text string, data interface{}) error {
 	t := template.New("top")
-	t.Funcs(templateFuncs)
+	t.Funcs(lsTemplateFuncs)
 	template.Must(t.Parse(text))
 	return t.Execute(w, data)
 }
