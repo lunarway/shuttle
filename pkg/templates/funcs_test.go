@@ -45,7 +45,7 @@ func TestTmpObjArray(t *testing.T) {
 
 	if len(output) == 2 {
 		if !(output[0].Key == "c" && output[0].Value == "2" && output[1].Key == "h" && output[1].Value == "ewff") {
-			t.Errorf("ObjArray didn't match expected values")
+			t.Errorf("ObjArray didn't match expected values, got: [{%s, %s}, {%s, %s}], want: [{c, 2}, {h, ewff}]", output[0].Key, output[0].Value, output[1].Key, output[1].Value)
 		}
 	} else {
 		t.Errorf("ObjArray didn't match length, got: %s, want: %v", output, 2)
