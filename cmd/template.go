@@ -28,8 +28,9 @@ var templateCmd = &cobra.Command{
 			parts := strings.SplitN(arg, "=", 2)
 			namedArgs[parts[0]] = parts[1]
 		}
+		templateDir := path.Join(projectContext.LocalPlanPath, "templates")
 
-		templatePath := path.Join(projectContext.LocalPlanPath, templateName)
+		templatePath := path.Join(templateDir, templateName)
 
 		tmpl, err := template.New(templateName).Funcs(tmplFuncs.GetFuncMap()).ParseFiles(templatePath)
 
