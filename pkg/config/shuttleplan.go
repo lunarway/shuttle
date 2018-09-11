@@ -3,6 +3,7 @@ package config
 import (
 	"io/ioutil"
 	"log"
+	"os/user"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -11,7 +12,10 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/crypto/ssh"
 	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport"
+	go_git_ssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 	"gopkg.in/yaml.v2"
 )
 
@@ -64,15 +68,19 @@ func (p *ShuttlePlanConfiguration) Load(planPath string) *ShuttlePlanConfigurati
 func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string) string {
 	switch {
 	case isMatching("^git://", plan):
-		//panic("plan not valid: git is not supported yet")
+		// We need the user to find the homedir.
+		usr, err := user.Current()
+		CheckIfError(err)
 		planPath := path.Join(localShuttleDirectoryPath, "plan")
-
 		if _, err := os.Stat(planPath); err == nil {
 			repo, err := git.PlainOpen(planPath)
 			CheckIfError(err)
 			worktree, err := repo.Worktree()
 			CheckIfError(err)
-			err = worktree.Pull(&git.PullOptions{RemoteName: "origin"})
+			err = worktree.Pull(&git.PullOptions{
+				RemoteName: "origin",
+				Auth:       getSshKeyAuth(usr.HomeDir + "/.ssh/bitbucket_key"),
+			})
 			if err != nil && err.Error() != "already up-to-date" {
 				CheckIfError(err)
 			}
@@ -80,6 +88,7 @@ func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string
 			_, err := git.PlainClone(planPath, false, &git.CloneOptions{
 				URL:      strings.Replace(plan, "git://", "", 1),
 				Progress: os.Stdout,
+				Auth:     getSshKeyAuth(usr.HomeDir + "/.ssh/bitbucket_key"),
 			})
 			if err != nil {
 				panic(err)
@@ -117,4 +126,12 @@ func CheckIfError(err error) {
 
 	fmt.Printf("\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf("error: %s", err))
 	os.Exit(1)
+}
+
+func getSshKeyAuth(privateSshKeyFile string) transport.AuthMethod {
+	var auth transport.AuthMethod
+	sshKey, _ := ioutil.ReadFile(privateSshKeyFile)
+	signer, _ := ssh.ParsePrivateKey([]byte(sshKey))
+	auth = &go_git_ssh.PublicKeys{User: "git", Signer: signer}
+	return auth
 }
