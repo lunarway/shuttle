@@ -11,7 +11,7 @@ import (
 
 // Build builds the docker image from a shuttle plan
 func executeShell(context ActionExecutionContext) {
-	log.Printf("Exec: %s", context.Action.Shell)
+	//log.Printf("Exec: %s", context.Action.Shell)
 	//cmdAndArgs := strings.Split(s.Shell, " ")
 	//cmd := cmdAndArgs[0]
 	//args := cmdAndArgs[1:]

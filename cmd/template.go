@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"html/template"
 	"os"
 	"path"
@@ -37,8 +38,19 @@ var templateCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
+		// TODO: This is probably not the right place to initialize the temp dir?
+		os.Mkdir(projectContext.TempDirectoryPath, 0755)
 
-		err = tmpl.Execute(os.Stdout, context{
+		outputYamlFilename := strings.Replace(templateName, "tmpl", "yaml", -1)
+
+		fmt.Printf("Template generated: .shuttle/temp/%s\n", outputYamlFilename)
+		file, err := os.Create(path.Join(projectContext.TempDirectoryPath, outputYamlFilename))
+
+		if err != nil {
+			panic(err)
+		}
+
+		err = tmpl.Execute(file, context{
 			Args: namedArgs,
 			Vars: projectContext.Config.Variables,
 		})

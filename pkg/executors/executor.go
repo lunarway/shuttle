@@ -2,6 +2,7 @@ package executors
 
 import (
 	"fmt"
+	"strings"
 
 	"bitbucket.org/LunarWay/shuttle/pkg/config"
 )
@@ -24,14 +25,20 @@ type ActionExecutionContext struct {
 // Execute is the command executor for the plan files
 func Execute(p config.ShuttleProjectContext, command string, args []string) {
 	script := p.Plan.Scripts[command]
-
 	namedArgs := map[string]string{}
-	for i, argSpec := range script.Args {
-		if len(args)-1 < i {
-			panic(fmt.Sprintf("Required %v (position %v) is not supplied!", argSpec.Name, i))
-		}
-		namedArgs[argSpec.Name] = args[i]
+	for _, arg := range args {
+		parts := strings.SplitN(arg, "=", 2)
+		namedArgs[parts[0]] = parts[1]
 	}
+
+	// namedArgs := map[string]string{}
+	// for i, argSpec := range script.Args {
+	// 	if len(args)-1 < i {
+	// 		panic(fmt.Sprintf("Required %v (position %v) is not supplied!", argSpec.Name, i))
+	// 	}
+	// 	namedArgs[argSpec.Name] = args[i]
+	// 	fmt.Printf("i,argSpec: %d, %v", i, argSpec, argSpec.Name)
+	// }
 
 	scriptContext := ScriptExecutionContext{
 		ScriptName: command,
