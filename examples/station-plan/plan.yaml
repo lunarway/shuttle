@@ -5,7 +5,8 @@ scripts:
     - name: tag
       required: true
     actions:
-    - shell: docker build -f $plan/Dockerfile -t $(shuttle get docker.image):$tag .
+    - shell: shuttle template -o Dockerfile Dockerfile.tmpl GO_VERSION=1.10.3
+    - shell: docker build -f $tmp/Dockerfile -t $(shuttle get docker.image):$tag .
   test:
     description: Run test for the project
     actions:
