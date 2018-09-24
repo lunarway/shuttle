@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"bitbucket.org/LunarWay/shuttle/pkg/config"
+	"bitbucket.org/LunarWay/shuttle/pkg/output"
 )
 
 // ScriptExecutionContext gives context to the execution of a plan script
@@ -29,19 +30,16 @@ func Execute(p config.ShuttleProjectContext, command string, args []string) {
 	for _, arg := range args {
 		parts := strings.SplitN(arg, "=", 2)
 		if len(parts) < 2 {
-			panic(fmt.Sprintf("Could not parse `shuttle run %s %s`, because '%s' was expected to be on the `<option>=<value> form, but wasn't!`.\nScript '%s' expects arguments:\n%v", command, strings.Join(args, " "), arg, command, script.Args))
+			output.ExitWithError(fmt.Sprintf("Could not parse `shuttle run %s %s`, because '%s' was expected to be on the `<option>=<value>` form, but wasn't!.\nScript '%s' expects arguments:\n%v", command, strings.Join(args, " "), arg, command, script.Args))
 		}
 		namedArgs[parts[0]] = parts[1]
 	}
 
-	// namedArgs := map[string]string{}
-	// for i, argSpec := range script.Args {
-	// 	if len(args)-1 < i {
-	// 		panic(fmt.Sprintf("Required %v (position %v) is not supplied!", argSpec.Name, i))
-	// 	}
-	// 	namedArgs[argSpec.Name] = args[i]
-	// 	fmt.Printf("i,argSpec: %d, %v", i, argSpec, argSpec.Name)
-	// }
+	for _, argSpec := range script.Args {
+		if _, ok := namedArgs[argSpec.Name]; argSpec.Required && !ok {
+			output.ExitWithError(fmt.Sprintf("Required argument `%s` was not supplied!", argSpec.Name)) // TODO: Add expected arguments
+		}
+	}
 
 	scriptContext := ScriptExecutionContext{
 		ScriptName: command,
