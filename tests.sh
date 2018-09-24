@@ -23,11 +23,11 @@ function assertErrorCode() {
 }
 
 test_moon_base_builds() {
-  assertRun -p examples/moon-base run build test
+  assertRun -p examples/moon-base run build tag=test
 }
 
 test_venus_base_fails() {
-  assertErrorCode 2 -p examples/venus-base run build test
+  assertErrorCode 2 -p examples/venus-base run build tag=test
 }
 
 # Load and run shUnit2.

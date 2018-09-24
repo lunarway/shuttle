@@ -28,6 +28,9 @@ func Execute(p config.ShuttleProjectContext, command string, args []string) {
 	namedArgs := map[string]string{}
 	for _, arg := range args {
 		parts := strings.SplitN(arg, "=", 2)
+		if len(parts) < 2 {
+			panic(fmt.Sprintf("Could not parse `shuttle run %s %s`, because '%s' was expected to be on the `<option>=<value> form, but wasn't!`.\nScript '%s' expects arguments:\n%v", command, strings.Join(args, " "), arg, command, script.Args))
+		}
 		namedArgs[parts[0]] = parts[1]
 	}
 
