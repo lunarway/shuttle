@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"bitbucket.org/LunarWay/shuttle/pkg/config"
 )
@@ -15,6 +16,8 @@ func executeShell(context ActionExecutionContext) {
 	//cmdAndArgs := strings.Split(s.Shell, " ")
 	//cmd := cmdAndArgs[0]
 	//args := cmdAndArgs[1:]
+	shuttlePath, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+
 	execCmd := exec.Command("sh", "-c", context.Action.Shell)
 	execCmd.Env = os.Environ()
 	for name, value := range context.ScriptContext.Args {
@@ -23,6 +26,8 @@ func executeShell(context ActionExecutionContext) {
 	execCmd.Env = append(execCmd.Env, fmt.Sprintf("plan=%s", context.ScriptContext.Project.LocalPlanPath))
 	execCmd.Env = append(execCmd.Env, fmt.Sprintf("tmp=%s", context.ScriptContext.Project.TempDirectoryPath))
 	execCmd.Env = append(execCmd.Env, fmt.Sprintf("project=%s", context.ScriptContext.Project.ProjectPath))
+	// TODO: Add project path as a shuttle specific ENV
+	execCmd.Env = append(execCmd.Env, fmt.Sprintf("PATH=%s", shuttlePath+string(os.PathListSeparator)+os.Getenv("PATH")))
 	execCmd.Dir = context.ScriptContext.Project.ProjectPath
 
 	var stdout, stderr []byte
