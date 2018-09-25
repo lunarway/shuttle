@@ -1,0 +1,17 @@
+language: go
+
+script: |
+  echo "Build shuttle" &&
+  go build -v -a &&
+  echo "\n\nRun go tests:" &&
+  go test ./pkg/... -run Test* &&
+  echo "\n\nRun shell tests:" &&
+  ./tests.sh
+
+deploy:
+- provider: script
+  skip_cleanup: true
+  script: curl -sL https://git.io/goreleaser | bash
+  on:
+    tags: true
+    condition: $TRAVIS_OS_NAME = linux

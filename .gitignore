@@ -1,4 +1,5 @@
 .vscode/
+dist/
 vendor/
 shuttle
 .shuttle
