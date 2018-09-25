@@ -1,5 +1,7 @@
 # shuttle
 
+*DISCLAIMER: shuttle is in its alpha stage and is not yet production ready. Expect the APIs to change.*
+
 ## What is it?
 `shuttle` is a CLI for handling shared build and deploy tools between many projects no matter what technologies the project is using.
 
@@ -49,6 +51,6 @@ vars:
 With this in place a docker image can be built:
 
 ```sh
-$> cd workspace/moon-base
-$> shuttle run build v1
+$ cd workspace/moon-base
+$ shuttle run build tag=v1
 ```
