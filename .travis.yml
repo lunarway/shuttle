@@ -8,6 +8,12 @@ script: |
   echo "\n\nRun shell tests:" &&
   ./tests.sh
 
+  # .travis.yml
+language: go
+
+services:
+- docker
+
 deploy:
 - provider: script
   skip_cleanup: true
