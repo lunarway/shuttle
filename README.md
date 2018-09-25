@@ -1,4 +1,4 @@
-# shuttle
+# shuttle [![Build Status](https://travis-ci.com/lunarway/shuttle.svg?branch=master)](https://travis-ci.com/lunarway/shuttle)
 
 *DISCLAIMER: shuttle is in its alpha stage and is not yet production ready. Expect the APIs to change.*
 
