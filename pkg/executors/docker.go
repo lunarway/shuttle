@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"path"
 
-	"bitbucket.org/LunarWay/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/config"
 )
 
 // Build builds the docker image from a shuttle plan

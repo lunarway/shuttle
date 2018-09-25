@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"bitbucket.org/LunarWay/shuttle/pkg/config"
-	"bitbucket.org/LunarWay/shuttle/pkg/output"
+	"github.com/lunarway/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/output"
 )
 
 // ScriptExecutionContext gives context to the execution of a plan script

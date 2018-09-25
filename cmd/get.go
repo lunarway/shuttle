@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"bitbucket.org/LunarWay/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/spf13/cobra"
 )
 

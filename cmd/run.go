@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"bitbucket.org/LunarWay/shuttle/pkg/executors"
+	"github.com/lunarway/shuttle/pkg/executors"
 	"github.com/spf13/cobra"
 )
 

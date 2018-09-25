@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"os"
 
-	"bitbucket.org/LunarWay/shuttle/pkg/git"
+	"github.com/lunarway/shuttle/pkg/git"
 	"gopkg.in/yaml.v2"
 )
 

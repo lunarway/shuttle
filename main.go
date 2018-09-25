@@ -15,7 +15,7 @@
 package main
 
 import (
-	"bitbucket.org/LunarWay/shuttle/cmd"
+	"github.com/lunarway/shuttle/cmd"
 )
 
 func main() {

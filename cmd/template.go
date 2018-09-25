@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	tmplFuncs "bitbucket.org/LunarWay/shuttle/pkg/templates"
+	tmplFuncs "github.com/lunarway/shuttle/pkg/templates"
 	"github.com/spf13/cobra"
 )
 
