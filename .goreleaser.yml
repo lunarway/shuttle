@@ -1,6 +1,8 @@
 builds:
 - env:
   - CGO_ENABLED=0
+  ldflags:
+  - "-s -w -X cmd.version={{.Version}} -X cmd.commit={{.Commit}}"
 
 archive:
   format: binary
@@ -19,7 +21,6 @@ snapshot:
 
 release:
   draft: true
-  prerelease: true
   name_template: "v{{.Version}}"
 
 changelog:

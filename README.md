@@ -2,7 +2,7 @@
 
 *DISCLAIMER: shuttle is in its alpha stage and is not yet production ready. Expect the APIs to change.*
 
-## What is it?
+## What is shuttle?
 `shuttle` is a CLI for handling shared build and deploy tools between many projects no matter what technologies the project is using.
 
 ## How?
@@ -54,3 +54,35 @@ With this in place a docker image can be built:
 $ cd workspace/moon-base
 $ shuttle run build tag=v1
 ```
+
+## Features
+* Fetch shuttle plans from git repositories
+* ...
+
+## Documentation
+*Documention is coming*
+
+
+## Installing
+
+### Mac OS
+
+```console
+curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -s https://api.github.com/repos/lunarway/shuttle/releases/latest | grep tag_name | cut -d '"' -f 4)/shuttle-darwin-amd64
+chmod +x shuttle-darwin-amd64
+sudo mv shuttle-darwin-amd64 /usr/local/bin/shuttle
+```
+
+### Linux
+
+```console
+curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -s https://api.github.com/repos/lunarway/shuttle/releases/latest | grep tag_name | cut -d '"' -f 4)/shuttle-linux-amd64
+chmod +x shuttle-linux-amd64
+sudo mv shuttle-linux-amd64 /usr/local/bin/shuttle
+```
+
+
+## Release History
+
+See the [releases](https://github.com/lunarway/shuttle/releases) for more
+information on changes between releases.
