@@ -1,19 +1,27 @@
-# This is an example goreleaser.yaml file with some sane defaults.
-# Make sure to check the documentation at http://goreleaser.com
 builds:
 - env:
   - CGO_ENABLED=0
+
 archive:
+  format: binary
+  name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
   replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
+    darwin: darwin
+    linux: linux
+    windows: windows
     386: i386
-    amd64: x86_64
+
 checksum:
-  name_template: 'checksums.txt'
+  name_template: '{{ .ProjectName }}-checksums.txt'
+
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  name_template: "git-{{.Commit}}"
+
+release:
+  draft: true
+  prerelease: true
+  name_template: "v{{.Version}}"
+
 changelog:
   sort: asc
   filters:
