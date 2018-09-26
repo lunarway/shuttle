@@ -20,7 +20,7 @@ type gitPlan struct {
 	repository string
 }
 
-var gitRegex = regexp.MustCompile(`^git://((?P<user>[^@]+)@)?(?P<repository>(?P<host>[^:]+):(?P<path>.*))$|^(?P<protocol>https)://(?P<repository>.*\.git)$`)
+var gitRegex = regexp.MustCompile(`^git://((?P<user>[^@]+)@)?(?P<repository1>(?P<host>[^:]+):(?P<path>.*))$|^(?P<protocol>https)://(?P<repository2>.*\.git)$`)
 
 func parseGitPlan(plan string) gitPlan {
 	if !gitRegex.MatchString(plan) {
@@ -41,13 +41,17 @@ func parseGitPlan(plan string) gitPlan {
 	if protocol == "" {
 		protocol = "ssh"
 	}
+	repository := result["repository1"]
+	if repository == "" {
+		repository = result["repository2"]
+	}
 
 	return gitPlan{
 		isGitPlan:  true,
 		protocol:   protocol,
 		user:       result["user"],
 		host:       result["host"],
-		repository: result["repository"],
+		repository: repository,
 	}
 }
 
