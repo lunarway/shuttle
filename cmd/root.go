@@ -10,7 +10,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var projectPath string
+var (
+	projectPath string
+	version     = "<dev-version>"
+	commit      = "<unspecified-commit>"
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

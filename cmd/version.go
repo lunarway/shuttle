@@ -8,8 +8,6 @@ import (
 
 var (
 	showCommit bool
-	version    = "dev-version"
-	commit     = "unknown"
 	versionCmd = &cobra.Command{
 		Use:   "version",
 		Short: "Info about version of shuttle",
