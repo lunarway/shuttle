@@ -14,12 +14,13 @@ import (
 
 type gitPlan struct {
 	isGitPlan  bool
+	protocol   string
 	user       string
 	host       string
 	repository string
 }
 
-var gitRegex = regexp.MustCompile(`^git://((?P<user>[^@]+)@)?(?P<repository>(?P<host>[^:]+):(?P<path>.*))$`)
+var gitRegex = regexp.MustCompile(`^git://((?P<user>[^@]+)@)?(?P<repository>(?P<host>[^:]+):(?P<path>.*))$|^(?P<protocol>https)://(?P<repository>.*\.git)$`)
 
 func parseGitPlan(plan string) gitPlan {
 	if !gitRegex.MatchString(plan) {
@@ -36,8 +37,14 @@ func parseGitPlan(plan string) gitPlan {
 		}
 	}
 
+	protocol := result["protocol"]
+	if protocol == "" {
+		protocol = "ssh"
+	}
+
 	return gitPlan{
 		isGitPlan:  true,
+		protocol:   protocol,
 		user:       result["user"],
 		host:       result["host"],
 		repository: result["repository"],
@@ -84,7 +91,16 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string) string {
 	} else {
 		os.MkdirAll(localShuttleDirectoryPath, os.ModePerm)
 
-		execCmd := exec.Command("git", "clone", parsedGitPlan.user+"@"+parsedGitPlan.repository, "plan")
+		var cloneArg string
+		if parsedGitPlan.protocol == "https" {
+			cloneArg = "https://" + parsedGitPlan.repository
+		} else if parsedGitPlan.protocol == "ssh" {
+			cloneArg = parsedGitPlan.user + "@" + parsedGitPlan.repository
+		} else {
+			panic(fmt.Sprintf("Unknown protocol '%s'", parsedGitPlan.protocol))
+		}
+
+		execCmd := exec.Command("git", "clone", cloneArg, "plan")
 		execCmd.Env = append(os.Environ())
 		execCmd.Dir = localShuttleDirectoryPath
 

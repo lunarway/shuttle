@@ -1,4 +1,4 @@
-plan: 'git://git@github.com:lunarway/shuttle-example-go-plan.git'
+plan: 'https://github.com/lunarway/shuttle-example-go-plan.git'
 vars:
   docker:
     image: shuttle/repo-project
