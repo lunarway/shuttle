@@ -3,9 +3,8 @@
 go build
 
 function assertRun() {
-  local result
   result=$(./shuttle "$@" 2>&1)
-  local result_status=$?
+  result_status=$?
   if [[ $result_status -gt 0 ]]; then
     fail "Status code was $result_status\n$result"
   fi
@@ -14,9 +13,8 @@ function assertRun() {
 function assertErrorCode() {
   local expectedErrorCode=$1
   shift
-  local result
   result=$(./shuttle "$@" 2>&1)
-  local result_status=$?
+  result_status=$?
   if [[ $result_status -ne $expectedErrorCode ]]; then
     fail "Status code wasn't $expectedErrorCode but $result_status\nOutput: $result"
   fi
@@ -28,6 +26,23 @@ test_moon_base_builds() {
 
 test_venus_base_fails() {
   assertErrorCode 2 -p examples/venus-base run build tag=test
+}
+
+test_can_get_variable_from_local_plan() {
+  result=$(./shuttle -p examples/moon-base get docker.image 2>&1)
+  assertEquals "earth-united/moon-base" "$result"
+}
+
+test_can_get_variable_from_repo_plan() {
+  result=$(./shuttle -p examples/repo-project get docker.image 2>&1)
+  assertEquals "shuttle/repo-project" "$result"
+}
+
+test_fails_getting_no_repo_plan() {
+  assertErrorCode 3 -p examples/bad/no-repo-project ls
+  if [[ ! "$result" =~ "Could not clone " ]]; then
+    fail "Expected output to contain 'Could not clone ', but it was:\n$result"
+  fi
 }
 
 # Load and run shUnit2.

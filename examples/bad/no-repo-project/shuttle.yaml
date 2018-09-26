@@ -1,0 +1,4 @@
+plan: 'git://git@github.com:lunarway/not-existing-shuttle-plan.git'
+vars:
+  docker:
+    image: shuttle/no-repo-project

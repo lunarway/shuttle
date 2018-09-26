@@ -3,6 +3,7 @@ package git
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
@@ -70,22 +71,22 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string) string {
 		checkIfError(startErr)
 
 		go func() {
-			stdout, errStdout = copyAndCapture(os.Stdout, stdoutIn)
+			stdout, errStdout = copyAndCapture(ioutil.Discard, stdoutIn)
 		}()
 
 		go func() {
-			stderr, errStderr = copyAndCapture(os.Stderr, stderrIn)
+			stderr, errStderr = copyAndCapture(ioutil.Discard, stderrIn)
 		}()
 
 		err := execCmd.Wait()
 		checkIfError(err)
 
 	} else {
-		os.MkdirAll(planPath, os.ModePerm)
+		os.MkdirAll(localShuttleDirectoryPath, os.ModePerm)
 
-		execCmd := exec.Command("git", "clone", parsedGitPlan.user+"@"+parsedGitPlan.repository)
+		execCmd := exec.Command("git", "clone", parsedGitPlan.user+"@"+parsedGitPlan.repository, "plan")
 		execCmd.Env = append(os.Environ())
-		execCmd.Dir = planPath
+		execCmd.Dir = localShuttleDirectoryPath
 
 		var stdout, stderr []byte
 		var errStdout, errStderr error
@@ -95,15 +96,19 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string) string {
 		checkIfError(startErr)
 
 		go func() {
-			stdout, errStdout = copyAndCapture(os.Stdout, stdoutIn)
+			stdout, errStdout = copyAndCapture(ioutil.Discard, stdoutIn)
 		}()
 
 		go func() {
-			stderr, errStderr = copyAndCapture(os.Stderr, stderrIn)
+			stderr, errStderr = copyAndCapture(ioutil.Discard, stderrIn)
 		}()
 
 		err := execCmd.Wait()
-		checkIfError(err)
+
+		if err != nil {
+			fmt.Printf("\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf("Could not clone %s\ngit output:%v\n%v", plan, string(stdout), string(stderr)))
+			os.Exit(3)
+		}
 
 	}
 

@@ -1,5 +1,4 @@
-plan: 'git://git@bitbucket.org:LunarWay/lw-shuttle-go-plan.git'
-
+plan: 'git://git@github.com:lunarway/shuttle-example-go-plan.git'
 vars:
-  service: travelcard
-  squad: apollo
+  docker:
+    image: shuttle/repo-project
