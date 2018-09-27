@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"html/template"
 	"os"
 	"path"
 	"strings"
+	"text/template"
 
 	tmplFuncs "github.com/lunarway/shuttle/pkg/templates"
 	"github.com/spf13/cobra"

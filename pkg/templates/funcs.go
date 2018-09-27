@@ -2,8 +2,10 @@ package templates
 
 import (
 	"fmt"
-	"html/template"
 	"strings"
+	"text/template"
+
+	"github.com/Masterminds/sprig"
 )
 
 type KeyValuePair struct {
@@ -13,14 +15,24 @@ type KeyValuePair struct {
 
 // GetFuncMap returns a Map of template functions
 func GetFuncMap() template.FuncMap {
-	return template.FuncMap{
+	f := sprig.TxtFuncMap()
+
+	extra := template.FuncMap{
 		"get":         tmplGet,
 		"string":      tmplString,
 		"array":       tmplArray,
 		"objectArray": tmplObjectArray,
 		"strConst":    tmplStrConst,
 		"int":         tmplInt,
+		"is":          tmplIs,
+		"isnt":        tmplIsnt,
 	}
+
+	for k, v := range extra {
+		f[k] = v
+	}
+
+	return f
 }
 
 // TODO: Add description
@@ -105,6 +117,14 @@ func tmplObjectArray(path string, input interface{}) []KeyValuePair {
 		return values
 	}
 	return nil
+}
+
+func tmplIs(a interface{}, b interface{}) bool {
+	return a == b
+}
+
+func tmplIsnt(a interface{}, b interface{}) bool {
+	return a != b
 }
 
 // TODO: Add description
