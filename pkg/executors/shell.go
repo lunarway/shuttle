@@ -2,10 +2,11 @@ package executors
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/lunarway/shuttle/pkg/output"
 
 	"github.com/lunarway/shuttle/pkg/config"
 )
@@ -46,12 +47,14 @@ func executeShell(context ActionExecutionContext) {
 	}()
 
 	err := execCmd.Wait()
-
 	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
+		output.ExitWithErrorCode(4, fmt.Sprintf("Failed executing shell script `%s`\nError: %s", context.Action.Shell, err))
 	}
-	if errStdout != nil || errStderr != nil {
-		log.Fatalf("failed to capture stdout or stderr\n")
+	if errStdout != nil {
+		output.ExitWithErrorCode(4, fmt.Sprintf("Failed to capture Stdout for shell script `%s`˜\nError: %s", context.Action.Shell, errStdout))
+	}
+	if errStderr != nil {
+		output.ExitWithErrorCode(4, fmt.Sprintf("Failed to capture Stderr for shell script `%s`˜\nError: %s", context.Action.Shell, errStderr))
 	}
 	//outStr, errStr := string(stdout), string(stderr)
 	//fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
