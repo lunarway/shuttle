@@ -20,7 +20,6 @@ snapshot:
   name_template: "git-{{.Commit}}"
 
 release:
-  draft: true
   name_template: "v{{.Version}}"
 
 changelog:
