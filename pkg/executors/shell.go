@@ -3,12 +3,14 @@ package executors
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"time"
 
 	"github.com/lunarway/shuttle/pkg/output"
 
 	"github.com/lunarway/shuttle/pkg/config"
+
+	go_cmd "github.com/go-cmd/cmd"
 )
 
 // Build builds the docker image from a shuttle plan
@@ -19,7 +21,14 @@ func executeShell(context ActionExecutionContext) {
 	//args := cmdAndArgs[1:]
 	shuttlePath, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 
-	execCmd := exec.Command("sh", "-c", context.Action.Shell)
+	cmdOptions := go_cmd.Options{
+		Buffered:  false,
+		Streaming: true,
+	}
+
+	execCmd := go_cmd.NewCmdOptions(cmdOptions, "sh", "-c", "cd '"+context.ScriptContext.Project.ProjectPath+"'; "+context.Action.Shell)
+
+	//execCmd := exec.Command("sh", "-c", context.Action.Shell)
 	execCmd.Env = os.Environ()
 	for name, value := range context.ScriptContext.Args {
 		execCmd.Env = append(execCmd.Env, fmt.Sprintf("%s=%s", name, value))
@@ -29,33 +38,39 @@ func executeShell(context ActionExecutionContext) {
 	execCmd.Env = append(execCmd.Env, fmt.Sprintf("project=%s", context.ScriptContext.Project.ProjectPath))
 	// TODO: Add project path as a shuttle specific ENV
 	execCmd.Env = append(execCmd.Env, fmt.Sprintf("PATH=%s", shuttlePath+string(os.PathListSeparator)+os.Getenv("PATH")))
-	execCmd.Dir = context.ScriptContext.Project.ProjectPath
-
-	var stdout, stderr []byte
-	var errStdout, errStderr error
-	stdoutIn, _ := execCmd.StdoutPipe()
-	stderrIn, _ := execCmd.StderrPipe()
-
-	execCmd.Start()
 
 	go func() {
-		stdout, errStdout = copyAndCapture(os.Stdout, stdoutIn)
+		for {
+			select {
+			case line := <-execCmd.Stdout:
+				fmt.Println(line)
+			case line := <-execCmd.Stderr:
+				fmt.Fprintln(os.Stderr, line)
+			}
+		}
 	}()
 
-	go func() {
-		stderr, errStderr = copyAndCapture(os.Stderr, stderrIn)
-	}()
+	// Run and wait for Cmd to return, discard Status
+	status := <-execCmd.Start()
 
-	err := execCmd.Wait()
-	if err != nil {
-		output.ExitWithErrorCode(4, fmt.Sprintf("Failed executing shell script `%s`\nError: %s", context.Action.Shell, err))
+	// Cmd has finished but wait for goroutine to print all lines
+	for len(execCmd.Stdout) > 0 || len(execCmd.Stderr) > 0 {
+		time.Sleep(10 * time.Millisecond)
 	}
-	if errStdout != nil {
-		output.ExitWithErrorCode(4, fmt.Sprintf("Failed to capture Stdout for shell script `%s`˜\nError: %s", context.Action.Shell, errStdout))
+
+	if status.Exit > 0 {
+		output.ExitWithErrorCode(4, fmt.Sprintf("Failed executing shell script `%s`\nExit code: ", context.Action.Shell, status.Exit))
 	}
-	if errStderr != nil {
-		output.ExitWithErrorCode(4, fmt.Sprintf("Failed to capture Stderr for shell script `%s`˜\nError: %s", context.Action.Shell, errStderr))
-	}
+
+	// go func() {
+	// 	stdout, errStdout = copyAndCapture(os.Stdout, stdoutIn)
+	// }()
+
+	// go func() {
+	// 	stderr, errStderr = copyAndCapture(os.Stderr, stderrIn)
+	// }()
+
+	// err := execCmd.Wait()
 	//outStr, errStr := string(stdout), string(stderr)
 	//fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
 
