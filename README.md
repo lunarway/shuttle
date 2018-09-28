@@ -57,6 +57,9 @@ $ shuttle run build tag=v1
 
 ## Features
 * Fetch shuttle plans from git repositories
+* Create any script you like in the plan
+* Overwrite scripts in local projects when they defer from the plan
+* Write templates in plans and overwrite them in projects when they defer
 * ...
 
 ## Documentation

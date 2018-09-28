@@ -2,6 +2,7 @@ package executors
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/lunarway/shuttle/pkg/config"
@@ -25,7 +26,11 @@ type ActionExecutionContext struct {
 
 // Execute is the command executor for the plan files
 func Execute(p config.ShuttleProjectContext, command string, args []string) {
-	script := p.Plan.Scripts[command]
+	script, ok := p.Plan.Scripts[command]
+	if !ok {
+		fmt.Println(fmt.Sprintf("No script found called '%s'", command))
+		os.Exit(2)
+	}
 	namedArgs := map[string]string{}
 	for _, arg := range args {
 		parts := strings.SplitN(arg, "=", 2)

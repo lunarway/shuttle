@@ -13,8 +13,9 @@ type DynamicYaml = map[string]interface{}
 
 // ShuttleConfig describes the actual config for each project
 type ShuttleConfig struct {
-	Plan      string      `yaml:"plan"`
-	Variables DynamicYaml `yaml:"vars"`
+	Plan      string                       `yaml:"plan"`
+	Variables DynamicYaml                  `yaml:"vars"`
+	Scripts   map[string]ShuttlePlanScript `yaml:"scripts"`
 }
 
 // ShuttleProjectContext describes the context of the project using shuttle
@@ -25,6 +26,7 @@ type ShuttleProjectContext struct {
 	Config                    ShuttleConfig
 	LocalPlanPath             string
 	Plan                      ShuttlePlanConfiguration
+	Scripts                   map[string]ShuttlePlanScript
 }
 
 // Setup the ShuttleProjectContext for a specific path
@@ -35,6 +37,13 @@ func (c *ShuttleProjectContext) Setup(projectPath string) *ShuttleProjectContext
 	c.TempDirectoryPath = path.Join(c.LocalShuttleDirectoryPath, "temp")
 	c.LocalPlanPath = FetchPlan(c.Config.Plan, projectPath, c.LocalShuttleDirectoryPath)
 	c.Plan.Load(c.LocalPlanPath)
+	c.Scripts = make(map[string]ShuttlePlanScript)
+	for scriptName, script := range c.Plan.Scripts {
+		c.Scripts[scriptName] = script
+	}
+	for scriptName, script := range c.Config.Scripts {
+		c.Scripts[scriptName] = script
+	}
 	return c
 }
 
