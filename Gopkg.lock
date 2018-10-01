@@ -20,6 +20,12 @@
   version = "v1.0.1"
 
 [[projects]]
+  name = "github.com/go-cmd/cmd"
+  packages = ["."]
+  revision = "b84ca4f2247327f07f46331c260675cba1a1dc7a"
+  version = "v1.0.3"
+
+[[projects]]
   name = "github.com/google/uuid"
   packages = ["."]
   revision = "d460ce9f8df2e77fb1ba55ca87fafed96c607494"
@@ -79,6 +85,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "83089c54a5a7254b06c3f2b549d73f80479a4e9ccce92bc82ef6a1d94d0306a1"
+  inputs-digest = "cea6f7d90b902e0c99ee1babbefe53c92267579eb1a248fdcb8223b7750613ed"
   solver-name = "gps-cdcl"
   solver-version = 1
