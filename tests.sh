@@ -39,9 +39,16 @@ test_can_get_variable_from_repo_plan() {
 }
 
 test_fails_getting_no_repo_plan() {
-  assertErrorCode 3 -p examples/bad/no-repo-project ls
-  if [[ ! "$result" =~ "Could not clone " ]]; then
-    fail "Expected output to contain 'Could not clone ', but it was:\n$result"
+  assertErrorCode 4 -p examples/bad/no-repo-project ls
+  if [[ ! "$result" =~ "Failed executing git command \`clone" ]]; then
+    fail "Expected output to contain 'Failed executing git command \`clone', but it was:\n$result"
+  fi
+}
+
+test_get_a_boolean() {
+  result=$(./shuttle -p examples/moon-base get run-as-root 2>&1)
+  if [[ "$result" != "false" ]]; then
+    fail "Expected output to be 'false', but it was:\n$result"
   fi
 }
 

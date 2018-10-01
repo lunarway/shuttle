@@ -2,3 +2,4 @@ plan: '../station-plan'
 vars:
   docker:
     image: earth-united/moon-base
+  run-as-root: false

@@ -3,15 +3,16 @@ package git
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
-	"os/exec"
 	"os/user"
 	"path"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/lunarway/shuttle/pkg/output"
+
+	go_cmd "github.com/go-cmd/cmd"
 )
 
 type gitPlan struct {
@@ -64,36 +65,13 @@ func IsGitPlan(plan string) bool {
 }
 
 // GetGitPlan will pull git repository and return its path
-func GetGitPlan(plan string, localShuttleDirectoryPath string) string {
-	// We need the user to find the homedir.
-
+func GetGitPlan(plan string, localShuttleDirectoryPath string, verbose bool) string {
 	parsedGitPlan := parseGitPlan(plan)
 	planPath := path.Join(localShuttleDirectoryPath, "plan")
 
 	if fileAvailable(planPath) {
-
-		execCmd := exec.Command("git", "pull", "origin")
-		execCmd.Env = append(os.Environ())
-		execCmd.Dir = planPath
-
-		var stdout, stderr []byte
-		var errStdout, errStderr error
-		stdoutIn, _ := execCmd.StdoutPipe()
-		stderrIn, _ := execCmd.StderrPipe()
-		startErr := execCmd.Start()
-		checkIfError(startErr)
-
-		go func() {
-			stdout, errStdout = copyAndCapture(ioutil.Discard, stdoutIn)
-		}()
-
-		go func() {
-			stderr, errStderr = copyAndCapture(ioutil.Discard, stderrIn)
-		}()
-
-		err := execCmd.Wait()
-		checkIfError(err)
-
+		output.Verbose(verbose, "Pulling latest git changes")
+		gitCmd("pull origin", planPath, verbose)
 	} else {
 		os.MkdirAll(localShuttleDirectoryPath, os.ModePerm)
 
@@ -106,31 +84,8 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string) string {
 			panic(fmt.Sprintf("Unknown protocol '%s'", parsedGitPlan.protocol))
 		}
 
-		execCmd := exec.Command("git", "clone", cloneArg, "plan")
-		execCmd.Env = append(os.Environ())
-		execCmd.Dir = localShuttleDirectoryPath
-
-		var stdout, stderr []byte
-		var errStdout, errStderr error
-		stdoutIn, _ := execCmd.StdoutPipe()
-		stderrIn, _ := execCmd.StderrPipe()
-		startErr := execCmd.Start()
-		checkIfError(startErr)
-
-		go func() {
-			stdout, errStdout = copyAndCapture(ioutil.Discard, stdoutIn)
-		}()
-
-		go func() {
-			stderr, errStderr = copyAndCapture(ioutil.Discard, stderrIn)
-		}()
-
-		err := execCmd.Wait()
-
-		if err != nil {
-			output.ExitWithErrorCode(3, fmt.Sprintf("Could not clone %s\ngit output:%v\n%v", plan, string(stdout), string(stderr)))
-		}
-
+		output.Verbose(verbose, "Cloning repository %s", cloneArg)
+		gitCmd("clone "+cloneArg+" plan", localShuttleDirectoryPath, verbose)
 	}
 
 	return planPath
@@ -192,4 +147,34 @@ func copyAndCapture(w io.Writer, r io.Reader) ([]byte, error) {
 	// never reached
 	panic(true)
 	return nil, nil
+}
+
+func gitCmd(command string, dir string, printOutput bool) {
+	cmdOptions := go_cmd.Options{
+		Buffered:  false,
+		Streaming: true,
+	}
+	execCmd := go_cmd.NewCmdOptions(cmdOptions, "sh", "-c", "cd '"+dir+"'; git "+command)
+	execCmd.Env = os.Environ()
+	go func() {
+		for {
+			select {
+			case line := <-execCmd.Stdout:
+				if printOutput {
+					fmt.Println("git> " + line)
+				}
+			case line := <-execCmd.Stderr:
+				if printOutput {
+					fmt.Fprintln(os.Stderr, "git> "+line)
+				}
+			}
+		}
+	}()
+	status := <-execCmd.Start()
+	for len(execCmd.Stdout) > 0 || len(execCmd.Stderr) > 0 {
+		time.Sleep(10 * time.Millisecond)
+	}
+	if status.Exit > 0 {
+		output.ExitWithErrorCode(4, fmt.Sprintf("Failed executing git command `%s` in `%s`\nExit code: %v", command, dir, status.Exit))
+	}
 }

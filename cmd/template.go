@@ -16,7 +16,7 @@ type context struct {
 	Args map[string]string
 }
 
-var output string
+var templateOutput string
 var templateCmd = &cobra.Command{
 	Use:   "template [template]",
 	Short: "Execute a template",
@@ -52,7 +52,7 @@ var templateCmd = &cobra.Command{
 			Vars: projectContext.Config.Variables,
 		}
 
-		if output == "" {
+		if templateOutput == "" {
 			err = tmpl.Execute(os.Stdout, context)
 			if err != nil {
 				panic(err)
@@ -61,7 +61,7 @@ var templateCmd = &cobra.Command{
 			// TODO: This is probably not the right place to initialize the temp dir?
 			os.MkdirAll(projectContext.TempDirectoryPath, os.ModePerm)
 
-			file, err := os.Create(path.Join(projectContext.TempDirectoryPath, output))
+			file, err := os.Create(path.Join(projectContext.TempDirectoryPath, templateOutput))
 			if err != nil {
 				panic(err)
 			}
@@ -75,7 +75,7 @@ var templateCmd = &cobra.Command{
 }
 
 func init() {
-	templateCmd.Flags().StringVarP(&output, "output", "o", "", "Select filename to output file to in temporary directory")
+	templateCmd.Flags().StringVarP(&templateOutput, "output", "o", "", "Select filename to output file to in temporary directory")
 	rootCmd.AddCommand(templateCmd)
 }
 

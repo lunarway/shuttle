@@ -11,3 +11,8 @@ scripts:
     description: Run test for the project
     actions:
     - shell: go test
+  say-hi:
+    description: just say hi
+    args: []
+    actions:
+    - shell: echo "test"

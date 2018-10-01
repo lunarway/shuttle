@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 
 	yaml "gopkg.in/yaml.v2"
@@ -30,12 +31,21 @@ type ShuttleProjectContext struct {
 }
 
 // Setup the ShuttleProjectContext for a specific path
-func (c *ShuttleProjectContext) Setup(projectPath string) *ShuttleProjectContext {
+func (c *ShuttleProjectContext) Setup(projectPath string, verbose bool, clean bool) *ShuttleProjectContext {
 	c.Config.getConf(projectPath)
 	c.ProjectPath = projectPath
 	c.LocalShuttleDirectoryPath = path.Join(c.ProjectPath, ".shuttle")
+
+	if clean {
+		os.RemoveAll(c.LocalShuttleDirectoryPath)
+		if verbose {
+			fmt.Println(fmt.Sprintf("Cleaning %s", c.LocalShuttleDirectoryPath))
+		}
+	}
+	os.MkdirAll(c.LocalShuttleDirectoryPath, os.ModePerm)
+
 	c.TempDirectoryPath = path.Join(c.LocalShuttleDirectoryPath, "temp")
-	c.LocalPlanPath = FetchPlan(c.Config.Plan, projectPath, c.LocalShuttleDirectoryPath)
+	c.LocalPlanPath = FetchPlan(c.Config.Plan, projectPath, c.LocalShuttleDirectoryPath, verbose)
 	c.Plan.Load(c.LocalPlanPath)
 	c.Scripts = make(map[string]ShuttlePlanScript)
 	for scriptName, script := range c.Plan.Scripts {

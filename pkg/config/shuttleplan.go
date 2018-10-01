@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/lunarway/shuttle/pkg/git"
+	"github.com/lunarway/shuttle/pkg/output"
 	"gopkg.in/yaml.v2"
 )
 
@@ -21,11 +22,13 @@ type ShuttlePlanScript struct {
 	Args        []ShuttleScriptArgs `yaml:"args"`
 }
 
+// ShuttleScriptArgs describes an arguments that a script accepts
 type ShuttleScriptArgs struct {
 	Name     string `yaml:"name"`
 	Required bool   `yaml:"required"`
 }
 
+// ShuttleAction describes an action done by a shuttle script
 type ShuttleAction struct {
 	Shell      string `yaml:"shell"`
 	Dockerfile string `yaml:"dockerfile"`
@@ -60,15 +63,18 @@ func (p *ShuttlePlanConfiguration) Load(planPath string) *ShuttlePlanConfigurati
 }
 
 // FetchPlan so it exists locally and return path to that plan
-func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string) string {
+func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, verbose bool) string {
 	switch {
 	case git.IsGitPlan(plan):
-		return git.GetGitPlan(plan, localShuttleDirectoryPath)
+		output.Verbose(verbose, "Using git plan at '%s'", plan)
+		return git.GetGitPlan(plan, localShuttleDirectoryPath, verbose)
 	case isMatching("^http://|^https://", plan):
 		panic("plan not valid: http is not supported yet")
 	case isFilePath(plan, true):
+		output.Verbose(verbose, "Using local plan at '%s'", plan)
 		return plan
 	case isFilePath(plan, false):
+		output.Verbose(verbose, "Using local plan at '%s'", plan)
 		return path.Join(projectPath, plan)
 
 	}
