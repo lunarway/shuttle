@@ -48,6 +48,9 @@ type ShuttlePlan struct {
 
 // Load loads a plan from project path and shuttle config
 func (p *ShuttlePlanConfiguration) Load(planPath string) *ShuttlePlanConfiguration {
+	if planPath == "" {
+		return p
+	}
 	var configPath = path.Join(planPath, "plan.yaml")
 	//log.Printf("configpath: %s", configPath)
 	yamlFile, err := ioutil.ReadFile(configPath)
@@ -65,6 +68,9 @@ func (p *ShuttlePlanConfiguration) Load(planPath string) *ShuttlePlanConfigurati
 // FetchPlan so it exists locally and return path to that plan
 func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, verbose bool) string {
 	switch {
+	case plan == "":
+		output.Verbose(verbose, "Using no plan")
+		return ""
 	case git.IsGitPlan(plan):
 		output.Verbose(verbose, "Using git plan at '%s'", plan)
 		return git.GetGitPlan(plan, localShuttleDirectoryPath, verbose)

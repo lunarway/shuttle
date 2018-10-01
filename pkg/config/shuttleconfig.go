@@ -14,7 +14,8 @@ type DynamicYaml = map[string]interface{}
 
 // ShuttleConfig describes the actual config for each project
 type ShuttleConfig struct {
-	Plan      string                       `yaml:"plan"`
+	Plan      string                       `yaml:"not_plan"`
+	PlanRaw   interface{}                  `yaml:"plan"`
 	Variables DynamicYaml                  `yaml:"vars"`
 	Scripts   map[string]ShuttlePlanScript `yaml:"scripts"`
 }
@@ -70,6 +71,13 @@ func (c *ShuttleConfig) getConf(projectPath string) *ShuttleConfig {
 	err = yaml.Unmarshal(yamlFile, c)
 	if err != nil {
 		panic(fmt.Sprintf("Unmarshal: %v", err))
+	}
+
+	switch c.PlanRaw {
+	case false:
+		// no plan
+	default:
+		c.Plan = c.PlanRaw.(string)
 	}
 
 	return c

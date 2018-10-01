@@ -25,7 +25,7 @@ type ActionExecutionContext struct {
 
 // Execute is the command executor for the plan files
 func Execute(p config.ShuttleProjectContext, command string, args []string) {
-	script, ok := p.Plan.Scripts[command]
+	script, ok := p.Scripts[command]
 	if !ok {
 		output.ExitWithErrorCode(2, fmt.Sprintf("No script found called '%s'", command))
 	}

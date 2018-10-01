@@ -1,0 +1,18 @@
+plan: false
+scripts:
+  build:
+    description: 'build code'
+    actions:
+    - shell: 'go build'
+  test-go:
+    description: 'run tests written in go'
+    actions:
+    - shell: go test ./pkg/... -run Test*
+  test-shell:
+    description: 'run tests written in shell'
+    actions:
+    - shell: ./tests.sh
+  test:
+    actions:
+    - shell: shuttle run test-go
+    - shell: shuttle run test-shell

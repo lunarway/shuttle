@@ -2,11 +2,8 @@ language: go
 
 script: |
   echo "Build shuttle" &&
-  go build -v -a &&
-  echo "\n\nRun go tests:" &&
-  go test ./pkg/... -run Test* &&
-  echo "\n\nRun shell tests:" &&
-  ./tests.sh
+  go build &&
+  ./shuttle run test
 
   # .travis.yml
 language: go
