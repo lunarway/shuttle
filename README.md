@@ -71,7 +71,7 @@ $ shuttle run build tag=v1
 ### Mac OS
 
 ```console
-curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -s https://api.github.com/repos/lunarway/shuttle/releases/latest | grep tag_name | cut -d '"' -f 4)/shuttle-darwin-amd64
+curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | grep -o '[^/]*$')/shuttle-darwin-amd64
 chmod +x shuttle-darwin-amd64
 sudo mv shuttle-darwin-amd64 /usr/local/bin/shuttle
 ```
@@ -79,7 +79,7 @@ sudo mv shuttle-darwin-amd64 /usr/local/bin/shuttle
 ### Linux
 
 ```console
-curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -s https://api.github.com/repos/lunarway/shuttle/releases/latest | grep tag_name | cut -d '"' -f 4)/shuttle-linux-amd64
+curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | grep -o '[^/]*$')/shuttle-linux-amd64
 chmod +x shuttle-linux-amd64
 sudo mv shuttle-linux-amd64 /usr/local/bin/shuttle
 ```
