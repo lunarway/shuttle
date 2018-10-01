@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
+
+	"github.com/lunarway/shuttle/pkg/output"
+	"github.com/lunarway/shuttle/pkg/templates"
 
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/spf13/cobra"
@@ -16,12 +18,8 @@ var getCmd = &cobra.Command{
 	//Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		context := getProjectContext()
-
 		path := args[0]
-		properties := strings.Split(path, ".")
-
-		response := resolve(context.Config.Variables, properties)
-		fmt.Printf(response)
+		fmt.Print(templates.TmplGet(path, context.Config.Variables))
 	},
 }
 
@@ -46,10 +44,8 @@ func resolve(dynyaml dynamicValue, properties []string) string {
 func get(dynyaml dynamicValue, property string) dynamicValue {
 	switch t := dynyaml.(type) {
 	default:
-		fmt.Printf("unexpected type %T\n", t) // %T prints whatever type t has
-		panic("Booom!")
-		//case config.DynamicYaml:
-		//	return
+		output.ExitWithErrorCode(2, fmt.Sprintf("unexpected type %T", t))
+		return nil
 	case map[interface{}]interface{}:
 		values := dynyaml.(map[interface{}]interface{})
 		return values[property]

@@ -18,14 +18,14 @@ func GetFuncMap() template.FuncMap {
 	f := sprig.TxtFuncMap()
 
 	extra := template.FuncMap{
-		"get":         tmplGet,
-		"string":      tmplString,
-		"array":       tmplArray,
-		"objectArray": tmplObjectArray,
-		"strConst":    tmplStrConst,
+		"get":         TmplGet,
+		"string":      TmplString,
+		"array":       TmplArray,
+		"objectArray": TmplObjectArray,
+		"strConst":    TmplStrConst,
 		"int":         tmplInt,
-		"is":          tmplIs,
-		"isnt":        tmplIsnt,
+		"is":          TmplIs,
+		"isnt":        TmplIsnt,
 	}
 
 	for k, v := range extra {
@@ -36,13 +36,12 @@ func GetFuncMap() template.FuncMap {
 }
 
 // TODO: Add description
-func tmplGet(path string, input interface{}) interface{} {
-	properties := strings.SplitN(path, ".", 2)
-
+func TmplGet(path string, input interface{}) interface{} {
 	if !strings.Contains(path, ".") {
 		return getInner(path, input)
 	}
 
+	properties := strings.SplitN(path, ".", 2)
 	property := properties[0]
 	step := getInner(property, input)
 
@@ -53,24 +52,24 @@ func tmplGet(path string, input interface{}) interface{} {
 }
 
 // template function to convert from log.debug to LOG_DEBUG
-func tmplStrConst(value string) string {
+func TmplStrConst(value string) string {
 	value = strings.Replace(value, ".", "_", -1)
 	value = strings.ToUpper(value)
 	return value
 }
 
 // TODO: Add description
-func tmplString(path string, input interface{}) string {
-	value := tmplGet(path, input)
+func TmplString(path string, input interface{}) string {
+	value := TmplGet(path, input)
 	if value == nil {
 		return ""
 	}
-	return value.(string)
+	return fmt.Sprintf("%v", value)
 }
 
 // TODO: Add description
 func tmplInt(path string, input interface{}) int {
-	value := tmplGet(path, input)
+	value := TmplGet(path, input)
 	if value == nil {
 		return 0
 	}
@@ -78,8 +77,8 @@ func tmplInt(path string, input interface{}) int {
 }
 
 // TODO: Add description
-func tmplArray(path string, input interface{}) []interface{} {
-	value := tmplGet(path, input)
+func TmplArray(path string, input interface{}) []interface{} {
+	value := TmplGet(path, input)
 	switch value.(type) {
 	case map[interface{}]interface{}:
 		values := []interface{}{}
@@ -100,8 +99,8 @@ func tmplArray(path string, input interface{}) []interface{} {
 }
 
 // TODO: Add description
-func tmplObjectArray(path string, input interface{}) []KeyValuePair {
-	value := tmplGet(path, input)
+func TmplObjectArray(path string, input interface{}) []KeyValuePair {
+	value := TmplGet(path, input)
 	switch value.(type) {
 	case map[interface{}]interface{}:
 		values := []KeyValuePair{}
@@ -119,11 +118,11 @@ func tmplObjectArray(path string, input interface{}) []KeyValuePair {
 	return nil
 }
 
-func tmplIs(a interface{}, b interface{}) bool {
+func TmplIs(a interface{}, b interface{}) bool {
 	return a == b
 }
 
-func tmplIsnt(a interface{}, b interface{}) bool {
+func TmplIsnt(a interface{}, b interface{}) bool {
 	return a != b
 }
 

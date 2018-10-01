@@ -10,7 +10,7 @@ import (
 var input = make(map[string]interface{})
 var data = `
 a: Easy!
-b: 
+b:
   c: 2
   h: 'ewff'
 `
@@ -24,7 +24,7 @@ func init() {
 
 func TestTmplStrConst(t *testing.T) {
 	input := "log.console.as.json"
-	output := tmplStrConst(input)
+	output := TmplStrConst(input)
 	expected := "LOG_CONSOLE_AS_JSON"
 
 	if output != expected {
@@ -33,15 +33,23 @@ func TestTmplStrConst(t *testing.T) {
 }
 
 func TestTmplStr(t *testing.T) {
-	output := tmplString("b.h", input)
+	output := TmplString("b.h", input)
 
 	if output != "ewff" {
 		t.Errorf("string conversion was incorrect, got: %s, want: %v", output, "ewff")
 	}
 }
 
+func TestTmplStr_with_int(t *testing.T) {
+	output := TmplString("b.c", input)
+
+	if output != "2" {
+		t.Errorf("string conversion was incorrect, got: %s, want: %v", output, 2)
+	}
+}
+
 func TestTmplInt(t *testing.T) {
-	output := tmplInt("b.c", input)
+	output := TmplInt("b.c", input)
 
 	if output != 2 {
 		t.Errorf("string conversion was incorrect, got: %d, want: %d", output, 2)
@@ -49,7 +57,7 @@ func TestTmplInt(t *testing.T) {
 }
 
 func TestTmpObjArray(t *testing.T) {
-	output := tmplObjectArray("b", input)
+	output := TmplObjectArray("b", input)
 
 	if len(output) == 2 {
 		if !(output[0].Key == "c" && output[0].Value == 2 && output[1].Key == "h" && output[1].Value == "ewff") {
