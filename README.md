@@ -63,7 +63,7 @@ $ shuttle run build tag=v1
 * ...
 
 ## Documentation
-*Documention is coming*
+*Documentation is coming*
 
 
 ## Installing
