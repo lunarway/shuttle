@@ -22,6 +22,6 @@ var (
 )
 
 func init() {
-	versionCmd.Flags().BoolVarP(&showCommit, "commit", "c", false, "Get git commit sha for current version")
+	versionCmd.Flags().BoolVar(&showCommit, "commit", false, "Get git commit sha for current version")
 	rootCmd.AddCommand(versionCmd)
 }
