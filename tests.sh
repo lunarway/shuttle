@@ -52,5 +52,36 @@ test_get_a_boolean() {
   fi
 }
 
+test_can_check_variable_exists() {
+  ./shuttle -p examples/moon-base has run-as-root 2>&1
+}
+
+test_can_check_variable_exists_with_stdout() {
+  result=$(./shuttle -p examples/moon-base has --stdout run-as-root 2>&1)
+  if [[ "$result" != "true" ]]; then
+    fail "Expected output to be 'true', but it was:\n$result"
+  fi
+}
+
+test_can_check_variable_doesnt_exist() {
+  assertErrorCode 1 -p examples/moon-base has not.a.thing 2>&1
+}
+
+test_can_check_variable_doesnt_exist_with_stdout() {
+  result=$(./shuttle -p examples/moon-base has --stdout oh.no 2>&1)
+  if [[ "$result" != "false" ]]; then
+    fail "Expected output to be 'false', but it was:\n$result"
+  fi
+}
+
+
+test_can_check_if_script_exists() {
+  ./shuttle -p examples/moon-base has --script build 2>&1
+}
+
+test_can_check_if_script_does_not_exist() {
+  assertErrorCode 1 -p examples/moon-base has --script do_not 2>&1
+}
+
 # Load and run shUnit2.
 . ./shunit2
