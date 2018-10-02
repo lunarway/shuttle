@@ -4,6 +4,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
 
@@ -57,13 +58,69 @@ func TestTmplInt(t *testing.T) {
 }
 
 func TestTmpObjArray(t *testing.T) {
-	output := TmplObjectArray("b", input)
-
-	if len(output) == 2 {
-		if !(output[0].Key == "c" && output[0].Value == 2 && output[1].Key == "h" && output[1].Value == "ewff") {
-			t.Errorf("ObjArray didn't match expected values, got: [{%s, %v}, {%s, %s}], want: [{c, 2}, {h, ewff}]", output[0].Key, output[0].Value, output[1].Key, output[1].Value)
-		}
-	} else {
-		t.Errorf("ObjArray didn't match length, got: %s, want: %v", output, 2)
+	type input struct {
+		path string
+		data interface{}
 	}
+	tt := []struct {
+		name   string
+		input  input
+		output []KeyValuePair
+	}{
+		{
+			name: "nil input",
+			input: input{
+				path: "b",
+				data: nil,
+			},
+			output: []KeyValuePair{},
+		},
+		{
+			name: "empty input",
+			input: input{
+				path: "b",
+				data: fromYaml(""),
+			},
+			output: []KeyValuePair{},
+		},
+		{
+			name: "nested values",
+			input: input{
+				path: "b",
+				data: fromYaml(`
+b:
+  c: 2
+  h: 'ewff'
+`),
+			},
+			output: []KeyValuePair{
+				{Key: "c", Value: 2},
+				{Key: "h", Value: "ewff"},
+			},
+		},
+		{
+			name: "non object value in path",
+			input: input{
+				path: "a",
+				data: fromYaml(`a: b`),
+			},
+			output: []KeyValuePair{},
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			output := TmplObjectArray(tc.input.path, tc.input.data)
+
+			assert.ElementsMatch(t, tc.output, output, "output does not match the expected")
+		})
+	}
+}
+
+func fromYaml(data string) interface{} {
+	m := make(map[string]interface{})
+	err := yaml.Unmarshal([]byte(data), m)
+	if err != nil {
+		log.Fatalf("faild to read yaml: %v", err)
+	}
+	return m
 }

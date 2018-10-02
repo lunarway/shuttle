@@ -100,6 +100,9 @@ func TmplArray(path string, input interface{}) []interface{} {
 
 // TODO: Add description
 func TmplObjectArray(path string, input interface{}) []KeyValuePair {
+	if input == nil {
+		return nil
+	}
 	value := TmplGet(path, input)
 	switch value.(type) {
 	case map[interface{}]interface{}:
