@@ -84,8 +84,35 @@ chmod +x shuttle-linux-amd64
 sudo mv shuttle-linux-amd64 /usr/local/bin/shuttle
 ```
 
+# Functions
 
-## Release History
+## `shuttle get <variable>`
+Used to get a variable defined in shuttle.yaml
+
+```console
+$ shuttle get some.variable
+> some variable content
+
+$ shuttle get does.not.exist
+> # nothing
+```
+
+## `shuttle has <variable>`
+It is possible to easily check if a variable or script is defined
+```console
+shuttle has some.variable
+shuttle has --script integration
+```
+
+Output is either statuscode=0 if variable is found or statuscode=1 if variables isn't found. The output can also be a stdout boolean like
+
+```console
+$ shuttle has my.docker.image --stdout
+> false
+```
+
+
+# Release History
 
 See the [releases](https://github.com/lunarway/shuttle/releases) for more
 information on changes between releases.
