@@ -59,7 +59,7 @@ func executeShell(context ActionExecutionContext) {
 	}
 
 	if status.Exit > 0 {
-		output.ExitWithErrorCode(4, fmt.Sprintf("Failed executing shell script `%s`\nExit code: ", context.Action.Shell, status.Exit))
+		output.ExitWithErrorCode(4, fmt.Sprintf("Failed executing shell script `%s`\nExit code: %v", context.Action.Shell, status.Exit))
 	}
 
 	// go func() {

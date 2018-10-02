@@ -83,5 +83,18 @@ test_can_check_if_script_does_not_exist() {
   assertErrorCode 1 -p examples/moon-base has --script do_not 2>&1
 }
 
+test_can_execute_shuttle_version_without_error() {
+  ./shuttle version
+  ./shuttle version --commit
+}
+
+
+test_run_shell_error_outputs_exit_code() {
+  assertErrorCode 4 -p examples/moon-base run crash
+  if [[ ! "$result" =~ "Exit code: 1" ]]; then
+    fail "Expected output to contain 'Exit code: 1', but it was:\n$result"
+  fi
+}
+
 # Load and run shUnit2.
 . ./shunit2

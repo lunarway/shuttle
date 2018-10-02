@@ -16,3 +16,8 @@ scripts:
     args: []
     actions:
     - shell: echo "test"
+  crash:
+    description: I will fail you
+    args: []
+    actions:
+    - shell: exit 1
