@@ -13,6 +13,7 @@ type dynamicValue = interface{}
 var getCmd = &cobra.Command{
 	Use:   "get [variable]",
 	Short: "Get a variable value",
+	Args:  cobra.ExactArgs(1),
 	//Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		context := getProjectContext()
