@@ -35,3 +35,7 @@
 [[constraint]]
   name = "github.com/go-cmd/cmd"
   version = "1.0.3"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
+  version = "1.*"
