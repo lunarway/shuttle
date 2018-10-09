@@ -13,12 +13,13 @@ import (
 )
 
 var (
-	projectPath string
-	uii         ui.UI
-	verboseFlag bool
-	clean       bool
-	version     = "<dev-version>"
-	commit      = "<unspecified-commit>"
+	projectPath        string
+	uii                ui.UI
+	verboseFlag        bool
+	clean              bool
+	skipGitPlanPulling bool
+	version            = "<dev-version>"
+	commit             = "<unspecified-commit>"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -54,6 +55,7 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&projectPath, "project", "p", ".", "Project path")
 	rootCmd.PersistentFlags().BoolVarP(&clean, "clean", "c", false, "Start from clean setup")
+	rootCmd.PersistentFlags().BoolVar(&skipGitPlanPulling, "skip-pull", false, "Skip git plan pulling step")
 	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Print verbose output")
 }
 
@@ -66,6 +68,6 @@ func getProjectContext() config.ShuttleProjectContext {
 
 	var fullProjectPath = path.Join(dir, projectPath)
 	var c config.ShuttleProjectContext
-	c.Setup(fullProjectPath, uii, clean)
+	c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling)
 	return c
 }

@@ -64,7 +64,7 @@ func IsGitPlan(plan string) bool {
 }
 
 // GetGitPlan will pull git repository and return its path
-func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI) string {
+func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool) string {
 	parsedGitPlan := parseGitPlan(plan)
 	planPath := path.Join(localShuttleDirectoryPath, "plan")
 
@@ -77,6 +77,11 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI) string
 	}
 
 	if fileAvailable(planPath) {
+		if skipGitPlanPulling {
+			uii.VerboseLn("Skipping git plan pulling")
+			return planPath
+		}
+
 		status := getStatus(planPath)
 
 		if status.mergeState {
@@ -88,6 +93,7 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI) string
 			uii.InfoLn("Pulling latest plan changes")
 			gitCmd("pull origin", planPath, uii)
 		}
+		return planPath
 	} else {
 		os.MkdirAll(localShuttleDirectoryPath, os.ModePerm)
 
@@ -105,6 +111,28 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI) string
 	}
 
 	return planPath
+}
+
+func RunGitPlanCommand(command string, plan string, uii ui.UI) {
+	cmdOptions := go_cmd.Options{
+		Streaming: true,
+	}
+	execCmd := go_cmd.NewCmdOptions(cmdOptions, "sh", "-c", "cd '"+plan+"'; git "+command)
+	execCmd.Env = os.Environ()
+	go func() {
+		for {
+			select {
+			case line := <-execCmd.Stdout:
+				uii.InfoLn(line)
+			case line := <-execCmd.Stderr:
+				uii.InfoLn(line)
+			}
+		}
+	}()
+	status := <-execCmd.Start()
+	if status.Exit > 0 {
+		os.Exit(status.Exit)
+	}
 }
 
 func isMatching(r string, content string) bool {

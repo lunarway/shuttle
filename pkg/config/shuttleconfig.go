@@ -34,7 +34,7 @@ type ShuttleProjectContext struct {
 }
 
 // Setup the ShuttleProjectContext for a specific path
-func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool) *ShuttleProjectContext {
+func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool, skipGitPlanPulling bool) *ShuttleProjectContext {
 	c.Config.getConf(projectPath)
 	c.UI = uii
 	c.ProjectPath = projectPath
@@ -47,7 +47,7 @@ func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool)
 	os.MkdirAll(c.LocalShuttleDirectoryPath, os.ModePerm)
 
 	c.TempDirectoryPath = path.Join(c.LocalShuttleDirectoryPath, "temp")
-	c.LocalPlanPath = FetchPlan(c.Config.Plan, projectPath, c.LocalShuttleDirectoryPath, uii)
+	c.LocalPlanPath = FetchPlan(c.Config.Plan, projectPath, c.LocalShuttleDirectoryPath, uii, skipGitPlanPulling)
 	c.Plan.Load(c.LocalPlanPath)
 	c.Scripts = make(map[string]ShuttlePlanScript)
 	for scriptName, script := range c.Plan.Scripts {
