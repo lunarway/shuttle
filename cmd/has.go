@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/lunarway/shuttle/pkg/templates"
+	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +18,8 @@ var (
 		Args:  cobra.ExactArgs(1),
 		//Long:  ``,
 		Run: func(cmd *cobra.Command, args []string) {
+			uii = uii.SetContext(ui.LevelSilent)
+
 			context := getProjectContext()
 			variable := args[0]
 

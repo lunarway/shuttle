@@ -11,7 +11,7 @@ import (
 	"os"
 
 	"github.com/lunarway/shuttle/pkg/git"
-	"github.com/lunarway/shuttle/pkg/output"
+	"github.com/lunarway/shuttle/pkg/ui"
 	"gopkg.in/yaml.v2"
 )
 
@@ -66,21 +66,21 @@ func (p *ShuttlePlanConfiguration) Load(planPath string) *ShuttlePlanConfigurati
 }
 
 // FetchPlan so it exists locally and return path to that plan
-func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, verbose bool) string {
+func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, uii ui.UI) string {
 	switch {
 	case plan == "":
-		output.Verbose(verbose, "Using no plan")
+		uii.VerboseLn("Using no plan")
 		return ""
 	case git.IsGitPlan(plan):
-		output.Verbose(verbose, "Using git plan at '%s'", plan)
-		return git.GetGitPlan(plan, localShuttleDirectoryPath, verbose)
+		uii.VerboseLn("Using git plan at '%s'", plan)
+		return git.GetGitPlan(plan, localShuttleDirectoryPath, uii)
 	case isMatching("^http://|^https://", plan):
 		panic("plan not valid: http is not supported yet")
 	case isFilePath(plan, true):
-		output.Verbose(verbose, "Using local plan at '%s'", plan)
+		uii.VerboseLn("Using local plan at '%s'", plan)
 		return plan
 	case isFilePath(plan, false):
-		output.Verbose(verbose, "Using local plan at '%s'", plan)
+		uii.VerboseLn("Using local plan at '%s'", plan)
 		return path.Join(projectPath, plan)
 
 	}

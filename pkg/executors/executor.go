@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/lunarway/shuttle/pkg/config"
-	"github.com/lunarway/shuttle/pkg/output"
 )
 
 // ScriptExecutionContext gives context to the execution of a plan script
@@ -27,20 +26,20 @@ type ActionExecutionContext struct {
 func Execute(p config.ShuttleProjectContext, command string, args []string) {
 	script, ok := p.Scripts[command]
 	if !ok {
-		output.ExitWithErrorCode(2, fmt.Sprintf("No script found called '%s'", command))
+		p.UI.ExitWithErrorCode(2, "No script found called '%s'", command)
 	}
 	namedArgs := map[string]string{}
 	for _, arg := range args {
 		parts := strings.SplitN(arg, "=", 2)
 		if len(parts) < 2 {
-			output.ExitWithError(fmt.Sprintf("Could not parse `shuttle run %s %s`, because '%s' was expected to be on the `<option>=<value>` form, but wasn't!.\nScript '%s' expects arguments:\n%v", command, strings.Join(args, " "), arg, command, script.Args))
+			p.UI.ExitWithError("Could not parse `shuttle run %s %s`, because '%s' was expected to be on the `<option>=<value>` form, but wasn't!.\nScript '%s' expects arguments:\n%v", command, strings.Join(args, " "), arg, command, script.Args)
 		}
 		namedArgs[parts[0]] = parts[1]
 	}
 
 	for _, argSpec := range script.Args {
 		if _, ok := namedArgs[argSpec.Name]; argSpec.Required && !ok {
-			output.ExitWithError(fmt.Sprintf("Required argument `%s` was not supplied!", argSpec.Name)) // TODO: Add expected arguments
+			p.UI.ExitWithError("Required argument `%s` was not supplied!", argSpec.Name) // TODO: Add expected arguments
 		}
 	}
 

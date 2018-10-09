@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	tmplFuncs "github.com/lunarway/shuttle/pkg/templates"
+	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -22,6 +23,8 @@ var templateCmd = &cobra.Command{
 	Short: "Execute a template",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		uii = uii.SetContext(ui.LevelSilent)
+
 		var templateName = args[0]
 		projectContext := getProjectContext()
 

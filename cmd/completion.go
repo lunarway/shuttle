@@ -17,9 +17,11 @@ package cmd
 import (
 	"os"
 
-	"github.com/spf13/cobra"
-	"github.com/pkg/errors"
 	"fmt"
+
+	"github.com/lunarway/shuttle/pkg/ui"
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
 )
 
 var shell string
@@ -70,7 +72,8 @@ Examples:
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
- 		switch args[0] {
+		uii = uii.SetContext(ui.LevelSilent)
+		switch args[0] {
 		case "zsh":
 			rootCmd.GenZshCompletion(os.Stdout)
 		case "bash":

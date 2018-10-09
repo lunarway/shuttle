@@ -2,7 +2,6 @@ package git
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"os/user"
 	"path"
@@ -10,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lunarway/shuttle/pkg/output"
+	"github.com/lunarway/shuttle/pkg/ui"
 
 	go_cmd "github.com/go-cmd/cmd"
 )
@@ -65,13 +64,30 @@ func IsGitPlan(plan string) bool {
 }
 
 // GetGitPlan will pull git repository and return its path
-func GetGitPlan(plan string, localShuttleDirectoryPath string, verbose bool) string {
+func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI) string {
 	parsedGitPlan := parseGitPlan(plan)
 	planPath := path.Join(localShuttleDirectoryPath, "plan")
 
+	plansAlreadyValidated := strings.Split(os.Getenv("SHUTTLE_PLANS_ALREADY_VALIDATED"), string(os.PathListSeparator))
+	for _, planAlreadyValidated := range plansAlreadyValidated {
+		if planAlreadyValidated == planPath {
+			uii.VerboseLn("Shuttle already validated plan. Skipping further plan validation")
+			return planPath
+		}
+	}
+
 	if fileAvailable(planPath) {
-		output.Verbose(verbose, "Pulling latest git changes")
-		gitCmd("pull origin", planPath, verbose)
+		status := getStatus(planPath)
+
+		if status.mergeState {
+			uii.ExitWithErrorCode(9, "Plan's cloned output is in merge state. Please resolve merge conflicts and the try again")
+		} else if status.changes {
+			uii.EmphasizeInfoLn("Found %v files locally changed in plan", len(status.files))
+			uii.EmphasizeInfoLn("Skipping plan pull because of changes")
+		} else {
+			uii.InfoLn("Pulling latest plan changes")
+			gitCmd("pull origin", planPath, uii)
+		}
 	} else {
 		os.MkdirAll(localShuttleDirectoryPath, os.ModePerm)
 
@@ -84,8 +100,8 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, verbose bool) str
 			panic(fmt.Sprintf("Unknown protocol '%s'", parsedGitPlan.protocol))
 		}
 
-		output.Verbose(verbose, "Cloning repository %s", cloneArg)
-		gitCmd("clone "+cloneArg+" plan", localShuttleDirectoryPath, verbose)
+		uii.InfoLn("Cloning plan %s", cloneArg)
+		gitCmd("clone "+cloneArg+" plan", localShuttleDirectoryPath, uii)
 	}
 
 	return planPath
@@ -123,35 +139,9 @@ func expandHome(path string) string {
 	return strings.Replace(path, "~/", usr.HomeDir+"/", 1)
 }
 
-func copyAndCapture(w io.Writer, r io.Reader) ([]byte, error) {
-	var out []byte
-	buf := make([]byte, 1024, 1024)
-	for {
-		n, err := r.Read(buf[:])
-		if n > 0 {
-			d := buf[:n]
-			out = append(out, d...)
-			_, err := w.Write(d)
-			if err != nil {
-				return out, err
-			}
-		}
-		if err != nil {
-			// Read returns io.EOF at the end of file, which is not an error for us
-			if err == io.EOF {
-				err = nil
-			}
-			return out, err
-		}
-	}
-	// never reached
-	panic(true)
-	return nil, nil
-}
-
-func gitCmd(command string, dir string, printOutput bool) {
+func gitCmd(command string, dir string, uii ui.UI) {
 	cmdOptions := go_cmd.Options{
-		Buffered:  false,
+		Buffered:  true,
 		Streaming: true,
 	}
 	execCmd := go_cmd.NewCmdOptions(cmdOptions, "sh", "-c", "cd '"+dir+"'; git "+command)
@@ -160,13 +150,9 @@ func gitCmd(command string, dir string, printOutput bool) {
 		for {
 			select {
 			case line := <-execCmd.Stdout:
-				if printOutput {
-					fmt.Println("git> " + line)
-				}
+				uii.VerboseLn("git> " + line)
 			case line := <-execCmd.Stderr:
-				if printOutput {
-					fmt.Fprintln(os.Stderr, "git> "+line)
-				}
+				uii.VerboseLn("git> " + line)
 			}
 		}
 	}()
@@ -174,7 +160,8 @@ func gitCmd(command string, dir string, printOutput bool) {
 	for len(execCmd.Stdout) > 0 || len(execCmd.Stderr) > 0 {
 		time.Sleep(10 * time.Millisecond)
 	}
+
 	if status.Exit > 0 {
-		output.ExitWithErrorCode(4, fmt.Sprintf("Failed executing git command `%s` in `%s`\nExit code: %v", command, dir, status.Exit))
+		uii.ExitWithErrorCode(4, "Failed executing git command `%s` in `%s`. Got exit code: %v\n%s", command, dir, status.Exit, strings.Join(status.Stderr, "\n"))
 	}
 }

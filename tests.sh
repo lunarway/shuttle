@@ -84,8 +84,8 @@ test_can_check_if_script_does_not_exist() {
 }
 
 test_can_execute_shuttle_version_without_error() {
-  ./shuttle version
-  ./shuttle version --commit
+  ./shuttle version &> /dev/null
+  ./shuttle version --commit &> /dev/null
 }
 
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -12,6 +13,7 @@ var (
 		Use:   "version",
 		Short: "Info about version of shuttle",
 		Run: func(cmd *cobra.Command, args []string) {
+			uii = uii.SetContext(ui.LevelSilent)
 			if showCommit {
 				fmt.Println(commit)
 			} else {

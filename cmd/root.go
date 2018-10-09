@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/lunarway/shuttle/pkg/output"
+	"github.com/lunarway/shuttle/pkg/ui"
 
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/spf13/cobra"
@@ -14,7 +14,8 @@ import (
 
 var (
 	projectPath string
-	verbose     bool
+	uii         ui.UI
+	verboseFlag bool
 	clean       bool
 	version     = "<dev-version>"
 	commit      = "<unspecified-commit>"
@@ -31,25 +32,29 @@ projects no matter what technologies the project is using.
 
 Read more about shuttle at https://github.com/lunarway/shuttle`, version),
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if verbose {
-			fmt.Println("Running shuttle")
-			fmt.Println(fmt.Sprintf("- version: %s", version))
-			fmt.Println(fmt.Sprintf("- commit: %s", commit))
-			fmt.Println(fmt.Sprintf("- project-path: %s", projectPath))
+		uii = ui.Create()
+		if verboseFlag {
+			uii = uii.SetUserLevel(ui.LevelVerbose)
 		}
+
+		uii.VerboseLn("Running shuttle")
+		uii.VerboseLn("- version: %s", version)
+		uii.VerboseLn("- commit: %s", commit)
+		uii.VerboseLn("- project-path: %s", projectPath)
 	},
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		output.ExitWithErrorCode(1, fmt.Sprintf("%s", err))
+		var uii = ui.Create()
+		uii.ExitWithErrorCode(1, "%s", err)
 	}
 }
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&projectPath, "project", "p", ".", "Project path")
 	rootCmd.PersistentFlags().BoolVarP(&clean, "clean", "c", false, "Start from clean setup")
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Print verbose output")
+	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Print verbose output")
 }
 
 func getProjectContext() config.ShuttleProjectContext {
@@ -61,6 +66,6 @@ func getProjectContext() config.ShuttleProjectContext {
 
 	var fullProjectPath = path.Join(dir, projectPath)
 	var c config.ShuttleProjectContext
-	c.Setup(fullProjectPath, verbose, clean)
+	c.Setup(fullProjectPath, uii, clean)
 	return c
 }

@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/lunarway/shuttle/pkg/output"
-
 	"github.com/lunarway/shuttle/pkg/config"
 
 	go_cmd "github.com/go-cmd/cmd"
@@ -38,19 +36,21 @@ func executeShell(context ActionExecutionContext) {
 	execCmd.Env = append(execCmd.Env, fmt.Sprintf("project=%s", context.ScriptContext.Project.ProjectPath))
 	// TODO: Add project path as a shuttle specific ENV
 	execCmd.Env = append(execCmd.Env, fmt.Sprintf("PATH=%s", shuttlePath+string(os.PathListSeparator)+os.Getenv("PATH")))
+	execCmd.Env = append(execCmd.Env, fmt.Sprintf("SHUTTLE_PLANS_ALREADY_VALIDATED=%s", context.ScriptContext.Project.LocalPlanPath))
 
 	go func() {
 		for {
 			select {
 			case line := <-execCmd.Stdout:
-				fmt.Println(line)
+				context.ScriptContext.Project.UI.InfoLn(line)
 			case line := <-execCmd.Stderr:
-				fmt.Fprintln(os.Stderr, line)
+				context.ScriptContext.Project.UI.ErrorLn(line)
 			}
 		}
 	}()
 
 	// Run and wait for Cmd to return, discard Status
+	context.ScriptContext.Project.UI.TitleLn("shell: %s", context.Action.Shell)
 	status := <-execCmd.Start()
 
 	// Cmd has finished but wait for goroutine to print all lines
@@ -59,22 +59,8 @@ func executeShell(context ActionExecutionContext) {
 	}
 
 	if status.Exit > 0 {
-		output.ExitWithErrorCode(4, fmt.Sprintf("Failed executing shell script `%s`\nExit code: %v", context.Action.Shell, status.Exit))
+		context.ScriptContext.Project.UI.ExitWithErrorCode(4, "Failed executing shell script `%s`\nExit code: %v", context.Action.Shell, status.Exit)
 	}
-
-	// go func() {
-	// 	stdout, errStdout = copyAndCapture(os.Stdout, stdoutIn)
-	// }()
-
-	// go func() {
-	// 	stderr, errStderr = copyAndCapture(os.Stderr, stderrIn)
-	// }()
-
-	// err := execCmd.Wait()
-	//outStr, errStr := string(stdout), string(stderr)
-	//fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
-
-	//return context.ScriptContext.ScriptName + "> Executed shell - " + context.Action.Shell
 }
 
 func init() {
