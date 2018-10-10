@@ -7,7 +7,7 @@ import (
 	go_cmd "github.com/go-cmd/cmd"
 )
 
-func gitCmd2(command string, dir string) go_cmd.Status {
+func syncGitCmd(command string, dir string) go_cmd.Status {
 	cmdOptions := go_cmd.Options{
 		Buffered: true,
 	}
@@ -30,9 +30,12 @@ const (
 )
 
 type Status struct {
-	changes    bool
-	files      []FileStatus
-	mergeState bool
+	changes      bool
+	files        []FileStatus
+	mergeState   bool
+	commit       string
+	branch       string
+	remoteBranch string
 }
 
 type FileStatus struct {
@@ -44,16 +47,27 @@ type FileStatus struct {
 
 func getStatus(dir string) Status {
 	// 1 M. N... 100755 100755 100755 df43166016aa8f73ff348175fb11c8f061ebd871 79e6ffe9583d538fdf957b5e7595ba9aa9ed9929 scripts/env.sh
-	cmdStatus := gitCmd2("status --porcelain=v2 --branch", dir)
+	cmdStatus := syncGitCmd("status --porcelain=v2 --branch", dir)
 
 	status := Status{}
 
 	for _, line := range cmdStatus.Stdout {
 		var x, y, sub, path, origPath string // mH, mI, mW, hH, hI, score
-		var merge bool = false
+		var merge = false
 		switch line[0] {
 		case '#':
-			// header
+			parts := strings.SplitN(line, " ", 3)
+			switch parts[1] {
+			case "branch.oid":
+				status.commit = parts[2]
+			case "branch.head":
+				status.branch = parts[2]
+			case "branch.upsteam":
+				status.remoteBranch = parts[2]
+			case "branch.ab":
+				// # branch.ab +1 -0
+				//status.remoteBranch = parts[2]
+			}
 			continue
 		case '1':
 			// Ordinary changed entries

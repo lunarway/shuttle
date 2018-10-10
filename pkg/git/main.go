@@ -77,11 +77,6 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 	}
 
 	if fileAvailable(planPath) {
-		if skipGitPlanPulling {
-			uii.VerboseLn("Skipping git plan pulling")
-			return planPath
-		}
-
 		status := getStatus(planPath)
 
 		if status.mergeState {
@@ -90,7 +85,13 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 			uii.EmphasizeInfoLn("Found %v files locally changed in plan", len(status.files))
 			uii.EmphasizeInfoLn("Skipping plan pull because of changes")
 		} else {
+			if skipGitPlanPulling {
+				uii.VerboseLn("Skipping git plan pulling")
+				return planPath
+			}
+
 			uii.InfoLn("Pulling latest plan changes")
+			uii.VerboseLn("Using %s - branch %s - commit %s", plan, status.branch, status.commit)
 			gitCmd("pull origin", planPath, uii)
 		}
 		return planPath
