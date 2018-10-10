@@ -2,6 +2,9 @@ package templates
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"strings"
 	"text/template"
 
@@ -19,14 +22,19 @@ func GetFuncMap() template.FuncMap {
 	f := sprig.TxtFuncMap()
 
 	extra := template.FuncMap{
-		"get":         TmplGet,
-		"string":      TmplString,
-		"array":       TmplArray,
-		"objectArray": TmplObjectArray,
-		"strConst":    TmplStrConst,
-		"int":         TmplInt,
-		"is":          TmplIs,
-		"isnt":        TmplIsnt,
+		"get":            TmplGet,
+		"string":         TmplString,
+		"array":          TmplArray,
+		"objectArray":    TmplObjectArray,
+		"strConst":       TmplStrConst,
+		"int":            TmplInt,
+		"is":             TmplIs,
+		"isnt":           TmplIsnt,
+		"toYaml":         TmplToYaml,
+		"fromYaml":       TmplFromYaml,
+		"getFiles":       TmplGetFiles,
+		"getFileContent": TmplGetFileContent,
+		"fileExists":     TmplFileExists,
 	}
 
 	for k, v := range extra {
@@ -130,13 +138,13 @@ func TmplIsnt(a interface{}, b interface{}) bool {
 	return a != b
 }
 
-// ToYaml takes an interface, marshals it to yaml, and returns a string. It will
+// TmplToYaml takes an interface, marshals it to yaml, and returns a string. It will
 // always return a string, even on marshal error (empty string).
 //
 // This is designed to be called from a template.
 //
 // Borrowed from github.com/helm/helm/pkg/chartutil
-func ToYaml(v interface{}) string {
+func TmplToYaml(v interface{}) string {
 	data, err := yaml.Marshal(v)
 	if err != nil {
 		// Swallow errors inside of a template.
@@ -145,7 +153,7 @@ func ToYaml(v interface{}) string {
 	return string(data)
 }
 
-// FromYaml converts a YAML document into a map[string]interface{}.
+// TmplFromYaml converts a YAML document into a map[string]interface{}.
 //
 // This is not a general-purpose YAML parser, and will not parse all valid
 // YAML documents. Additionally, because its intended use is within templates
@@ -153,13 +161,36 @@ func ToYaml(v interface{}) string {
 // m["Error"] in the returned map.
 //
 // Borrowed from github.com/helm/helm/pkg/chartutil
-func FromYaml(str string) map[string]interface{} {
+func TmplFromYaml(str string) map[string]interface{} {
 	m := map[string]interface{}{}
 
 	if err := yaml.Unmarshal([]byte(str), &m); err != nil {
 		m["Error"] = err.Error()
 	}
 	return m
+}
+
+func TmplGetFileContent(filePath string) string {
+	byteContent, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return "" // TODO: Print error to shuttle output
+	}
+	return string(byteContent)
+}
+
+func TmplFileExists(filePath string) bool {
+	if _, err := os.Stat(filePath); !os.IsNotExist(err) {
+		return true
+	}
+	return false
+}
+
+func TmplGetFiles(directoryPath string) []os.FileInfo {
+	files, err := ioutil.ReadDir(directoryPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return files
 }
 
 // TODO: Add description

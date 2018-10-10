@@ -13,8 +13,10 @@ import (
 )
 
 type context struct {
-	Vars interface{}
-	Args map[string]string
+	Vars        interface{}
+	Args        map[string]string
+	PlanPath    string
+	ProjectPath string
 }
 
 var templateOutput string
@@ -51,8 +53,10 @@ var templateCmd = &cobra.Command{
 		}
 
 		context := context{
-			Args: namedArgs,
-			Vars: projectContext.Config.Variables,
+			Args:        namedArgs,
+			Vars:        projectContext.Config.Variables,
+			PlanPath:    projectContext.LocalPlanPath,
+			ProjectPath: projectContext.ProjectPath,
 		}
 
 		if templateOutput == "" {
