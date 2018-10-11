@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/lunarway/shuttle/pkg/templates"
 	"github.com/lunarway/shuttle/pkg/ui"
@@ -20,7 +23,17 @@ var getCmd = &cobra.Command{
 		uii = uii.SetContext(ui.LevelSilent)
 		context := getProjectContext()
 		path := args[0]
-		fmt.Print(templates.TmplGet(path, context.Config.Variables))
+		value := templates.TmplGet(path, context.Config.Variables)
+		switch value.(type) {
+		case nil:
+			// print nothing
+		default:
+			x, err := yaml.Marshal(value)
+			if err != nil {
+				uii.ExitWithErrorCode(9, "Could not yaml encoded %s\nError: %s", value, err)
+			}
+			fmt.Print(strings.TrimRight(string(x), "\n"))
+		}
 	},
 }
 
