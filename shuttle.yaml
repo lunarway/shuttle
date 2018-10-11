@@ -16,3 +16,10 @@ scripts:
     actions:
     - shell: shuttle run test-go
     - shell: shuttle run test-shell
+  release:
+    description: Prepare for a release of shuttle
+    args:
+    - name: version
+      required: true
+    actions:
+    - shell: git tag -fa $version -m "$version release" && git push origin $version
