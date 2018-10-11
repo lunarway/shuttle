@@ -55,7 +55,7 @@ func TmplGet(path string, input interface{}) interface{} {
 	step := getInner(property, input)
 
 	if step != nil {
-		return getInner(properties[1], step)
+		return TmplGet(properties[1], step)
 	}
 	return nil
 }
@@ -199,8 +199,8 @@ func getInner(property string, input interface{}) interface{} {
 	default:
 		fmt.Printf("unexpected type %T\n", t) // %T prints whatever type t has
 		panic(fmt.Sprintf("unexpected type %T\n", t))
-		//case config.DynamicYaml:
-		//	return
+	case nil:
+		return nil
 	case map[interface{}]interface{}:
 		values := input.(map[interface{}]interface{})
 		return values[property]

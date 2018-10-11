@@ -116,6 +116,86 @@ b:
 	}
 }
 
+func TestTmplGet(t *testing.T) {
+	type input struct {
+		path string
+		data interface{}
+	}
+	tt := []struct {
+		name   string
+		input  input
+		output interface{}
+	}{
+		{
+			name: "nil input",
+			input: input{
+				path: "b",
+				data: nil,
+			},
+			output: nil,
+		},
+		{
+			name: "empty input",
+			input: input{
+				path: "b",
+				data: fromYaml(""),
+			},
+			output: nil,
+		},
+		{
+			name: "nested values",
+			input: input{
+				path: "b",
+				data: fromYaml(`
+b:
+  c: 2
+  h: 'ewff'
+`),
+			},
+			output: map[interface{}]interface{}{
+				"c": 2,
+				"h": "ewff",
+			},
+		},
+		{
+			name: "an array",
+			input: input{
+				path: "a",
+				data: fromYaml(`
+a:
+- 4
+- c`),
+			},
+			output: []interface{}{
+				4,
+				"c",
+			},
+		},
+		{
+			name: "a nested array",
+			input: input{
+				path: "a.b.c",
+				data: fromYaml(`
+a:
+  b:
+    c:
+    - 4
+    - c`),
+			},
+			output: []interface{}{
+				4,
+				"c",
+			},
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			output := TmplGet(tc.input.path, tc.input.data)
+			assert.Equal(t, tc.output, output, "output does not match the expected")
+		})
+	}
+}
+
 func fromYaml(data string) interface{} {
 	m := make(map[string]interface{})
 	err := yaml.Unmarshal([]byte(data), m)
