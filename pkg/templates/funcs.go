@@ -3,7 +3,6 @@ package templates
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 	"text/template"
@@ -188,7 +187,7 @@ func TmplFileExists(filePath string) bool {
 func TmplGetFiles(directoryPath string) []os.FileInfo {
 	files, err := ioutil.ReadDir(directoryPath)
 	if err != nil {
-		log.Fatal(err)
+		return []os.FileInfo{} // TODO: Print error to shuttle output
 	}
 	return files
 }
