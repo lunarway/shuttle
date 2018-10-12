@@ -1,4 +1,4 @@
-# shuttle [![Build Status](https://travis-ci.com/lunarway/shuttle.svg?branch=master)](https://travis-ci.com/lunarway/shuttle)
+# shuttle [![Build Status](https://travis-ci.com/lunarway/shuttle.svg?branch=master)](https://travis-ci.com/lunarway/shuttle) [![Go Report Card](https://goreportcard.com/badge/github.com/lunarway/shuttle)](https://goreportcard.com/report/github.com/lunarway/shuttle)
 
 *DISCLAIMER: shuttle is in its alpha stage and is not yet production ready. Expect the APIs to change.*
 
