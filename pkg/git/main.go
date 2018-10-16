@@ -71,7 +71,7 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 	plansAlreadyValidated := strings.Split(os.Getenv("SHUTTLE_PLANS_ALREADY_VALIDATED"), string(os.PathListSeparator))
 	for _, planAlreadyValidated := range plansAlreadyValidated {
 		if planAlreadyValidated == planPath {
-			uii.VerboseLn("Shuttle already validated plan. Skipping further plan validation")
+			uii.Verboseln("Shuttle already validated plan. Skipping further plan validation")
 			return planPath
 		}
 	}
@@ -82,16 +82,16 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 		if status.mergeState {
 			uii.ExitWithErrorCode(9, "Plan's cloned output is in merge state. Please resolve merge conflicts and the try again")
 		} else if status.changes {
-			uii.EmphasizeInfoLn("Found %v files locally changed in plan", len(status.files))
-			uii.EmphasizeInfoLn("Skipping plan pull because of changes")
+			uii.EmphasizeInfoln("Found %v files locally changed in plan", len(status.files))
+			uii.EmphasizeInfoln("Skipping plan pull because of changes")
 		} else {
 			if skipGitPlanPulling {
-				uii.VerboseLn("Skipping git plan pulling")
+				uii.Verboseln("Skipping git plan pulling")
 				return planPath
 			}
 
-			uii.InfoLn("Pulling latest plan changes")
-			uii.VerboseLn("Using %s - branch %s - commit %s", plan, status.branch, status.commit)
+			uii.Infoln("Pulling latest plan changes")
+			uii.Verboseln("Using %s - branch %s - commit %s", plan, status.branch, status.commit)
 			gitCmd("pull origin", planPath, uii)
 		}
 		return planPath
@@ -107,7 +107,7 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 			panic(fmt.Sprintf("Unknown protocol '%s'", parsedGitPlan.protocol))
 		}
 
-		uii.InfoLn("Cloning plan %s", cloneArg)
+		uii.Infoln("Cloning plan %s", cloneArg)
 		gitCmd("clone "+cloneArg+" plan", localShuttleDirectoryPath, uii)
 	}
 
@@ -124,9 +124,9 @@ func RunGitPlanCommand(command string, plan string, uii ui.UI) {
 		for {
 			select {
 			case line := <-execCmd.Stdout:
-				uii.InfoLn(line)
+				uii.Infoln("%s", line)
 			case line := <-execCmd.Stderr:
-				uii.InfoLn(line)
+				uii.Infoln("%s", line)
 			}
 		}
 	}()
@@ -179,9 +179,9 @@ func gitCmd(command string, dir string, uii ui.UI) {
 		for {
 			select {
 			case line := <-execCmd.Stdout:
-				uii.VerboseLn("git> " + line)
+				uii.Verboseln("git> %s", line)
 			case line := <-execCmd.Stderr:
-				uii.VerboseLn("git> " + line)
+				uii.Verboseln("git> %s", line)
 			}
 		}
 	}()
