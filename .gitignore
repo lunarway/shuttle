@@ -3,3 +3,4 @@ dist/
 vendor/
 shuttle
 .shuttle
+.idea
