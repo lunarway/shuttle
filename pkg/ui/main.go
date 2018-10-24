@@ -49,47 +49,46 @@ func (ui *UI) SetContext(level Level) UI {
 	}
 }
 
-// VerboseLn doc
-func (ui *UI) VerboseLn(msg string, args ...interface{}) {
+// Verboseln prints a formatted verbose message line.
+func (ui *UI) Verboseln(format string, args ...interface{}) {
 	if ui.EffectiveLevel.OutputIsIncluded(LevelVerbose) {
-		fmt.Println(fmt.Sprintf(msg, args...))
+		fmt.Println(fmt.Sprintf(format, args...))
 	}
 }
 
-// InfoLn doc
-func (ui *UI) InfoLn(msg string, args ...interface{}) {
+// Infoln prints a formatted info message line.
+func (ui *UI) Infoln(format string, args ...interface{}) {
 	if ui.EffectiveLevel.OutputIsIncluded(LevelInfo) {
-		fmt.Println(fmt.Sprintf(msg, args...))
+		fmt.Println(fmt.Sprintf(format, args...))
 	}
 }
 
-// EmphasizeInfoLn doc
-func (ui *UI) EmphasizeInfoLn(msg string, args ...interface{}) {
+func (ui *UI) EmphasizeInfoln(format string, args ...interface{}) {
 	if ui.EffectiveLevel.OutputIsIncluded(LevelInfo) {
-		ui.InfoLn("\x1b[032;1m"+msg+"\x1b[0m", args...)
+		fmt.Printf("\x1b[032;1m%s\x1b[0m\n", fmt.Sprintf(format, args...))
 	}
 }
 
-// TitleLn doc
-func (ui *UI) TitleLn(msg string, args ...interface{}) {
-	ui.InfoLn("\x1b[1m"+msg+"\x1b[0m", args...)
+// Titleln doc
+func (ui *UI) Titleln(format string, args ...interface{}) {
+	ui.Infoln("\x1b[1m%s\x1b[0m", fmt.Sprintf(format, args...))
 }
 
-// ErrorLn doc
-func (ui *UI) ErrorLn(msg string, args ...interface{}) {
+// Errorln doc
+func (ui *UI) Errorln(format string, args ...interface{}) {
 	if ui.EffectiveLevel.OutputIsIncluded(LevelInfo) {
-		fmt.Fprintln(os.Stderr, fmt.Sprintf("\x1b[31;1m"+msg+"\x1b[0m", args...))
+		fmt.Fprintf(os.Stderr, "\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf(format, args...))
 	}
 }
 
 // ExitWithError doc
-func (ui *UI) ExitWithError(msg string, args ...interface{}) {
-	ui.ExitWithErrorCode(1, msg, args...)
+func (ui *UI) ExitWithError(format string, args ...interface{}) {
+	ui.ExitWithErrorCode(1, format, args...)
 }
 
 // ExitWithErrorCode doc
-func (ui *UI) ExitWithErrorCode(code int, msg string, args ...interface{}) {
-	ui.ErrorLn("shuttle failed\n"+msg, args...)
+func (ui *UI) ExitWithErrorCode(code int, format string, args ...interface{}) {
+	ui.Errorln("shuttle failed\n"+format, args...)
 	os.Exit(code)
 }
 
@@ -98,5 +97,5 @@ func (ui *UI) CheckIfError(err error) {
 	if err == nil {
 		return
 	}
-	ui.ExitWithError(fmt.Sprintf("error: %s", err))
+	ui.ExitWithError("error: %s", err)
 }

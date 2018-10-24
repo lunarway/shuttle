@@ -38,10 +38,10 @@ Read more about shuttle at https://github.com/lunarway/shuttle`, version),
 			uii = uii.SetUserLevel(ui.LevelVerbose)
 		}
 
-		uii.VerboseLn("Running shuttle")
-		uii.VerboseLn("- version: %s", version)
-		uii.VerboseLn("- commit: %s", commit)
-		uii.VerboseLn("- project-path: %s", projectPath)
+		uii.Verboseln("Running shuttle")
+		uii.Verboseln("- version: %s", version)
+		uii.Verboseln("- commit: %s", commit)
+		uii.Verboseln("- project-path: %s", projectPath)
 	},
 }
 

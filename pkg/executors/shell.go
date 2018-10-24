@@ -42,15 +42,15 @@ func executeShell(context ActionExecutionContext) {
 		for {
 			select {
 			case line := <-execCmd.Stdout:
-				context.ScriptContext.Project.UI.InfoLn(line)
+				context.ScriptContext.Project.UI.Infoln("%s", line)
 			case line := <-execCmd.Stderr:
-				context.ScriptContext.Project.UI.ErrorLn(line)
+				context.ScriptContext.Project.UI.Errorln("%s", line)
 			}
 		}
 	}()
 
 	// Run and wait for Cmd to return, discard Status
-	context.ScriptContext.Project.UI.TitleLn("shell: %s", context.Action.Shell)
+	context.ScriptContext.Project.UI.Titleln("shell: %s", context.Action.Shell)
 	status := <-execCmd.Start()
 
 	// Cmd has finished but wait for goroutine to print all lines

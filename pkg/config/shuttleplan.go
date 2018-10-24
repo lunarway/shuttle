@@ -69,18 +69,18 @@ func (p *ShuttlePlanConfiguration) Load(planPath string) *ShuttlePlanConfigurati
 func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool) string {
 	switch {
 	case plan == "":
-		uii.VerboseLn("Using no plan")
+		uii.Verboseln("Using no plan")
 		return ""
 	case git.IsGitPlan(plan):
-		uii.VerboseLn("Using git plan at '%s'", plan)
+		uii.Verboseln("Using git plan at '%s'", plan)
 		return git.GetGitPlan(plan, localShuttleDirectoryPath, uii, skipGitPlanPulling)
 	case isMatching("^http://|^https://", plan):
 		panic("plan not valid: http is not supported yet")
 	case isFilePath(plan, true):
-		uii.VerboseLn("Using local plan at '%s'", plan)
+		uii.Verboseln("Using local plan at '%s'", plan)
 		return plan
 	case isFilePath(plan, false):
-		uii.VerboseLn("Using local plan at '%s'", plan)
+		uii.Verboseln("Using local plan at '%s'", plan)
 		return path.Join(projectPath, plan)
 
 	}

@@ -42,7 +42,7 @@ func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool,
 
 	if clean {
 		os.RemoveAll(c.LocalShuttleDirectoryPath)
-		uii.InfoLn("Cleaning %s", c.LocalShuttleDirectoryPath)
+		uii.Infoln("Cleaning %s", c.LocalShuttleDirectoryPath)
 	}
 	os.MkdirAll(c.LocalShuttleDirectoryPath, os.ModePerm)
 
