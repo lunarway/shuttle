@@ -1,9 +1,38 @@
-# shuttle [![Build Status](https://travis-ci.com/lunarway/shuttle.svg?branch=master)](https://travis-ci.com/lunarway/shuttle) [![Go Report Card](https://goreportcard.com/badge/github.com/lunarway/shuttle)](https://goreportcard.com/report/github.com/lunarway/shuttle)
+<p align="center">
+  <a href="https://github.com/lunarway/shuttle">
+    <img src="docs/logo.png" alt="Shuttle logo">
+  </a>
 
-*DISCLAIMER: shuttle is in its alpha stage and is not yet production ready. Expect the APIs to change.*
+  <p align="center">
+    A CLI for handling shared build and deploy tools between many projects no matter what technologies the project is using.
+    <br>
+    <a href="https://github.com/lunarway/shuttle/issues/new?template=bug.md">Report bug</a>
+    ·
+    <a href="https://github.com/lunarway/shuttle/issues/new?template=feature.md&labels=feature">Request feature</a>
+    ·
+    <a href="https://github.com/lunarway/shuttle/releases">Releases</a>
+    ·
+    <a href="https://github.com/lunarway/shuttle/releases/latest">Latest release</a>
+  </p>
+</p>
+
+## Table of contents
+- [What is shuttle?](#what-is-shuttle)
+- [Status](#status)
+- [How?](#how)
+- [Features](#features)
+- [Documentation](#documentation)
+- [Installing](#installing)
+- [Functions](#functions)
+- [Release History](#release-history)
 
 ## What is shuttle?
 `shuttle` is a CLI for handling shared build and deploy tools between many projects no matter what technologies the project is using.
+
+## Status
+*DISCLAIMER: shuttle is in its alpha stage and is not yet production ready. Expect the APIs to change.*
+
+[![Build Status](https://travis-ci.com/lunarway/shuttle.svg?branch=master)](https://travis-ci.com/lunarway/shuttle) [![Go Report Card](https://goreportcard.com/badge/github.com/lunarway/shuttle)](https://goreportcard.com/report/github.com/lunarway/shuttle)
 
 ## How?
 
@@ -84,9 +113,9 @@ chmod +x shuttle-linux-amd64
 sudo mv shuttle-linux-amd64 /usr/local/bin/shuttle
 ```
 
-# Functions
+## Functions
 
-## `shuttle get <variable>`
+### `shuttle get <variable>`
 Used to get a variable defined in shuttle.yaml
 
 ```console
@@ -97,7 +126,7 @@ $ shuttle get does.not.exist
 > # nothing
 ```
 
-## `shuttle has <variable>`
+### `shuttle has <variable>`
 It is possible to easily check if a variable or script is defined
 ```console
 shuttle has some.variable
@@ -112,7 +141,7 @@ $ shuttle has my.docker.image --stdout
 ```
 
 
-# Release History
+## Release History
 
 See the [releases](https://github.com/lunarway/shuttle/releases) for more
 information on changes between releases.
