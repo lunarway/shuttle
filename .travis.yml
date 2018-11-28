@@ -1,5 +1,8 @@
 language: go
 
+go:
+- "1.11.x"
+
 script: |
   echo "Build shuttle" &&
   go build &&
