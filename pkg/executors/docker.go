@@ -16,18 +16,17 @@ func executeDocker(context ActionExecutionContext) {
 	projectPath := context.ScriptContext.Project.ProjectPath
 	execCmd := exec.Command("docker", "build", "-f", dockerFilePath, projectPath)
 
-	var stdout, stderr []byte
 	var errStdout, errStderr error
 	stdoutIn, _ := execCmd.StdoutPipe()
 	stderrIn, _ := execCmd.StderrPipe()
 	execCmd.Start()
 
 	go func() {
-		stdout, errStdout = copyAndCapture(os.Stdout, stdoutIn)
+		_, errStdout = copyAndCapture(os.Stdout, stdoutIn)
 	}()
 
 	go func() {
-		stderr, errStderr = copyAndCapture(os.Stderr, stderrIn)
+		_, errStderr = copyAndCapture(os.Stderr, stderrIn)
 	}()
 
 	err := execCmd.Wait()
@@ -38,9 +37,6 @@ func executeDocker(context ActionExecutionContext) {
 	if errStdout != nil || errStderr != nil {
 		log.Fatalf("failed to capture stdout or stderr\n")
 	}
-	//outStr, errStr := string(stdout), string(stderr)
-	//fmt.Printf("\nout:\n%s\nerr:\n%s\n", outStr, errStr)
-
 }
 
 func init() {
