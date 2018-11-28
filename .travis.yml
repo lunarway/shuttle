@@ -5,9 +5,6 @@ script: |
   go build &&
   ./shuttle run test
 
-  # .travis.yml
-language: go
-
 services:
 - docker
 
