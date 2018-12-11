@@ -66,7 +66,13 @@ func getProjectContext() config.ShuttleProjectContext {
 		os.Exit(1)
 	}
 
-	var fullProjectPath = path.Join(dir, projectPath)
+	var fullProjectPath string
+	if path.IsAbs(projectPath) {
+		fullProjectPath = projectPath
+	} else {
+		fullProjectPath = path.Join(dir, projectPath)
+	}
+
 	var c config.ShuttleProjectContext
 	c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling)
 	return c

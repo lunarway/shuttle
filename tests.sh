@@ -24,6 +24,10 @@ test_moon_base_builds() {
   assertRun -p examples/moon-base run build tag=test
 }
 
+test_moon_base_builds_with_absolute_path() {
+  assertRun -p $(pwd)/examples/moon-base run build tag=test
+}
+
 test_venus_base_fails() {
   assertErrorCode 2 -p examples/venus-base run build tag=test
 }
