@@ -23,6 +23,27 @@ var (
 	commit             = "<unspecified-commit>"
 )
 
+const rootCmdCompletion = `
+__shuttle_get_script() {
+    local shuttle_output out
+		if shuttle_output=$(shuttle ls 2>/dev/null); then
+        out=($(echo "${shuttle_output}" | tail +3 | awk '{print $1}'))
+        COMPREPLY=( $( compgen -W "${out[*]}" -- "$cur" ) )
+    fi
+}
+
+__shuttle_custom_func() {
+	case ${last_command} in
+			shuttle_run)
+					__shuttle_get_script
+					return
+					;;
+			*)
+					;;
+	esac
+}
+`
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "shuttle",
@@ -43,6 +64,7 @@ Read more about shuttle at https://github.com/lunarway/shuttle`, version),
 		uii.Verboseln("- commit: %s", commit)
 		uii.Verboseln("- project-path: %s", projectPath)
 	},
+	BashCompletionFunction: rootCmdCompletion,
 }
 
 func Execute() {
