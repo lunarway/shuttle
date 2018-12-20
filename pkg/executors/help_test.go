@@ -94,7 +94,74 @@ Available arguments:
 		t.Run(tc.name, func(t *testing.T) {
 			output := bytes.Buffer{}
 
-			err := executors.Help(tc.scripts, tc.script, &output)
+			err := executors.Help(tc.scripts, tc.script, &output, "")
+
+			if tc.err != nil {
+				assert.EqualError(t, err, tc.err.Error(), "output error not as expected")
+			} else {
+				assert.NoError(t, err, "no output error expected")
+			}
+			assert.Equal(t, tc.output, output.String(), "output not as expected")
+		})
+	}
+}
+
+func TestHelp_customTemplate(t *testing.T) {
+	scriptMap := func(args ...interface{}) map[string]config.ShuttlePlanScript {
+		m := make(map[string]config.ShuttlePlanScript)
+		for i := 0; i < len(args); i = i + 2 {
+			m[args[i].(string)] = args[i+1].(config.ShuttlePlanScript)
+		}
+		return m
+	}
+	scripts := func(description string, args ...config.ShuttleScriptArgs) config.ShuttlePlanScript {
+		return config.ShuttlePlanScript{
+			Description: description,
+			Args:        args,
+		}
+	}
+	arg := func(name string, required bool, description string) config.ShuttleScriptArgs {
+		return config.ShuttleScriptArgs{
+			Name:        name,
+			Required:    required,
+			Description: description,
+		}
+	}
+	tt := []struct {
+		name     string
+		scripts  map[string]config.ShuttlePlanScript
+		script   string
+		template string
+		err      error
+		output   string
+	}{
+		{
+			name:     "script without arguments",
+			scripts:  scriptMap("build", scripts("A script to build stuff")),
+			script:   "build",
+			template: `{{.Args}}`,
+			output:   `[]`,
+		},
+		{
+			name:     "ranging args",
+			scripts:  scriptMap("test", scripts("A script to test stuff", arg("long", false, "Run long running tests"))),
+			script:   "test",
+			template: `{{- range $i, $arg := .Args -}}{{$arg.Name}}{{end}}`,
+			output:   `long`,
+		},
+		{
+			name:     "invalid template",
+			scripts:  scriptMap("test", scripts("A script to test stuff", arg("long", true, "Run long running tests"))),
+			script:   "test",
+			template: `{{.Args`,
+			err:      errors.New("invalid template: template: runHelp:1: unclosed action"),
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			output := bytes.Buffer{}
+
+			err := executors.Help(tc.scripts, tc.script, &output, tc.template)
 
 			if tc.err != nil {
 				assert.EqualError(t, err, tc.err.Error(), "output error not as expected")

@@ -19,6 +19,10 @@ var runCmd = &cobra.Command{
 	},
 }
 
+var (
+	flagTemplate string
+)
+
 func init() {
 	runCmd.SetHelpFunc(func(f *cobra.Command, args []string) {
 		scripts := f.Flags().Args()
@@ -27,11 +31,12 @@ func init() {
 			return
 		}
 		context := getProjectContext()
-		err := executors.Help(context.Scripts, scripts[0], os.Stdout)
+		err := executors.Help(context.Scripts, scripts[0], os.Stdout, flagTemplate)
 		if err != nil {
 			context.UI.ExitWithError(err.Error())
 			return
 		}
 	})
+	runCmd.Flags().StringVar(&flagTemplate, "template", "", "Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].")
 	rootCmd.AddCommand(runCmd)
 }

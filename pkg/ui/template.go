@@ -16,7 +16,10 @@ var lsTemplateFuncs = template.FuncMap{
 func Template(destination io.Writer, name, text string, data interface{}) error {
 	t := template.New(name)
 	t.Funcs(lsTemplateFuncs)
-	template.Must(t.Parse(text))
+	t, err := t.Parse(text)
+	if err != nil {
+		return fmt.Errorf("invalid template: %v", err)
+	}
 	return t.Execute(destination, data)
 }
 

@@ -32,12 +32,15 @@ type scriptHelpTemplateArg struct {
 	Description string
 }
 
-func Help(scripts map[string]config.ShuttlePlanScript, script string, output io.Writer) error {
+func Help(scripts map[string]config.ShuttlePlanScript, script string, output io.Writer, template string) error {
 	s, ok := scripts[script]
 	if !ok {
 		return errors.New("unrecognized script")
 	}
-	err := ui.Template(output, "runHelp", scriptHelpTemplate, scriptHelpTemplateData{
+	if template == "" {
+		template = scriptHelpTemplate
+	}
+	err := ui.Template(output, "runHelp", template, scriptHelpTemplateData{
 		Description: s.Description,
 		Args:        templateArgs(s.Args),
 		Max:         maxLength(s.Args),
