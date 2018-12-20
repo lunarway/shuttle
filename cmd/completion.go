@@ -53,17 +53,17 @@ Examples:
   ## Load the shuttle completion code for bash into the current shell
   source <(shuttle completion bash)
   ## Write bash completion code to a file and source if from .bash_profile
-  shuttle completion bash > ~/.kube/completion.bash.inc
+  shuttle completion bash > ~/.shuttle/completion.bash.inc
   printf "
-  # Kubectl shell completion
-  source '$HOME/.kube/completion.bash.inc'
+  # shuttle shell completion
+  source '$HOME/.shuttle/completion.bash.inc'
   " >> $HOME/.bash_profile
   source $HOME/.bash_profile
 
   # Load the shuttle completion code for zsh[1] into the current shell
   source <(shuttle completion zsh)
   # Set the shuttle completion code for zsh[1] to autoload on startup
-  shuttle completion zsh > "${fpath[1]}/_kubectl"`,
+  shuttle completion zsh > "${fpath[1]}/_shuttle"`,
 	ValidArgs: []string{"bash", "zsh"},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if cobra.ExactArgs(1)(cmd, args) != nil || cobra.OnlyValidArgs(cmd, args) != nil {
