@@ -14,7 +14,7 @@ import (
 
 var (
 	projectPath        string
-	uii                ui.UI
+	uii                ui.UI = ui.Create()
 	verboseFlag        bool
 	clean              bool
 	skipGitPlanPulling bool
@@ -33,7 +33,6 @@ projects no matter what technologies the project is using.
 
 Read more about shuttle at https://github.com/lunarway/shuttle`, version),
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		uii = ui.Create()
 		if verboseFlag {
 			uii = uii.SetUserLevel(ui.LevelVerbose)
 		}

@@ -1,30 +1,36 @@
 package cmd
 
 import (
-	"fmt"
-	"io"
 	"os"
-	"strings"
-	"text/template"
 
-	"github.com/spf13/cobra"
 	"github.com/lunarway/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/ui"
+	"github.com/spf13/cobra"
 )
 
 const templ = `
-{{- $max := calcrpad .Scripts }}
+{{- $max := .Max -}}
 Available Scripts:
 {{- range $key, $value := .Scripts}}
-  {{rpad $key $max }} {{upperfirst $value.Description}}
+  {{rightPad $key $max }} {{upperFirst $value.Description}}
 {{- end}}
 `
+
+type templData struct {
+	Scripts map[string]config.ShuttlePlanScript
+	Max     int
+}
+
 var lsCmd = &cobra.Command{
 	Use:   "ls [command]",
 	Short: "List possible commands",
-	//Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		context := getProjectContext()
-		tmpl(os.Stdout, templ, context)
+		err := ui.Template(os.Stdout, "ls", templ, templData{
+			Scripts: context.Scripts,
+			Max:     calculateRightPadForKeys(context.Scripts),
+		})
+		context.UI.CheckIfError(err)
 	},
 }
 
@@ -32,41 +38,7 @@ func init() {
 	rootCmd.AddCommand(lsCmd)
 }
 
-var lsTemplateFuncs = template.FuncMap{
-	"trim": strings.TrimSpace,
-	"calcrpad": calcrpad,
-	"upperfirst": upperfirst,
-	//"trimRightSpace":          trimRightSpace,
-	//"trimTrailingWhitespaces": trimRightSpace,
-	//"appendIfNotPresent":      appendIfNotPresent,
-	"rpad": rpad,
-	//"gt":                      Gt,
-	//"eq":                      Eq,
-}
-
-func tmpl(w io.Writer, text string, data interface{}) error {
-	t := template.New("top")
-	t.Funcs(lsTemplateFuncs)
-	template.Must(t.Parse(text))
-	return t.Execute(w, data)
-}
-
-// rpad adds padding to the right of a string.
-func rpad(s string, padding int) string {
-	template := fmt.Sprintf("%%-%ds", padding)
-	return fmt.Sprintf(template, s)
-}
-
-// upperfirst upper cases the first letter in the string
-func upperfirst(s string) string {
-	if len(s) <= 1 {
-		return strings.ToUpper(s)
-	}
-	return fmt.Sprintf("%s%s", strings.ToUpper(s[0:1]), s[1:])
-}
-
-// calcrpad calculates the right padding to use for the scripts
-func calcrpad(m map[string]config.ShuttlePlanScript) int {
+func calculateRightPadForKeys(m map[string]config.ShuttlePlanScript) int {
 	max := 10
 	for k := range m {
 		if max < len(k) {

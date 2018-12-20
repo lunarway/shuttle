@@ -24,8 +24,9 @@ type ShuttlePlanScript struct {
 
 // ShuttleScriptArgs describes an arguments that a script accepts
 type ShuttleScriptArgs struct {
-	Name     string `yaml:"name"`
-	Required bool   `yaml:"required"`
+	Name        string `yaml:"name"`
+	Required    bool   `yaml:"required"`
+	Description string `yaml:"description"`
 }
 
 // ShuttleAction describes an action done by a shuttle script

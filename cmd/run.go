@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/lunarway/shuttle/pkg/executors"
 	"github.com/spf13/cobra"
 )
@@ -56,5 +58,18 @@ var runCmd = &cobra.Command{
 // 	cmdTimes.Flags().IntVarP(&echoTimes, "times", "t", 1, "times to echo the input")
 
 func init() {
+	runCmd.SetHelpFunc(func(f *cobra.Command, args []string) {
+		scripts := f.Flags().Args()
+		if len(scripts) == 0 {
+			runCmd.Usage()
+			return
+		}
+		context := getProjectContext()
+		err := executors.Help(context.Scripts, scripts[0], os.Stdout)
+		if err != nil {
+			context.UI.ExitWithError(err.Error())
+			return
+		}
+	})
 	rootCmd.AddCommand(runCmd)
 }
