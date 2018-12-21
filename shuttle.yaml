@@ -18,7 +18,7 @@ scripts:
     - shell: shuttle run test-go
     - shell: shuttle run test-shell
   release:
-    description: Prepare for a release of shuttle.
+    description: Start the release pipeline of shuttle from the current commit.
     args:
     - name: version
       description: The new version to release.
