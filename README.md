@@ -30,7 +30,7 @@
 `shuttle` is a CLI for handling shared build and deploy tools between many projects no matter what technologies the project is using.
 
 ## Status
-*DISCLAIMER: shuttle is in its alpha stage and is not yet production ready. Expect the APIs to change.*
+*DISCLAIMER: shuttle is in beta, so stuff may change. However we are using shuttle heavily at Lunar Way and we use it to deploy to production, so it is pretty battle proven.*
 
 [![Build Status](https://travis-ci.com/lunarway/shuttle.svg?branch=master)](https://travis-ci.com/lunarway/shuttle) [![Go Report Card](https://goreportcard.com/badge/github.com/lunarway/shuttle)](https://goreportcard.com/report/github.com/lunarway/shuttle)
 
