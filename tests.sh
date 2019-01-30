@@ -100,5 +100,12 @@ test_run_shell_error_outputs_exit_code() {
   fi
 }
 
+test_run_shell_error_outputs_script_name() {
+  assertErrorCode 4 -p examples/moon-base run crash
+  if [[ ! "$result" =~ "crash" ]]; then
+    fail "Expected output to contain the script name 'crash', but it was:\n$result"
+  fi
+}
+
 # Load and run shUnit2.
 . ./shunit2
