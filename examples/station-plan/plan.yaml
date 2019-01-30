@@ -21,3 +21,10 @@ scripts:
     args: []
     actions:
     - shell: exit 1
+  required-arg:
+    description: Provide arg and succeed
+    args:
+    - name: a
+      required: true
+    actions:
+    - shell: echo "Arg provided"
