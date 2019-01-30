@@ -24,23 +24,49 @@ var (
 )
 
 const rootCmdCompletion = `
-__shuttle_get_script() {
-    local shuttle_output out
-		if shuttle_output=$(shuttle ls 2>/dev/null); then
-        out=($(echo "${shuttle_output}" | tail +3 | awk '{print $1}'))
-        COMPREPLY=( $( compgen -W "${out[*]}" -- "$cur" ) )
-    fi
+__shuttle_get_script_args() {
+	local cur prev args_output args
+	COMPREPLY=()
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+	template=$'{{ range $i, $arg := .Args }}{{ $arg.Name }}\n{{ end }}'
+	if args_output=$(./run run "$1" --help --template "$template" 2>/dev/null); then
+		args=($(echo "${args_output}"))
+		COMPREPLY=( $( compgen -W "${args[*]}" -- "$cur" ) )
+		compopt -o nospace
+	fi
 }
 
+__shuttle_get_script() {
+	local cur prev scripts
+	COMPREPLY=()
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+	if [[ ! "${prev}" = "run" ]]; then
+	# lookup script arguments
+	__shuttle_get_script_args $prev
+	return 0
+	fi
+
+	if scripts_output=$(shuttle ls 2>/dev/null); then
+		scripts=($(echo "${scripts_output}" | tail +3 | awk '{print $1}'))
+		COMPREPLY=( $( compgen -W "${scripts[*]}" -- "$cur" ) )
+	fi
+	return 0
+}
+
+# called when the build in completion fails to match
 __shuttle_custom_func() {
-	case ${last_command} in
-			shuttle_run)
-					__shuttle_get_script
-					return
-					;;
-			*)
-					;;
-	esac
+  case ${last_command} in
+      shuttle_run)
+          __shuttle_get_script
+          return
+          ;;
+      *)
+          ;;
+  esac
 }
 `
 
