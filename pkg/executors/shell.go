@@ -59,7 +59,7 @@ func executeShell(context ActionExecutionContext) {
 	}
 
 	if status.Exit > 0 {
-		context.ScriptContext.Project.UI.ExitWithErrorCode(4, "Failed executing shell script `%s`\nExit code: %v", context.Action.Shell, status.Exit)
+		context.ScriptContext.Project.UI.ExitWithErrorCode(4, "Failed executing script '%s': shell script `%s`\nExit code: %v", context.ScriptContext.ScriptName, context.Action.Shell, status.Exit)
 	}
 }
 
