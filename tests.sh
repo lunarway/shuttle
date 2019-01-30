@@ -107,5 +107,12 @@ test_run_shell_error_outputs_script_name() {
   fi
 }
 
+test_run_shell_error_outputs_missing_arg() {
+  assertErrorCode 1 -p examples/moon-base run required-arg
+  if [[ ! "$result" =~ "required-arg" ]]; then
+    fail "Expected output to contain the script name 'required-arg', but it was:\n$result"
+  fi
+}
+
 # Load and run shUnit2.
 . ./shunit2

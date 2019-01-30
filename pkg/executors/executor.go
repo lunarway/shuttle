@@ -39,7 +39,7 @@ func Execute(p config.ShuttleProjectContext, command string, args []string) {
 
 	for _, argSpec := range script.Args {
 		if _, ok := namedArgs[argSpec.Name]; argSpec.Required && !ok {
-			p.UI.ExitWithError("Required argument `%s` was not supplied!", argSpec.Name) // TODO: Add expected arguments
+			p.UI.ExitWithError("Required argument `%s` for script `%s` was not supplied!", argSpec.Name, command) // TODO: Add expected arguments
 		}
 	}
 
