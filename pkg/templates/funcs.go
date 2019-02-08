@@ -190,6 +190,9 @@ func TmplGetFiles(directoryPath string) []os.FileInfo {
 	if err != nil {
 		return []os.FileInfo{} // TODO: Print error to shuttle output
 	}
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Name() < files[j].Name()
+	})
 	return files
 }
 
