@@ -73,7 +73,7 @@ func TestTmpObjArray(t *testing.T) {
 				path: "b",
 				data: nil,
 			},
-			output: []KeyValuePair{},
+			output: nil,
 		},
 		{
 			name: "empty input",
@@ -99,6 +99,52 @@ b:
 			},
 		},
 		{
+			name: "large set testing for deterministic order",
+			input: input{
+				path: "a",
+				data: fromYaml(`a:
+  'b': 2
+  'd': 4
+  'e': 5
+  'g': 7
+  'h': 8
+  'f': 6
+  'i': 9
+  's': 19
+  'k': 11
+  'c': 3
+  'l': 12
+  'm': 13
+  'n': 14
+  'o': 15
+  'r': 18
+  'j': 10
+  'p': 16
+  'q': 17
+`),
+			},
+			output: []KeyValuePair{
+				{Key: "b", Value: 2},
+				{Key: "c", Value: 3},
+				{Key: "d", Value: 4},
+				{Key: "e", Value: 5},
+				{Key: "f", Value: 6},
+				{Key: "g", Value: 7},
+				{Key: "h", Value: 8},
+				{Key: "i", Value: 9},
+				{Key: "j", Value: 10},
+				{Key: "k", Value: 11},
+				{Key: "l", Value: 12},
+				{Key: "m", Value: 13},
+				{Key: "n", Value: 14},
+				{Key: "o", Value: 15},
+				{Key: "p", Value: 16},
+				{Key: "q", Value: 17},
+				{Key: "r", Value: 18},
+				{Key: "s", Value: 19},
+			},
+		},
+		{
 			name: "non object value in path",
 			input: input{
 				path: "a",
@@ -111,7 +157,7 @@ b:
 		t.Run(tc.name, func(t *testing.T) {
 			output := TmplObjectArray(tc.input.path, tc.input.data)
 
-			assert.ElementsMatch(t, tc.output, output, "output does not match the expected")
+			assert.Equal(t, tc.output, output, "output does not match the expected")
 		})
 	}
 }

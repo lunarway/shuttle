@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -112,21 +113,21 @@ func TmplObjectArray(path string, input interface{}) []KeyValuePair {
 		return nil
 	}
 	value := TmplGet(path, input)
+	values := []KeyValuePair{}
 	switch value.(type) {
 	case map[interface{}]interface{}:
-		values := []KeyValuePair{}
 		for k, v := range value.(map[interface{}]interface{}) {
 			values = append(values, KeyValuePair{Key: k.(string), Value: v})
 		}
-		return values
 	case map[string]interface{}:
-		values := []KeyValuePair{}
 		for k, v := range value.(map[string]interface{}) {
 			values = append(values, KeyValuePair{Key: k, Value: v})
 		}
-		return values
 	}
-	return nil
+	sort.Slice(values, func(i, j int) bool {
+		return values[i].Key < values[j].Key
+	})
+	return values
 }
 
 func TmplIs(a interface{}, b interface{}) bool {
