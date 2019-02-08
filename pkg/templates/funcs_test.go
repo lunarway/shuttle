@@ -57,6 +57,128 @@ func TestTmplInt(t *testing.T) {
 	}
 }
 
+func TestTmplArray(t *testing.T) {
+	type input struct {
+		path string
+		data interface{}
+	}
+	tt := []struct {
+		name   string
+		input  input
+		output []interface{}
+	}{
+		{
+			name: "nil input",
+			input: input{
+				path: "b",
+				data: nil,
+			},
+			output: nil,
+		},
+		{
+			name: "empty input",
+			input: input{
+				path: "b",
+				data: fromYaml(""),
+			},
+			output: nil,
+		},
+		{
+			name: "empty array",
+			input: input{
+				path: "b",
+				data: fromYaml(`
+b:
+`),
+			},
+			output: nil,
+		},
+		{
+			name: "single value string array",
+			input: input{
+				path: "b",
+				data: fromYaml(`
+b:
+- 'a'
+`),
+			},
+			output: []interface{}{
+				"a",
+			},
+		},
+		{
+			name: "single value object array",
+			input: input{
+				path: "b",
+				data: fromYaml(`
+b:
+- name: 'a'
+  field: 'b'
+`),
+			},
+			output: []interface{}{
+				map[interface{}]interface{}{
+					"name":  "a",
+					"field": "b",
+				},
+			},
+		},
+		{
+			name: "large string array testing for deterministic order",
+			input: input{
+				path: "a",
+				data: fromYaml(`a:
+  - 'b'
+  - 'd'
+  - 'e'
+  - 'g'
+  - 'h'
+  - 'f'
+  - 'i'
+  - 's'
+  - 'k'
+  - 'c'
+  - 'l'
+  - 'm'
+  - 'n'
+  - 'o'
+  - 'r'
+  - 'j'
+  - 'p'
+  - 'q'
+`),
+			},
+			output: []interface{}{
+				"b",
+				"c",
+				"d",
+				"e",
+				"f",
+				"g",
+				"h",
+				"i",
+				"j",
+				"k",
+				"l",
+				"m",
+				"n",
+				"o",
+				"p",
+				"q",
+				"r",
+				"s",
+			},
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			output := TmplArray(tc.input.path, tc.input.data)
+
+			assert.Equal(t, tc.output, output, "output does not match the expected")
+		})
+	}
+}
+
 func TestTmpObjArray(t *testing.T) {
 	type input struct {
 		path string
