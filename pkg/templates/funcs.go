@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -84,26 +85,34 @@ func TmplInt(path string, input interface{}) int {
 	return value.(int)
 }
 
-// TODO: Add description
+// TmplArray parses a YAML path in the input parameter aas an arraay.
+//
+// The array can be of any type but order is only deterministic for strings.
 func TmplArray(path string, input interface{}) []interface{} {
-	value := TmplGet(path, input)
-	switch value.(type) {
-	case map[interface{}]interface{}:
-		values := []interface{}{}
-		for _, v := range input.(map[interface{}]interface{}) {
-			values = append(values, v)
-		}
-		return values
-	case map[string]interface{}:
-		values := []interface{}{}
-		for _, v := range input.(map[string]interface{}) {
-			values = append(values, v)
-		}
-		return values
-	case []interface{}:
-		return value.([]interface{})
+	rawValue := TmplGet(path, input)
+	rawValues, ok := rawValue.([]interface{})
+	if !ok {
+		return nil
 	}
-	return nil
+
+	var stringValues []string
+	var values []interface{}
+	for _, v := range rawValues {
+		s, ok := v.(string)
+		if ok {
+			stringValues = append(stringValues, s)
+			continue
+		}
+		values = append(values, v)
+	}
+	sort.Slice(stringValues, func(i, j int) bool {
+		return stringValues[i] < stringValues[j]
+	})
+	for _, v := range stringValues {
+		values = append(values, v)
+	}
+
+	return values
 }
 
 // TODO: Add description
@@ -112,21 +121,21 @@ func TmplObjectArray(path string, input interface{}) []KeyValuePair {
 		return nil
 	}
 	value := TmplGet(path, input)
+	values := []KeyValuePair{}
 	switch value.(type) {
 	case map[interface{}]interface{}:
-		values := []KeyValuePair{}
 		for k, v := range value.(map[interface{}]interface{}) {
 			values = append(values, KeyValuePair{Key: k.(string), Value: v})
 		}
-		return values
 	case map[string]interface{}:
-		values := []KeyValuePair{}
 		for k, v := range value.(map[string]interface{}) {
 			values = append(values, KeyValuePair{Key: k, Value: v})
 		}
-		return values
 	}
-	return nil
+	sort.Slice(values, func(i, j int) bool {
+		return values[i].Key < values[j].Key
+	})
+	return values
 }
 
 func TmplIs(a interface{}, b interface{}) bool {
@@ -189,6 +198,9 @@ func TmplGetFiles(directoryPath string) []os.FileInfo {
 	if err != nil {
 		return []os.FileInfo{} // TODO: Print error to shuttle output
 	}
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Name() < files[j].Name()
+	})
 	return files
 }
 
