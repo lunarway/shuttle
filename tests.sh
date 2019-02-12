@@ -20,6 +20,14 @@ function assertErrorCode() {
   fi
 }
 
+function assertContains() {
+  local expectedResult=$1
+  local actualResult=$2
+  if [[ ! "$actualResult" =~ "$expectedResult" ]]; then
+    fail "Expected output to contain '$expectedResult', but it was:\n$actualResult"
+  fi
+}
+
 test_moon_base_builds() {
   assertRun -p examples/moon-base run build tag=test
 }
@@ -30,6 +38,7 @@ test_moon_base_builds_with_absolute_path() {
 
 test_venus_base_fails() {
   assertErrorCode 2 -p examples/venus-base run build tag=test
+  assertContains "Failed to load shuttle configuration" "$result"
 }
 
 test_can_get_variable_from_local_plan() {
@@ -44,9 +53,12 @@ test_can_get_variable_from_repo_plan() {
 
 test_fails_getting_no_repo_plan() {
   assertErrorCode 4 -p examples/bad/no-repo-project ls
-  if [[ ! "$result" =~ "Failed executing git command \`clone" ]]; then
-    fail "Expected output to contain 'Failed executing git command \`clone', but it was:\n$result"
-  fi
+  assertContains "Failed executing git command \`clone" "$result"
+}
+
+test_fails_loading_invalid_shuttle_configuration() {
+  assertErrorCode 2 -p examples/bad/yaml-invalid ls
+  assertContains "Failed to parse shuttle configuration" "$result"
 }
 
 test_get_a_boolean() {
@@ -95,9 +107,7 @@ test_can_execute_shuttle_version_without_error() {
 
 test_run_shell_error_outputs_exit_code() {
   assertErrorCode 4 -p examples/moon-base run crash
-  if [[ ! "$result" =~ "Exit code: 1" ]]; then
-    fail "Expected output to contain 'Exit code: 1', but it was:\n$result"
-  fi
+  assertContains "Exit code: 1" "$result"
 }
 
 test_run_shell_error_outputs_script_name() {
