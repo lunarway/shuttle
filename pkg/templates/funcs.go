@@ -85,43 +85,41 @@ func TmplInt(path string, input interface{}) int {
 	return value.(int)
 }
 
-// TmplArray parses a YAML path in the input parameter aas an arraay.
-//
-// The array can be of any type but order is only deterministic for strings.
+// TmplArray parses a YAML path in the input parameter as an array.
+// If variable found is an array, array values are returned
+// If variable found is a map, the maps values are returned
+// If none of above then nil is returned
 func TmplArray(path string, input interface{}) []interface{} {
-	rawValue := TmplGet(path, input)
-	rawValues, ok := rawValue.([]interface{})
-	if !ok {
-		return nil
-	}
-
-	var stringValues []string
-	var values []interface{}
-	for _, v := range rawValues {
-		s, ok := v.(string)
-		if ok {
-			stringValues = append(stringValues, s)
-			continue
+	value := TmplGet(path, input)
+	switch actualValue := value.(type) {
+	case map[interface{}]interface{}:
+		var values []interface{}
+		for _, v := range TmplObjectArray(path, input) {
+			values = append(values, v.Value)
 		}
-		values = append(values, v)
+		return values
+	case map[string]interface{}:
+		var values []interface{}
+		for _, v := range TmplObjectArray(path, input) {
+			values = append(values, v.Value)
+		}
+		return values
+	case []interface{}:
+		return actualValue
 	}
-	sort.Slice(stringValues, func(i, j int) bool {
-		return stringValues[i] < stringValues[j]
-	})
-	for _, v := range stringValues {
-		values = append(values, v)
-	}
-
-	return values
+	return nil
 }
 
-// TODO: Add description
+// TmplObjectArray parses a YAML path in the input parameter as an object and returns Key & Value pairs.
+// If variable found is a map, a []KeyValuePair array is returned
+// If variable found is a map, the maps values are returned
+// If none of above then nil is returned
 func TmplObjectArray(path string, input interface{}) []KeyValuePair {
 	if input == nil {
 		return nil
 	}
 	value := TmplGet(path, input)
-	values := []KeyValuePair{}
+	var values []KeyValuePair
 	switch value.(type) {
 	case map[interface{}]interface{}:
 		for k, v := range value.(map[interface{}]interface{}) {
