@@ -124,7 +124,7 @@ b:
 			},
 		},
 		{
-			name: "large string array testing for deterministic order",
+			name: "large string array testing for correct order",
 			input: input{
 				path: "a",
 				data: fromYaml(`a:
@@ -150,23 +150,47 @@ b:
 			},
 			output: []interface{}{
 				"b",
+				"d",
+				"e",
+				"g",
+				"h",
+				"f",
+				"i",
+				"s",
+				"k",
+				"c",
+				"l",
+				"m",
+				"n",
+				"o",
+				"r",
+				"j",
+				"p",
+				"q",
+			},
+		},
+		{
+			name: "object testing for deterministic order",
+			input: input{
+				path: "a",
+				data: fromYaml(`a:
+  b: b 
+  d: d 
+  e: e 
+  g: g 
+  h: h 
+  f: f
+  c: c
+`),
+			},
+			output: []interface{}{
+				"b",
 				"c",
 				"d",
 				"e",
 				"f",
 				"g",
 				"h",
-				"i",
-				"j",
-				"k",
-				"l",
-				"m",
-				"n",
-				"o",
-				"p",
-				"q",
-				"r",
-				"s",
 			},
 		},
 	}
