@@ -119,7 +119,7 @@ func TmplObjectArray(path string, input interface{}) []KeyValuePair {
 		return nil
 	}
 	value := TmplGet(path, input)
-	var values []KeyValuePair
+	values := []KeyValuePair{}
 	switch value.(type) {
 	case map[interface{}]interface{}:
 		for k, v := range value.(map[interface{}]interface{}) {
