@@ -124,5 +124,9 @@ test_run_shell_error_outputs_missing_arg() {
   fi
 }
 
+test_template_local_path() {
+  assertErrorCode 0 -p examples/moon-base template ../custom-template.tmpl -o Dockerfile-custom
+}
+
 # Load and run shUnit2.
 . ./shunit2
