@@ -8,7 +8,7 @@ import (
 	"text/template"
 
 	tmplFuncs "github.com/lunarway/shuttle/pkg/templates"
-	"github.com/lunarway/shuttle/pkg/ui"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -24,9 +24,7 @@ var templateCmd = &cobra.Command{
 	Use:   "template [template]",
 	Short: "Execute a template",
 	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		uii = uii.SetContext(ui.LevelSilent)
-
+	RunE: func(cmd *cobra.Command, args []string) error {
 		var templateName = args[0]
 		projectContext := getProjectContext()
 
@@ -43,13 +41,13 @@ var templateCmd = &cobra.Command{
 			path.Join(projectContext.LocalPlanPath, templateName),
 		})
 		if templatePath == "" {
-			panic(fmt.Sprintf("Could not find a template named `%s`", templateName))
+			return fmt.Errorf("template `%s` not found", templateName)
 		}
 
 		tmpl, err := template.New(templateName).Funcs(tmplFuncs.GetFuncMap()).ParseFiles(templatePath)
-
 		if err != nil {
-			panic(err)
+			uii.Errorln("Parse template file failed\nFile: %s", templatePath)
+			return err
 		}
 
 		context := context{
@@ -62,22 +60,25 @@ var templateCmd = &cobra.Command{
 		if templateOutput == "" {
 			err = tmpl.Execute(os.Stdout, context)
 			if err != nil {
-				panic(err)
+				uii.Errorln("Failed to execute template\nPlan: %s\nProject: %s", context.PlanPath, context.ProjectPath)
+				return err
 			}
 		} else {
 			// TODO: This is probably not the right place to initialize the temp dir?
 			os.MkdirAll(projectContext.TempDirectoryPath, os.ModePerm)
 
-			file, err := os.Create(path.Join(projectContext.TempDirectoryPath, templateOutput))
+			templateOutputPath := path.Join(projectContext.TempDirectoryPath, templateOutput)
+			file, err := os.Create(templateOutputPath)
 			if err != nil {
-				panic(err)
+				return errors.WithMessagef(err, "create template output file '%s'", templateOutputPath)
 			}
-
 			err = tmpl.Execute(file, context)
 			if err != nil {
-				panic(err)
+				uii.Errorln("Failed to execute template\nPlan: %s\nProject: %s", context.PlanPath, context.ProjectPath)
+				return err
 			}
 		}
+		return nil
 	},
 }
 
