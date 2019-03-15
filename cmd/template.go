@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -56,27 +57,24 @@ var templateCmd = &cobra.Command{
 			PlanPath:    projectContext.LocalPlanPath,
 			ProjectPath: projectContext.ProjectPath,
 		}
-
+		var output io.Writer
 		if templateOutput == "" {
-			err = tmpl.Execute(os.Stdout, context)
-			if err != nil {
-				uii.Errorln("Failed to execute template\nPlan: %s\nProject: %s", context.PlanPath, context.ProjectPath)
-				return err
-			}
+			output = os.Stdout
 		} else {
 			// TODO: This is probably not the right place to initialize the temp dir?
 			os.MkdirAll(projectContext.TempDirectoryPath, os.ModePerm)
-
 			templateOutputPath := path.Join(projectContext.TempDirectoryPath, templateOutput)
 			file, err := os.Create(templateOutputPath)
 			if err != nil {
 				return errors.WithMessagef(err, "create template output file '%s'", templateOutputPath)
 			}
-			err = tmpl.Execute(file, context)
-			if err != nil {
-				uii.Errorln("Failed to execute template\nPlan: %s\nProject: %s", context.PlanPath, context.ProjectPath)
-				return err
-			}
+			output = file
+		}
+
+		err = tmpl.ExecuteTemplate(output, path.Base(templatePath), context)
+		if err != nil {
+			uii.Errorln("Failed to execute template\nPlan: %s\nProject: %s", context.PlanPath, context.ProjectPath)
+			return err
 		}
 		return nil
 	},
