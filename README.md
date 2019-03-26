@@ -103,7 +103,10 @@ When using a git plan a url should look like:
 * `git@github.com:lunarway/shuttle-example-go-plan.git#change-build`
 
 The `#change-build` points the plan to a specific branch, which by default would be `master`.
-It can also be used to point to a tag or a git SHA.
+It can also be used to point to a tag or a git SHA, like this:
+
+* `https://github.com/lunarway/shuttle-example-go-plan.git#v1.2.3`
+* `git@github.com:lunarway/shuttle-example-go-plan.git#46ce3cc`
 
 ### Overloading the plan
 It is possible to overload the plan specified in `shuttle.yaml` file by using the `--plan` argument
