@@ -1,4 +1,4 @@
-plan: 'https://github.com/lunarway/shuttle-example-go-plan.git'
+plan: 'https://github.com/lunarway/shuttle-example-go-plan.git#change-build'
 vars:
   docker:
     baseImage: golang

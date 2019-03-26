@@ -18,6 +18,7 @@ var (
 	verboseFlag        bool
 	clean              bool
 	skipGitPlanPulling bool
+	plan               string
 	version            = "<dev-version>"
 	commit             = "<unspecified-commit>"
 )
@@ -55,6 +56,11 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&projectPath, "project", "p", ".", "Project path")
 	rootCmd.PersistentFlags().BoolVarP(&clean, "clean", "c", false, "Start from clean setup")
 	rootCmd.PersistentFlags().BoolVar(&skipGitPlanPulling, "skip-pull", false, "Skip git plan pulling step")
+	rootCmd.PersistentFlags().StringVar(&plan, "plan", "", `Overload the plan used.
+Specifying a local path with either an absolute path (/some/plan) or a relative path (../some/plan) to another location
+for the selected plan.
+Select a version of a git plan by using #branch, #sha or #tag
+If none of above is used, then the argument will expect a full plan spec.`)
 	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Print verbose output")
 }
 
@@ -72,7 +78,14 @@ func getProjectContext() config.ShuttleProjectContext {
 		fullProjectPath = path.Join(dir, projectPath)
 	}
 
+	if plan == "" {
+		env := os.Getenv("SHUTTLE_PLAN_OVERLOAD")
+		if env != "" {
+			plan = env
+		}
+	}
+
 	var c config.ShuttleProjectContext
-	c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling)
+	c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling, plan)
 	return c
 }

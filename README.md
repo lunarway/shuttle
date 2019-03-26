@@ -92,8 +92,29 @@ $ shuttle run build tag=v1
 * ...
 
 ## Documentation
-*Documentation is coming*
+*Documentation is under development*
 
+### Git Plan
+When using a git plan a url should look like:
+
+* `https://github.com/lunarway/shuttle-example-go-plan.git`
+* `git@github.com:lunarway/shuttle-example-go-plan.git`
+* `https://github.com/lunarway/shuttle-example-go-plan.git#change-build`
+* `git@github.com:lunarway/shuttle-example-go-plan.git#change-build`
+
+The `#change-build` points the plan to a specific branch, which by default would be `master`.
+It can also be used to point to a tag or a git SHA, like this:
+
+* `https://github.com/lunarway/shuttle-example-go-plan.git#v1.2.3`
+* `git@github.com:lunarway/shuttle-example-go-plan.git#46ce3cc`
+
+### Overloading the plan
+It is possible to overload the plan specified in `shuttle.yaml` file by using the `--plan` argument
+or the `SHUTTLE_PLAN_OVERLOAD` environment variable. Following arguments are supported
+
+* A path to a local plan like `--plan ../local-checkout-of-plan`. Absolute paths is also supported
+* Another git plan like `--plan git://github.com/some-org/some-plan`
+* A git tag to append to the plan like `--plan #some-branch`, `--plan #some-tag` or a SHA `--plan #2b52c21` 
 
 ## Installing
 

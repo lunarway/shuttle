@@ -20,9 +20,10 @@ type gitPlan struct {
 	user       string
 	host       string
 	repository string
+	head       string
 }
 
-var gitRegex = regexp.MustCompile(`^git://((?P<user>[^@]+)@)?(?P<repository1>(?P<host>[^:]+):(?P<path>.*))$|^(?P<protocol>https)://(?P<repository2>.*\.git)$`)
+var gitRegex = regexp.MustCompile(`^((git://((?P<user>[^@]+)@)?(?P<repository1>(?P<host>[^:]+):(?P<path>.*)))|((?P<protocol>https)://(?P<repository2>.*\.git)))(#(?P<head>.*))?$`)
 
 func parseGitPlan(plan string) gitPlan {
 	if !gitRegex.MatchString(plan) {
@@ -47,6 +48,10 @@ func parseGitPlan(plan string) gitPlan {
 	if repository == "" {
 		repository = result["repository2"]
 	}
+	head := result["head"]
+	if head == "" {
+		head = "master"
+	}
 
 	return gitPlan{
 		isGitPlan:  true,
@@ -54,6 +59,7 @@ func parseGitPlan(plan string) gitPlan {
 		user:       result["user"],
 		host:       result["host"],
 		repository: repository,
+		head:       head,
 	}
 }
 
@@ -64,8 +70,14 @@ func IsGitPlan(plan string) bool {
 }
 
 // GetGitPlan will pull git repository and return its path
-func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool) string {
+func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool, planArgument string) string {
 	parsedGitPlan := parseGitPlan(plan)
+
+	if strings.HasPrefix(planArgument, "#") {
+		parsedGitPlan.head = planArgument[1:]
+		uii.EmphasizeInfoln("Overload git plan branch/tag/sha with %v", parsedGitPlan.head)
+	}
+
 	planPath := path.Join(localShuttleDirectoryPath, "plan")
 
 	plansAlreadyValidated := strings.Split(os.Getenv("SHUTTLE_PLANS_ALREADY_VALIDATED"), string(os.PathListSeparator))
@@ -89,10 +101,17 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 				uii.Verboseln("Skipping git plan pulling")
 				return planPath
 			}
-
-			uii.Infoln("Pulling latest plan changes")
+			gitCmd("fetch origin", planPath, uii)
+			gitCmd(fmt.Sprintf("checkout %s", parsedGitPlan.head), planPath, uii)
+			status := getStatus(planPath)
+			if !status.isDetached {
+				uii.Infoln("Pulling latest plan changes on %v", parsedGitPlan.head)
+				gitCmd("pull origin", planPath, uii)
+				status = getStatus(planPath)
+			} else {
+				uii.EmphasizeInfoln("Skipping plan pull because its running on detached head")
+			}
 			uii.Verboseln("Using %s - branch %s - commit %s", plan, status.branch, status.commit)
-			gitCmd("pull origin", planPath, uii)
 		}
 		return planPath
 	} else {
@@ -108,7 +127,7 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 		}
 
 		uii.Infoln("Cloning plan %s", cloneArg)
-		gitCmd("clone "+cloneArg+" plan", localShuttleDirectoryPath, uii)
+		gitCmd(fmt.Sprintf("clone %v --branch %v plan", cloneArg, parsedGitPlan.head), localShuttleDirectoryPath, uii)
 	}
 
 	return planPath
