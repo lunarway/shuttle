@@ -57,7 +57,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&clean, "clean", "c", false, "Start from clean setup")
 	rootCmd.PersistentFlags().BoolVar(&skipGitPlanPulling, "skip-pull", false, "Skip git plan pulling step")
 	rootCmd.PersistentFlags().StringVar(&plan, "plan", "", `Overload the plan used.
-Specifying a local path with either a absolute path (/some/plan) or a relative path (../some/plan) to another location
+Specifying a local path with either an absolute path (/some/plan) or a relative path (../some/plan) to another location
 for the selected plan.
 Select a version of a git plan by using #branch, #sha or #tag
 If none of above is used, then the argument will expect a full plan spec.`)
