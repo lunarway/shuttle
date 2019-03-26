@@ -127,8 +127,7 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 		}
 
 		uii.Infoln("Cloning plan %s", cloneArg)
-		gitCmd("clone "+cloneArg+" plan", localShuttleDirectoryPath, uii)
-		gitCmd(fmt.Sprintf("checkout %v", parsedGitPlan.head), localShuttleDirectoryPath, uii)
+		gitCmd(fmt.Sprintf("clone %v --branch %v plan", cloneArg, parsedGitPlan.head), localShuttleDirectoryPath, uii)
 	}
 
 	return planPath
