@@ -8,7 +8,7 @@ import (
 )
 
 func isPlanArgumentAFilePlan(planArgument string) bool {
-	return strings.Index(planArgument, "/") == 0 || strings.Index(planArgument, "./") == 0 || strings.Index(planArgument, "../") == 0
+	return strings.HasPrefix(planArgument, "/") || strings.HasPrefix(planArgument, "./") || strings.HasPrefix(planArgument, "../")
 }
 
 func isPlanArgumentAPlan(planArgument string) bool {
