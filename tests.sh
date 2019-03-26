@@ -131,7 +131,7 @@ test_template_local_path() {
 test_run_repo_say_branch() {
   result=$(./shuttle -p examples/repo-project-branched run say)
   if [[ ! "$result" =~ "something clever" ]]; then
-    fail "Expected output to contain 'something minor', but it was:\n$result"
+    fail "Expected output to contain 'something clever', but it was:\n$result"
   fi
 }
 
