@@ -47,8 +47,8 @@ test_can_get_variable_from_local_plan() {
 }
 
 test_can_get_variable_from_repo_plan() {
-  result=$(./shuttle -p examples/repo-project get docker.image 2>&1)
-  assertEquals "shuttle/repo-project" "$result"
+  result=$(./shuttle -p examples/repo-project get docker.destImage 2>&1)
+  assertEquals "repo-project" "$result"
 }
 
 test_fails_getting_no_repo_plan() {
@@ -127,6 +127,35 @@ test_run_shell_error_outputs_missing_arg() {
 test_template_local_path() {
   assertErrorCode 0 -p examples/moon-base template ../custom-template.tmpl -o Dockerfile-custom
 }
+
+test_run_repo_say_branch() {
+  result=$(./shuttle -p examples/repo-project-branched run say)
+  if [[ ! "$result" =~ "something clever" ]]; then
+    fail "Expected output to contain 'something minor', but it was:\n$result"
+  fi
+}
+
+test_run_repo_say() {
+  result=$(./shuttle -p examples/repo-project run say)
+  if [[ ! "$result" =~ "something masterly" ]]; then
+    fail "Expected output to contain 'something', but it was:\n$result"
+  fi
+}
+
+test_run_repo_say_tagged() {
+  result=$(./shuttle -p examples/repo-project --plan "#tagged" run say)
+  if [[ ! "$result" =~ "something tagged" ]]; then
+    fail "Expected output to contain 'something', but it was:\n$result"
+  fi
+}
+
+test_run_repo_say_sha() {
+  result=$(./shuttle -p examples/repo-project --plan "#2b52c21" run say)
+  if [[ ! "$result" =~ "something minor" ]]; then
+    fail "Expected output to contain 'something minor', but it was:\n$result"
+  fi
+}
+
 
 # Load and run shUnit2.
 . ./shunit2

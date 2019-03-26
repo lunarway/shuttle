@@ -67,23 +67,27 @@ func (p *ShuttlePlanConfiguration) Load(planPath string) *ShuttlePlanConfigurati
 }
 
 // FetchPlan so it exists locally and return path to that plan
-func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool) string {
+func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool, planArgument string) string {
+	if isPlanArgumentAPlan(planArgument) {
+		uii.Infoln("Using overloaded plan %v", planArgument)
+		return FetchPlan(getPlanFromPlanArgument(planArgument), projectPath, localShuttleDirectoryPath, uii, skipGitPlanPulling, "")
+	}
+	
 	switch {
 	case plan == "":
 		uii.Verboseln("Using no plan")
 		return ""
 	case git.IsGitPlan(plan):
 		uii.Verboseln("Using git plan at '%s'", plan)
-		return git.GetGitPlan(plan, localShuttleDirectoryPath, uii, skipGitPlanPulling)
+		return git.GetGitPlan(plan, localShuttleDirectoryPath, uii, skipGitPlanPulling, planArgument)
 	case isMatching("^http://|^https://", plan):
-		panic("plan not valid: http is not supported yet")
+		panic(fmt.Sprintf("Plan '%v' is not valid: non-git http/https is not supported yet", plan))
 	case isFilePath(plan, true):
 		uii.Verboseln("Using local plan at '%s'", plan)
 		return plan
 	case isFilePath(plan, false):
 		uii.Verboseln("Using local plan at '%s'", plan)
 		return path.Join(projectPath, plan)
-
 	}
 	panic("Unknown plan path '" + plan + "'")
 }

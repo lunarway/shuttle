@@ -36,6 +36,7 @@ type Status struct {
 	commit       string
 	branch       string
 	remoteBranch string
+	isDetached   bool
 }
 
 type FileStatus struct {
@@ -61,7 +62,11 @@ func getStatus(dir string) Status {
 			case "branch.oid":
 				status.commit = parts[2]
 			case "branch.head":
-				status.branch = parts[2]
+				if parts[2] == "(detached)" {
+					status.isDetached = true
+				} else {
+					status.branch = parts[2]
+				}
 			case "branch.upsteam":
 				status.remoteBranch = parts[2]
 			case "branch.ab":

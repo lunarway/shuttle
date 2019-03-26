@@ -6,7 +6,7 @@ import (
 	"path"
 
 	"github.com/lunarway/shuttle/pkg/ui"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 // DynamicYaml are any yaml document
@@ -33,7 +33,7 @@ type ShuttleProjectContext struct {
 }
 
 // Setup the ShuttleProjectContext for a specific path
-func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool, skipGitPlanPulling bool) *ShuttleProjectContext {
+func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool, skipGitPlanPulling bool, planArgument string) *ShuttleProjectContext {
 	c.Config.getConf(uii, projectPath)
 	c.UI = uii
 	c.ProjectPath = projectPath
@@ -46,7 +46,7 @@ func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool,
 	os.MkdirAll(c.LocalShuttleDirectoryPath, os.ModePerm)
 
 	c.TempDirectoryPath = path.Join(c.LocalShuttleDirectoryPath, "temp")
-	c.LocalPlanPath = FetchPlan(c.Config.Plan, projectPath, c.LocalShuttleDirectoryPath, uii, skipGitPlanPulling)
+	c.LocalPlanPath = FetchPlan(c.Config.Plan, projectPath, c.LocalShuttleDirectoryPath, uii, skipGitPlanPulling, planArgument)
 	c.Plan.Load(c.LocalPlanPath)
 	c.Scripts = make(map[string]ShuttlePlanScript)
 	for scriptName, script := range c.Plan.Scripts {
