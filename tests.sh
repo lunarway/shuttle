@@ -145,7 +145,7 @@ test_run_repo_say() {
 test_run_repo_say_tagged() {
   result=$(./shuttle -p examples/repo-project --plan "#tagged" run say)
   if [[ ! "$result" =~ "something tagged" ]]; then
-    fail "Expected output to contain 'something', but it was:\n$result"
+    fail "Expected output to contain 'something tagged', but it was:\n$result"
   fi
 }
 
