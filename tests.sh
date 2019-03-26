@@ -138,7 +138,7 @@ test_run_repo_say_branch() {
 test_run_repo_say() {
   result=$(./shuttle -p examples/repo-project run say)
   if [[ ! "$result" =~ "something masterly" ]]; then
-    fail "Expected output to contain 'something', but it was:\n$result"
+    fail "Expected output to contain 'something masterly', but it was:\n$result"
   fi
 }
 
