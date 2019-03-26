@@ -73,7 +73,7 @@ func IsGitPlan(plan string) bool {
 func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool, planArgument string) string {
 	parsedGitPlan := parseGitPlan(plan)
 
-	if strings.Index(planArgument, "#") == 0 {
+	if strings.HasPrefix(planArgument, "#") {
 		parsedGitPlan.head = planArgument[1:]
 		uii.EmphasizeInfoln("Overload git plan branch/tag/sha with %v", parsedGitPlan.head)
 	}
