@@ -17,8 +17,6 @@ func isPlanArgumentAPlan(planArgument string) bool {
 
 func getPlanFromPlanArgument(planArgument string) string {
 	switch {
-	case isPlanArgumentAFilePlan(planArgument) && isFilePath(planArgument, true):
-		return planArgument
 	case isPlanArgumentAFilePlan(planArgument) && isFilePath(planArgument, false):
 		wd, err := os.Getwd()
 		if err != nil {
