@@ -106,7 +106,7 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 			status := getStatus(planPath)
 			if !status.isDetached {
 				uii.Infoln("Pulling latest plan changes on %v", parsedGitPlan.head)
-				gitCmd("pull origin", planPath, uii)
+				gitCmd(fmt.Sprintf("pull origin %v", parsedGitPlan.head), planPath, uii)
 				status = getStatus(planPath)
 			} else {
 				uii.EmphasizeInfoln("Skipping plan pull because its running on detached head")
