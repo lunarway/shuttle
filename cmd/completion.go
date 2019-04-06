@@ -66,7 +66,7 @@ Examples:
 	ValidArgs: []string{"bash", "zsh"},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if cobra.ExactArgs(1)(cmd, args) != nil || cobra.OnlyValidArgs(cmd, args) != nil {
-			return errors.New(fmt.Sprintf("Only %v arguments are allowed", cmd.ValidArgs))
+			return fmt.Errorf("only %v arguments are allowed", cmd.ValidArgs)
 		}
 		return nil
 	},
