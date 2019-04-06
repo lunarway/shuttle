@@ -86,7 +86,7 @@ func init() {
 	rootCmd.AddCommand(completionCmd)
 }
 
-// this writes a zsh competion file that wraps the bash completion file
+// this writes a zsh completion script that wraps the bash completion script.
 //
 // Copied from kubectl: https://github.com/kubernetes/kubernetes/blob/9c2df998af9eb565f11d42725dc77e9266483ffc/pkg/kubectl/cmd/completion/completion.go#L145
 func runCompletionZsh(out io.Writer, shuttle *cobra.Command) error {
