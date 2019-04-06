@@ -16,13 +16,11 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 
-	"fmt"
-
 	"github.com/lunarway/shuttle/pkg/ui"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -31,38 +29,53 @@ var shell string
 // completionCmd represents the completion command
 var completionCmd = &cobra.Command{
 	Use:   "completion <shell>",
-	Short: "Generates shell completion scripts",
-	Long: `Output shell completion code for the specified shell (bash or zsh). The shell code must be evaluated to provide
-interactive completion of shuttle commands. This can be done by sourcing it from the .bash _profile.
+	Short: `Output shell completion code`,
+	Long: `Output shell completion code for the specified shell (bash or zsh).
+The shell code must be evaluated to provide interactive
+completion of shuttle commands.  This can be done by sourcing it from
+the .bash_profile.
 
-Note for zsh users: [1] zsh completions are only supported in versions of zsh >= 5.2
+Note for zsh users: zsh completions are only supported in versions of zsh >= 5.2
 
-Examples:
-  # Installing bash completion on macOS using homebrew
-  ## If running Bash 3.2 included with macOS
-  brew install bash-completion
-  ## or, if running Bash 4.1+
-  brew install bash-completion@2
-  ## If shuttle is installed via homebrew, this should start working immediately.
-  ## If you've installed via other means, you may need add the completion to your completion directory
-  shuttle completion bash > $(brew --prefix)/etc/bash_completion.d/shuttle
+Installing bash completion on macOS using homebrew
 
+    If running Bash 3.2 included with macOS
 
-  # Installing bash completion on Linux
-  ## Load the shuttle completion code for bash into the current shell
-  source <(shuttle completion bash)
-  ## Write bash completion code to a file and source if from .bash_profile
-  shuttle completion bash > ~/.shuttle/completion.bash.inc
-  printf "
-  # shuttle shell completion
-  source '$HOME/.shuttle/completion.bash.inc'
-  " >> $HOME/.bash_profile
-  source $HOME/.bash_profile
+    	brew install bash-completion
 
-  # Load the shuttle completion code for zsh[1] into the current shell
-  source <(shuttle completion zsh)
-  # Set the shuttle completion code for zsh[1] to autoload on startup
-  shuttle completion zsh > "${fpath[1]}/_shuttle"`,
+    If running Bash 4.1+
+
+    	brew install bash-completion@2
+
+    You may need add the completion to your completion directory
+
+    	shuttle completion bash > $(brew --prefix)/etc/bash_completion.d/shuttle
+
+Installing bash completion on Linux
+
+    If bash-completion is not installed on Linux, please install the 'bash-completion' package
+    via your distribution's package manager.
+
+    Load the shuttle completion code for bash into the current shell
+
+    	source <(shuttle completion bash)
+
+    Write bash completion code to a file and source if from .bash_profile
+
+     	shuttle completion bash > ~/.shuttle/completion.bash.inc
+     	printf "
+     	            # shuttle shell completion
+     	source '$HOME/.shuttle/completion.bash.inc'
+     	            " >> $HOME/.bash_profile
+    	source $HOME/.bash_profile
+
+    Load the shuttle completion code for zsh[1] into the current shell
+
+    	source <(shuttle completion zsh)
+
+    Set the shuttle completion code for zsh[1] to autoload on startup
+
+    	shuttle completion zsh > "${fpath[1]}/_shuttle"`,
 	ValidArgs: []string{"bash", "zsh"},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if cobra.ExactArgs(1)(cmd, args) != nil || cobra.OnlyValidArgs(cmd, args) != nil {
