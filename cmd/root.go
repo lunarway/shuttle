@@ -24,33 +24,34 @@ var (
 )
 
 const rootCmdCompletion = `
-__shuttle_get_script_args() {
+__shuttle_run_script_args() {
 	local cur prev args_output args
 	COMPREPLY=()
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 
 	template=$'{{ range $i, $arg := .Args }}{{ $arg.Name }}\n{{ end }}'
-	if args_output=$(./run run "$1" --help --template "$template" 2>/dev/null); then
+	if args_output=$(shuttle --skip-pull run "$1" --help --template "$template" 2>/dev/null); then
 		args=($(echo "${args_output}"))
 		COMPREPLY=( $( compgen -W "${args[*]}" -- "$cur" ) )
 		compopt -o nospace
 	fi
 }
 
-__shuttle_get_script() {
-	local cur prev scripts
+# find available scripts to run
+__shuttle_run_scripts() {
+	local cur prev scripts currentScript
 	COMPREPLY=()
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
+	currentScript="${COMP_WORDS[2]}"
 
 	if [[ ! "${prev}" = "run" ]]; then
-	# lookup script arguments
-	__shuttle_get_script_args $prev
-	return 0
+		__shuttle_run_script_args $currentScript
+		return 0
 	fi
 
-	if scripts_output=$(shuttle ls 2>/dev/null); then
+	if scripts_output=$(shuttle --skip-pull ls 2>/dev/null); then
 		scripts=($(echo "${scripts_output}" | tail +3 | awk '{print $1}'))
 		COMPREPLY=( $( compgen -W "${scripts[*]}" -- "$cur" ) )
 	fi
@@ -61,7 +62,7 @@ __shuttle_get_script() {
 __shuttle_custom_func() {
   case ${last_command} in
       shuttle_run)
-          __shuttle_get_script
+          __shuttle_run_scripts
           return
           ;;
       *)
