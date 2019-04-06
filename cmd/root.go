@@ -51,8 +51,9 @@ __shuttle_run_scripts() {
 		return 0
 	fi
 
-	if scripts_output=$(shuttle --skip-pull ls 2>/dev/null); then
-		scripts=($(echo "${scripts_output}" | tail +3 | awk '{print $1}'))
+	template=$'{{ range $name, $script := .Scripts }}{{ $name }}\n{{ end }}'
+	if scripts_output=$(./run --skip-pull ls --template "$template" 2>/dev/null); then
+		scripts=($(echo "${scripts_output}"))
 		COMPREPLY=( $( compgen -W "${scripts[*]}" -- "$cur" ) )
 	fi
 	return 0
