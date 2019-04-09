@@ -12,7 +12,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0
 	github.com/pkg/errors v0.8.1
 	github.com/pmezard/go-difflib v1.0.0
-	github.com/spf13/cobra v0.0.3
+	github.com/spf13/cobra v0.0.4-0.20181127133106-d2d81d9a96e2
 	github.com/spf13/pflag v1.0.1
 	github.com/stretchr/testify v1.2.2
 	golang.org/x/crypto v0.0.0-20180621125126-a49355c7e3f8

@@ -8,13 +8,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const templ = `
+const lsDefaultTempl = `
 {{- $max := .Max -}}
 Available Scripts:
 {{- range $key, $value := .Scripts}}
   {{rightPad $key $max }} {{upperFirst $value.Description}}
 {{- end}}
 `
+
+var (
+	lsFlagTemplate string
+)
 
 type templData struct {
 	Scripts map[string]config.ShuttlePlanScript
@@ -26,6 +30,12 @@ var lsCmd = &cobra.Command{
 	Short: "List possible commands",
 	Run: func(cmd *cobra.Command, args []string) {
 		context := getProjectContext()
+		var templ string
+		if lsFlagTemplate != "" {
+			templ = lsFlagTemplate
+		} else {
+			templ = lsDefaultTempl
+		}
 		err := ui.Template(os.Stdout, "ls", templ, templData{
 			Scripts: context.Scripts,
 			Max:     calculateRightPadForKeys(context.Scripts),
@@ -35,6 +45,7 @@ var lsCmd = &cobra.Command{
 }
 
 func init() {
+	lsCmd.Flags().StringVar(&lsFlagTemplate, "template", "", "Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].")
 	rootCmd.AddCommand(lsCmd)
 }
 

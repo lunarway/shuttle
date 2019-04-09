@@ -23,6 +23,55 @@ var (
 	commit             = "<unspecified-commit>"
 )
 
+const rootCmdCompletion = `
+__shuttle_run_script_args() {
+	local cur prev args_output args
+	COMPREPLY=()
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+	template=$'{{ range $i, $arg := .Args }}{{ $arg.Name }}\n{{ end }}'
+	if args_output=$(shuttle --skip-pull run "$1" --help --template "$template" 2>/dev/null); then
+		args=($(echo "${args_output}"))
+		COMPREPLY=( $( compgen -W "${args[*]}" -- "$cur" ) )
+		compopt -o nospace
+	fi
+}
+
+# find available scripts to run
+__shuttle_run_scripts() {
+	local cur prev scripts currentScript
+	COMPREPLY=()
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	prev="${COMP_WORDS[COMP_CWORD-1]}"
+	currentScript="${COMP_WORDS[2]}"
+
+	if [[ ! "${prev}" = "run" ]]; then
+		__shuttle_run_script_args $currentScript
+		return 0
+	fi
+
+	template=$'{{ range $name, $script := .Scripts }}{{ $name }}\n{{ end }}'
+	if scripts_output=$(shuttle --skip-pull ls --template "$template" 2>/dev/null); then
+		scripts=($(echo "${scripts_output}"))
+		COMPREPLY=( $( compgen -W "${scripts[*]}" -- "$cur" ) )
+	fi
+	return 0
+}
+
+# called when the build in completion fails to match
+__shuttle_custom_func() {
+  case ${last_command} in
+      shuttle_run)
+          __shuttle_run_scripts
+          return
+          ;;
+      *)
+          ;;
+  esac
+}
+`
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "shuttle",
@@ -43,6 +92,7 @@ Read more about shuttle at https://github.com/lunarway/shuttle`, version),
 		uii.Verboseln("- commit: %s", commit)
 		uii.Verboseln("- project-path: %s", projectPath)
 	},
+	BashCompletionFunction: rootCmdCompletion,
 }
 
 func Execute() {
