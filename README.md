@@ -148,7 +148,7 @@ $ shuttle get does.not.exist
 ```
 
 ### `shuttle plan`
-Inspec the plan in use for a project.
+Inspect the plan in use for a project.
 Use the `template` flag to customize the output to your needs.
 
 ```console
