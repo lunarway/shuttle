@@ -76,7 +76,7 @@ func (ui *UI) Titleln(format string, args ...interface{}) {
 
 // Errorln doc
 func (ui *UI) Errorln(format string, args ...interface{}) {
-	if ui.EffectiveLevel.OutputIsIncluded(LevelInfo) {
+	if ui.EffectiveLevel.OutputIsIncluded(LevelError) {
 		fmt.Fprintf(os.Stderr, "\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf(format, args...))
 	}
 }

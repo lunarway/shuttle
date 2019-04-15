@@ -1,0 +1,7 @@
+plan: false
+vars:
+  T: hello
+scripts:
+  hello:
+    actions:
+    - shell: echo "Hello no plan project"

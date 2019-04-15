@@ -46,6 +46,31 @@ test_can_get_variable_from_local_plan() {
   assertEquals "earth-united/moon-base" "$result"
 }
 
+test_plan_from_relative_local_plan() {
+  result=$(./shuttle -p examples/moon-base plan 2>&1)
+  assertEquals "../station-plan" "$result"
+}
+
+test_plan_from_git_plan() {
+  result=$(./shuttle -p examples/repo-project plan 2>&1)
+  assertEquals "https://github.com/lunarway/shuttle-example-go-plan.git" "$result"
+}
+
+test_plan_from_git_plan_with_branch() {
+  result=$(./shuttle -p examples/repo-project-branched plan 2>&1)
+  assertEquals "https://github.com/lunarway/shuttle-example-go-plan.git#change-build" "$result"
+}
+
+test_plan_from_no_plan() {
+  result=$(./shuttle -p examples/no-plan-project plan 2>&1)
+  assertEquals "" "$result"
+}
+
+test_plan_with_template_from_no_plan() {
+  result=$(./shuttle -p examples/no-plan-project plan --template '{{.PlanRaw}}' 2>&1)
+  assertEquals "false" "$result"
+}
+
 test_can_get_variable_from_repo_plan() {
   result=$(./shuttle -p examples/repo-project get docker.destImage 2>&1)
   assertEquals "repo-project" "$result"
