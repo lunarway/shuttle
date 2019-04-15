@@ -114,7 +114,7 @@ or the `SHUTTLE_PLAN_OVERLOAD` environment variable. Following arguments are sup
 
 * A path to a local plan like `--plan ../local-checkout-of-plan`. Absolute paths is also supported
 * Another git plan like `--plan git://github.com/some-org/some-plan`
-* A git tag to append to the plan like `--plan #some-branch`, `--plan #some-tag` or a SHA `--plan #2b52c21` 
+* A git tag to append to the plan like `--plan #some-branch`, `--plan #some-tag` or a SHA `--plan #2b52c21`
 
 ## Installing
 
@@ -145,6 +145,15 @@ $ shuttle get some.variable
 
 $ shuttle get does.not.exist
 > # nothing
+```
+
+### `shuttle plan`
+Inspec the plan in use for a project.
+Use the `template` flag to customize the output to your needs.
+
+```console
+$ shuttle plan
+https://github.com/lunarway/shuttle-example-go-plan.git
 ```
 
 ### `shuttle has <variable>`
