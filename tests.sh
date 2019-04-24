@@ -46,6 +46,11 @@ test_can_get_variable_from_local_plan() {
   assertEquals "earth-united/moon-base" "$result"
 }
 
+test_can_get_variable_from_local_plan_with_templating() {
+  result=$(./shuttle -p examples/moon-base get docker --template '{{ range $k, $v := . }}{{ $k }}{{ end }}' 2>&1)
+  assertEquals "image" "$result"
+}
+
 test_plan_from_relative_local_plan() {
   result=$(./shuttle -p examples/moon-base plan 2>&1)
   assertEquals "../station-plan" "$result"
