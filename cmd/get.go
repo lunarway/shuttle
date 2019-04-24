@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -12,6 +13,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	getFlagTemplate string
+)
+
 type dynamicValue = interface{}
 
 var getCmd = &cobra.Command{
@@ -20,10 +25,19 @@ var getCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	//Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		uii = uii.SetContext(ui.LevelSilent)
+		uii = uii.SetContext(ui.LevelError)
 		context := getProjectContext()
 		path := args[0]
+		var templ string
+		if getFlagTemplate != "" {
+			templ = getFlagTemplate
+		}
 		value := templates.TmplGet(path, context.Config.Variables)
+		if templ != "" {
+			err := ui.Template(os.Stdout, "get", templ, value)
+			context.UI.CheckIfError(err)
+			return
+		}
 		switch value.(type) {
 		case nil:
 			// print nothing
@@ -38,5 +52,6 @@ var getCmd = &cobra.Command{
 }
 
 func init() {
+	getCmd.Flags().StringVar(&getFlagTemplate, "template", "", "Template string to use. See --help for details.")
 	rootCmd.AddCommand(getCmd)
 }
