@@ -35,6 +35,9 @@ func GetFuncMap() template.FuncMap {
 		"getFiles":       TmplGetFiles,
 		"getFileContent": TmplGetFileContent,
 		"fileExists":     TmplFileExists,
+		"trim":           strings.TrimSpace,
+		"upperFirst":     TmplUpperFirst,
+		"rightPad":       TmplRightPad,
 	}
 
 	for k, v := range extra {
@@ -142,6 +145,20 @@ func TmplIs(a interface{}, b interface{}) bool {
 
 func TmplIsnt(a interface{}, b interface{}) bool {
 	return a != b
+}
+
+// TmplRightPad adds padding to the right of a string.
+func TmplRightPad(s string, padding int) string {
+	template := fmt.Sprintf("%%-%ds", padding)
+	return fmt.Sprintf(template, s)
+}
+
+// TmplUpperFirst upper cases the first letter in the string
+func TmplUpperFirst(s string) string {
+	if len(s) <= 1 {
+		return strings.ToUpper(s)
+	}
+	return fmt.Sprintf("%s%s", strings.ToUpper(s[0:1]), s[1:])
 }
 
 // TmplToYaml takes an interface, marshals it to yaml, and returns a string. It will

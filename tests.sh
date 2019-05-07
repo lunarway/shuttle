@@ -51,6 +51,11 @@ test_can_get_variable_from_local_plan_with_templating() {
   assertEquals "image" "$result"
 }
 
+test_can_get_variable_from_local_plan_with_templating_functions() {
+  result=$(./shuttle -p examples/moon-base get env --template '{{ range objectArray "field" . }}{{ .Key }}{{ end }}' 2>&1)
+  assertEquals "key" "$result"
+}
+
 test_plan_from_relative_local_plan() {
   result=$(./shuttle -p examples/moon-base plan 2>&1)
   assertEquals "../station-plan" "$result"
