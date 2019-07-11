@@ -6,6 +6,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"fmt"
 	"os"
@@ -27,6 +28,18 @@ type ShuttleScriptArgs struct {
 	Name        string `yaml:"name"`
 	Required    bool   `yaml:"required"`
 	Description string `yaml:"description"`
+}
+
+func (a ShuttleScriptArgs) String() string {
+	var s strings.Builder
+	s.WriteString(a.Name)
+	if a.Required {
+		s.WriteString(" (required)")
+	}
+	if len(a.Description) != 0 {
+		fmt.Fprintf(&s, "  %s", a.Description)
+	}
+	return s.String()
 }
 
 // ShuttleAction describes an action done by a shuttle script

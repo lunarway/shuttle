@@ -26,22 +26,10 @@ type ActionExecutionContext struct {
 func Execute(p config.ShuttleProjectContext, command string, args []string) {
 	script, ok := p.Scripts[command]
 	if !ok {
-		p.UI.ExitWithErrorCode(2, "No script found called '%s'", command)
-	}
-	namedArgs := map[string]string{}
-	for _, arg := range args {
-		parts := strings.SplitN(arg, "=", 2)
-		if len(parts) < 2 {
-			p.UI.ExitWithError("Could not parse `shuttle run %s %s`, because '%s' was expected to be on the `<option>=<value>` form, but wasn't!.\nScript '%s' expects arguments:\n%v", command, strings.Join(args, " "), arg, command, script.Args)
-		}
-		namedArgs[parts[0]] = parts[1]
+		p.UI.ExitWithErrorCode(2, "Script '%s' not found", command)
 	}
 
-	for _, argSpec := range script.Args {
-		if _, ok := namedArgs[argSpec.Name]; argSpec.Required && !ok {
-			p.UI.ExitWithError("Required argument `%s` for script `%s` was not supplied!", argSpec.Name, command) // TODO: Add expected arguments
-		}
-	}
+	namedArgs := validateArguments(p, command, script.Args, args)
 
 	scriptContext := ScriptExecutionContext{
 		ScriptName: command,
@@ -58,6 +46,84 @@ func Execute(p config.ShuttleProjectContext, command string, args []string) {
 		}
 		executeAction(actionContext)
 	}
+}
+
+// validateArguments parses and validates args against available arguments in
+// scriptArgs.
+//
+// All detectable constraints are checked before reporting to the UI.
+func validateArguments(p config.ShuttleProjectContext, command string, scriptArgs []config.ShuttleScriptArgs, args []string) map[string]string {
+	var validationErrors []string
+
+	namedArgs, parsingErrors := validateArgFormat(args)
+	validationErrors = append(validationErrors, parsingErrors...)
+	validationErrors = append(validationErrors, validateRequiredArgs(scriptArgs, namedArgs)...)
+	validationErrors = append(validationErrors, validateUnknownArgs(scriptArgs, namedArgs)...)
+	if len(validationErrors) != 0 {
+		var s strings.Builder
+		s.WriteString("Arguments not valid:\n")
+		for _, e := range validationErrors {
+			fmt.Fprintf(&s, " %s\n", e)
+		}
+		fmt.Fprintf(&s, "\n%s", expectedArgumentsHelp(command, scriptArgs))
+		p.UI.ExitWithError(s.String())
+	}
+	return namedArgs
+}
+
+func validateArgFormat(args []string) (map[string]string, []string) {
+	var validationErrors []string
+	namedArgs := map[string]string{}
+	for _, arg := range args {
+		parts := strings.SplitN(arg, "=", 2)
+		if len(parts) < 2 {
+			validationErrors = append(validationErrors, fmt.Sprintf("'%s' not <argument>=<value>", arg))
+			continue
+		}
+		namedArgs[parts[0]] = parts[1]
+	}
+	return namedArgs, validationErrors
+}
+
+func validateRequiredArgs(scriptArgs []config.ShuttleScriptArgs, args map[string]string) []string {
+	var validationErrors []string
+	for _, argSpec := range scriptArgs {
+		if _, ok := args[argSpec.Name]; argSpec.Required && !ok {
+			validationErrors = append(validationErrors, fmt.Sprintf("'%s' not supplied but is required", argSpec.Name))
+		}
+	}
+	return validationErrors
+}
+
+func validateUnknownArgs(scriptArgs []config.ShuttleScriptArgs, args map[string]string) []string {
+	var validationErrors []string
+	for namedArg := range args {
+		found := false
+		for _, arg := range scriptArgs {
+			if arg.Name == namedArg {
+				found = true
+				break
+			}
+		}
+		if !found {
+			validationErrors = append(validationErrors, fmt.Sprintf("'%s' unknown", namedArg))
+		}
+	}
+	return validationErrors
+}
+
+func expectedArgumentsHelp(command string, args []config.ShuttleScriptArgs) string {
+	var s strings.Builder
+	fmt.Fprintf(&s, "Script '%s' accepts ", command)
+	if len(args) == 0 {
+		s.WriteString("no arguments.")
+		return s.String()
+	}
+	s.WriteString("the following arguments:")
+	for _, a := range args {
+		fmt.Fprintf(&s, "\n  %s", a)
+	}
+	return s.String()
 }
 
 func executeAction(context ActionExecutionContext) {
