@@ -2,6 +2,7 @@ package executors
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/lunarway/shuttle/pkg/config"
@@ -53,13 +54,14 @@ func Execute(p config.ShuttleProjectContext, command string, args []string) {
 //
 // All detectable constraints are checked before reporting to the UI.
 func validateArguments(p config.ShuttleProjectContext, command string, scriptArgs []config.ShuttleScriptArgs, args []string) map[string]string {
-	var validationErrors []string
+	var validationErrors []validationError
 
 	namedArgs, parsingErrors := validateArgFormat(args)
 	validationErrors = append(validationErrors, parsingErrors...)
 	validationErrors = append(validationErrors, validateRequiredArgs(scriptArgs, namedArgs)...)
 	validationErrors = append(validationErrors, validateUnknownArgs(scriptArgs, namedArgs)...)
 	if len(validationErrors) != 0 {
+		sortValidationErrors(validationErrors)
 		var s strings.Builder
 		s.WriteString("Arguments not valid:\n")
 		for _, e := range validationErrors {
@@ -71,13 +73,25 @@ func validateArguments(p config.ShuttleProjectContext, command string, scriptArg
 	return namedArgs
 }
 
-func validateArgFormat(args []string) (map[string]string, []string) {
-	var validationErrors []string
+type validationError struct {
+	arg string
+	err string
+}
+
+func (v validationError) String() string {
+	return fmt.Sprintf("'%s' %s", v.arg, v.err)
+}
+
+func validateArgFormat(args []string) (map[string]string, []validationError) {
+	var validationErrors []validationError
 	namedArgs := map[string]string{}
 	for _, arg := range args {
 		parts := strings.SplitN(arg, "=", 2)
 		if len(parts) < 2 {
-			validationErrors = append(validationErrors, fmt.Sprintf("'%s' not <argument>=<value>", arg))
+			validationErrors = append(validationErrors, validationError{
+				arg: arg,
+				err: "not <argument>=<value>",
+			})
 			continue
 		}
 		namedArgs[parts[0]] = parts[1]
@@ -85,18 +99,21 @@ func validateArgFormat(args []string) (map[string]string, []string) {
 	return namedArgs, validationErrors
 }
 
-func validateRequiredArgs(scriptArgs []config.ShuttleScriptArgs, args map[string]string) []string {
-	var validationErrors []string
+func validateRequiredArgs(scriptArgs []config.ShuttleScriptArgs, args map[string]string) []validationError {
+	var validationErrors []validationError
 	for _, argSpec := range scriptArgs {
 		if _, ok := args[argSpec.Name]; argSpec.Required && !ok {
-			validationErrors = append(validationErrors, fmt.Sprintf("'%s' not supplied but is required", argSpec.Name))
+			validationErrors = append(validationErrors, validationError{
+				arg: argSpec.Name,
+				err: "not supplied but is required",
+			})
 		}
 	}
 	return validationErrors
 }
 
-func validateUnknownArgs(scriptArgs []config.ShuttleScriptArgs, args map[string]string) []string {
-	var validationErrors []string
+func validateUnknownArgs(scriptArgs []config.ShuttleScriptArgs, args map[string]string) []validationError {
+	var validationErrors []validationError
 	for namedArg := range args {
 		found := false
 		for _, arg := range scriptArgs {
@@ -106,10 +123,19 @@ func validateUnknownArgs(scriptArgs []config.ShuttleScriptArgs, args map[string]
 			}
 		}
 		if !found {
-			validationErrors = append(validationErrors, fmt.Sprintf("'%s' unknown", namedArg))
+			validationErrors = append(validationErrors, validationError{
+				arg: namedArg,
+				err: "unknown",
+			})
 		}
 	}
 	return validationErrors
+}
+
+func sortValidationErrors(errs []validationError) {
+	sort.Slice(errs, func(i, j int) bool {
+		return errs[i].arg < errs[j].arg
+	})
 }
 
 func expectedArgumentsHelp(command string, args []config.ShuttleScriptArgs) string {
