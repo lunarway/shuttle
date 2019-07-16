@@ -159,6 +159,11 @@ test_run_shell_error_outputs_missing_arg() {
   fi
 }
 
+test_run_shell_error_outputs_unknown_argument() {
+  assertErrorCode 1 -p examples/moon-base run required-arg a=baz foo=bar
+  assertContains "'foo' unknown" "$result"
+}
+
 test_template_local_path() {
   assertErrorCode 0 -p examples/moon-base template ../custom-template.tmpl -o Dockerfile-custom
 }
