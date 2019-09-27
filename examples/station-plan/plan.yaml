@@ -1,4 +1,21 @@
 scripts:
+  ci:
+    description: Run all ci steps
+    args:
+      - name: tag
+        required: true
+    actions:
+      - step:
+          name: build
+          args:
+            tag: tag
+      - step:
+          name: test
+      - step:
+          name: deploy
+          args:
+            tag: tag
+
   build:
     description: Build the docker image
     args:
@@ -28,3 +45,9 @@ scripts:
       required: true
     actions:
     - shell: echo "Arg provided"
+  deploy:
+    description: Do a deploy (fake)
+    args:
+      - name: tag
+    actions:
+      - shell: echo "I would deploy $tag"

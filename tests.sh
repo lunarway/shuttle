@@ -196,6 +196,21 @@ test_run_repo_say_sha() {
   fi
 }
 
+test_run_moon_base_ci_steps() {
+  result=$(./shuttle -p examples/moon-base run ci tag=mytag)
+
+  if [[ ! "$result" =~ "--- Run build" ]]; then
+    fail "Expected output to contain 'Run build', but it was:\n$result"
+  fi
+
+  if [[ ! "$result" =~ "--- Run test" ]]; then
+    fail "Expected output to contain 'Run test', but it was:\n$result"
+  fi
+
+  if [[ ! "$result" =~ "--- Run deploy" ]]; then
+    fail "Expected output to contain 'Run deploy', but it was:\n$result"
+  fi
+}
 
 # Load and run shUnit2.
 . ./shunit2

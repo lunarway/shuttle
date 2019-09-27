@@ -44,8 +44,9 @@ func (a ShuttleScriptArgs) String() string {
 
 // ShuttleAction describes an action done by a shuttle script
 type ShuttleAction struct {
-	Shell      string `yaml:"shell"`
-	Dockerfile string `yaml:"dockerfile"`
+	Shell      string            `yaml:"shell"`
+	Dockerfile string            `yaml:"dockerfile"`
+	Step       ShuttleActionStep `yaml:"step"`
 }
 
 // ShuttlePlanConfiguration is a ShuttlePlan sub-element

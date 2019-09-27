@@ -11,7 +11,7 @@ import (
 	go_cmd "github.com/go-cmd/cmd"
 )
 
-// Build builds the docker image from a shuttle plan
+// executeShell runs a shell script action
 func executeShell(context ActionExecutionContext) {
 	//log.Printf("Exec: %s", context.Action.Shell)
 	//cmdAndArgs := strings.Split(s.Shell, " ")
