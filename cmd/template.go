@@ -20,7 +20,7 @@ type context struct {
 	ProjectPath string
 }
 
-var templateOutput string
+var templateOutput, leftDelimnArg, rightDelimnArg, delimnsArg string
 var templateCmd = &cobra.Command{
 	Use:   "template [template]",
 	Short: "Execute a template",
@@ -45,7 +45,12 @@ var templateCmd = &cobra.Command{
 			return fmt.Errorf("template `%s` not found", templateName)
 		}
 
-		tmpl, err := template.New(templateName).Funcs(tmplFuncs.GetFuncMap()).ParseFiles(templatePath)
+		leftDelimn, rightDelimn, err := parseDelimns(leftDelimnArg, rightDelimnArg, delimnsArg)
+		if err != nil {
+			return err
+		}
+
+		tmpl, err := template.New(templateName).Delims(leftDelimn, rightDelimn).Funcs(tmplFuncs.GetFuncMap()).ParseFiles(templatePath)
 		if err != nil {
 			uii.Errorln("Parse template file failed\nFile: %s", templatePath)
 			return err
@@ -82,6 +87,9 @@ var templateCmd = &cobra.Command{
 
 func init() {
 	templateCmd.Flags().StringVarP(&templateOutput, "output", "o", "", "Select filename to output file to in temporary directory")
+	templateCmd.Flags().StringVarP(&delimnsArg, "delimns", "", "", "Select delims for templating. Split by ','. If ',' is in the delimns, then use --left-delimn and --right-delimn instead")
+	templateCmd.Flags().StringVarP(&leftDelimnArg, "left-delimn", "", "", "Select delims for templating. Defaults to '{{'")
+	templateCmd.Flags().StringVarP(&rightDelimnArg, "right-delimn", "", "", "Select delims for templating. Defaults to '}}'")
 	rootCmd.AddCommand(templateCmd)
 }
 
@@ -101,4 +109,24 @@ func fileAvailable(name string) bool {
 		}
 	}
 	return true
+}
+
+func parseDelimns(leftDelimnArg, rightDelimnArg, delimnsArg string) (string, string, error) {
+	if (leftDelimnArg != "" && rightDelimnArg == "") || (leftDelimnArg == "" && rightDelimnArg != "") {
+		return "", "", fmt.Errorf("--left-delimn and --right-delimn should always be used together")
+	}
+	if delimnsArg != "" && (leftDelimnArg != "" || rightDelimnArg != "") {
+		return "", "", fmt.Errorf("either use --left-delimn and --right-delimn together or use --delimns")
+	}
+	if delimnsArg != "" {
+		parts := strings.Split(delimnsArg, ",")
+		if len(parts) != 2 {
+			return "", "", fmt.Errorf("--delimns should have exactly 2 values split by ',' but value was '%s'", delimnsArg)
+		}
+		return parts[0], parts[1], nil
+	}
+	if leftDelimnArg != "" && rightDelimnArg != "" {
+		return leftDelimnArg, rightDelimnArg, nil
+	}
+	return "{{", "}}", nil
 }

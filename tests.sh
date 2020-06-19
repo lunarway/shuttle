@@ -125,7 +125,6 @@ test_can_check_variable_doesnt_exist_with_stdout() {
   fi
 }
 
-
 test_can_check_if_script_exists() {
   ./shuttle -p examples/moon-base has --script build 2>&1
 }
@@ -135,10 +134,9 @@ test_can_check_if_script_does_not_exist() {
 }
 
 test_can_execute_shuttle_version_without_error() {
-  ./shuttle version &> /dev/null
-  ./shuttle version --commit &> /dev/null
+  ./shuttle version &>/dev/null
+  ./shuttle version --commit &>/dev/null
 }
-
 
 test_run_shell_error_outputs_exit_code() {
   assertErrorCode 4 -p examples/moon-base run crash
@@ -168,6 +166,11 @@ test_template_local_path() {
   assertErrorCode 0 -p examples/moon-base template ../custom-template.tmpl -o Dockerfile-custom
 }
 
+test_template_local_path_alternate_delimns() {
+  result=$(./shuttle -p examples/moon-base template ../custom-template-alternate-delimns.tmpl --delimns ">>,<<")
+  assertEquals "FROM earth-united/moon-base" "$result"
+}
+
 test_run_repo_say_branch() {
   result=$(./shuttle -p examples/repo-project-branched run say)
   if [[ ! "$result" =~ "something clever" ]]; then
@@ -195,7 +198,6 @@ test_run_repo_say_sha() {
     fail "Expected output to contain 'something minor', but it was:\n$result"
   fi
 }
-
 
 # Load and run shUnit2.
 . ./shunit2
