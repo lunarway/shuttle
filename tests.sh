@@ -166,8 +166,8 @@ test_template_local_path() {
   assertErrorCode 0 -p examples/moon-base template ../custom-template.tmpl -o Dockerfile-custom
 }
 
-test_template_local_path_alternate_delimns() {
-  result=$(./shuttle -p examples/moon-base template ../custom-template-alternate-delimns.tmpl --delimns ">>,<<")
+test_template_local_path_alternate_delims() {
+  result=$(./shuttle -p examples/moon-base template ../custom-template-alternate-delims.tmpl --delims ">>,<<")
   assertEquals "FROM earth-united/moon-base" "$result"
 }
 
