@@ -20,7 +20,7 @@ type context struct {
 	ProjectPath string
 }
 
-var templateOutput string
+var templateOutput, leftDelimArg, rightDelimArg, delimsArg string
 var templateCmd = &cobra.Command{
 	Use:   "template [template]",
 	Short: "Execute a template",
@@ -45,7 +45,12 @@ var templateCmd = &cobra.Command{
 			return fmt.Errorf("template `%s` not found", templateName)
 		}
 
-		tmpl, err := template.New(templateName).Funcs(tmplFuncs.GetFuncMap()).ParseFiles(templatePath)
+		leftDelim, rightDelim, err := parseDelims(leftDelimArg, rightDelimArg, delimsArg)
+		if err != nil {
+			return err
+		}
+
+		tmpl, err := template.New(templateName).Delims(leftDelim, rightDelim).Funcs(tmplFuncs.GetFuncMap()).ParseFiles(templatePath)
 		if err != nil {
 			uii.Errorln("Parse template file failed\nFile: %s", templatePath)
 			return err
@@ -82,6 +87,9 @@ var templateCmd = &cobra.Command{
 
 func init() {
 	templateCmd.Flags().StringVarP(&templateOutput, "output", "o", "", "Select filename to output file to in temporary directory")
+	templateCmd.Flags().StringVarP(&delimsArg, "delims", "", "", "Select delims for templating. Split by ','. If ',' is in the delims, then use --left-delim and --right-delim instead")
+	templateCmd.Flags().StringVarP(&leftDelimArg, "left-delim", "", "", "Select delims for templating. Defaults to '{{'")
+	templateCmd.Flags().StringVarP(&rightDelimArg, "right-delim", "", "", "Select delims for templating. Defaults to '}}'")
 	rootCmd.AddCommand(templateCmd)
 }
 
@@ -101,4 +109,24 @@ func fileAvailable(name string) bool {
 		}
 	}
 	return true
+}
+
+func parseDelims(leftDelimArg, rightDelimArg, delimsArg string) (string, string, error) {
+	if (leftDelimArg != "" && rightDelimArg == "") || (leftDelimArg == "" && rightDelimArg != "") {
+		return "", "", fmt.Errorf("--left-delim and --right-delim should always be used together")
+	}
+	if delimsArg != "" && (leftDelimArg != "" || rightDelimArg != "") {
+		return "", "", fmt.Errorf("either use --left-delim and --right-delim together or use --delims")
+	}
+	if delimsArg != "" {
+		parts := strings.Split(delimsArg, ",")
+		if len(parts) != 2 {
+			return "", "", fmt.Errorf("--delims should have exactly 2 values split by ',' but value was '%s'", delimsArg)
+		}
+		return parts[0], parts[1], nil
+	}
+	if leftDelimArg != "" && rightDelimArg != "" {
+		return leftDelimArg, rightDelimArg, nil
+	}
+	return "{{", "}}", nil
 }
