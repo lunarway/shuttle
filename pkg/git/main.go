@@ -134,22 +134,39 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 }
 
 func RunGitPlanCommand(command string, plan string, uii ui.UI) {
+
 	cmdOptions := go_cmd.Options{
+		Buffered:  false,
 		Streaming: true,
 	}
 	execCmd := go_cmd.NewCmdOptions(cmdOptions, "sh", "-c", "cd '"+plan+"'; git "+command)
 	execCmd.Env = os.Environ()
+
+	doneChan := make(chan struct{})
 	go func() {
-		for {
+		defer close(doneChan)
+
+		for execCmd.Stdout != nil || execCmd.Stderr != nil {
 			select {
-			case line := <-execCmd.Stdout:
+			case line, open := <-execCmd.Stdout:
+				if !open {
+					execCmd.Stdout = nil
+					continue
+				}
 				uii.Infoln("%s", line)
-			case line := <-execCmd.Stderr:
+			case line, open := <-execCmd.Stderr:
+				if !open {
+					execCmd.Stderr = nil
+					continue
+				}
 				uii.Infoln("%s", line)
 			}
 		}
 	}()
+
 	status := <-execCmd.Start()
+	<-doneChan
+
 	if status.Exit > 0 {
 		os.Exit(status.Exit)
 	}
