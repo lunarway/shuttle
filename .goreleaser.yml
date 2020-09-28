@@ -4,7 +4,8 @@ builds:
   ldflags:
   - "-s -w -X github.com/lunarway/shuttle/cmd.version={{.Version}} -X github.com/lunarway/shuttle/cmd.commit={{.Commit}}"
 
-archive:
+archives:
+- id: archives
   format: binary
   name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
   replacements:
