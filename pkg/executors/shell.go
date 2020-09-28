@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/lunarway/shuttle/pkg/config"
 
@@ -38,12 +37,22 @@ func executeShell(context ActionExecutionContext) {
 	execCmd.Env = append(execCmd.Env, fmt.Sprintf("PATH=%s", shuttlePath+string(os.PathListSeparator)+os.Getenv("PATH")))
 	execCmd.Env = append(execCmd.Env, fmt.Sprintf("SHUTTLE_PLANS_ALREADY_VALIDATED=%s", context.ScriptContext.Project.LocalPlanPath))
 
+	doneChan := make(chan struct{})
 	go func() {
-		for {
+		defer close(doneChan)
+		for execCmd.Stdout != nil || execCmd.Stderr != nil {
 			select {
-			case line := <-execCmd.Stdout:
+			case line, open := <-execCmd.Stdout:
+				if !open {
+					execCmd.Stdout = nil
+					continue
+				}
 				context.ScriptContext.Project.UI.Infoln("%s", line)
-			case line := <-execCmd.Stderr:
+			case line, open := <-execCmd.Stderr:
+				if !open {
+					execCmd.Stderr = nil
+					continue
+				}
 				context.ScriptContext.Project.UI.Errorln("%s", line)
 			}
 		}
@@ -52,11 +61,7 @@ func executeShell(context ActionExecutionContext) {
 	// Run and wait for Cmd to return, discard Status
 	context.ScriptContext.Project.UI.Titleln("shell: %s", context.Action.Shell)
 	status := <-execCmd.Start()
-
-	// Cmd has finished but wait for goroutine to print all lines
-	for len(execCmd.Stdout) > 0 || len(execCmd.Stderr) > 0 {
-		time.Sleep(10 * time.Millisecond)
-	}
+	<-doneChan
 
 	if status.Exit > 0 {
 		context.ScriptContext.Project.UI.ExitWithErrorCode(4, "Failed executing script `%s`: shell script `%s`\nExit code: %v", context.ScriptContext.ScriptName, context.Action.Shell, status.Exit)
