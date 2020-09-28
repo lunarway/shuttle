@@ -7,7 +7,6 @@ import (
 	"path"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/lunarway/shuttle/pkg/ui"
 
@@ -211,20 +210,28 @@ func gitCmd(command string, dir string, uii ui.UI) {
 	}
 	execCmd := go_cmd.NewCmdOptions(cmdOptions, "sh", "-c", "cd '"+dir+"'; git "+command)
 	execCmd.Env = os.Environ()
+	doneChan := make(chan struct{})
 	go func() {
-		for {
+		defer close(doneChan)
+		for execCmd.Stdout != nil || execCmd.Stderr != nil {
 			select {
-			case line := <-execCmd.Stdout:
+			case line, open := <-execCmd.Stdout:
+				if !open {
+					execCmd.Stdout = nil
+					continue
+				}
 				uii.Verboseln("git> %s", line)
-			case line := <-execCmd.Stderr:
+			case line, open := <-execCmd.Stderr:
+				if !open {
+					execCmd.Stderr = nil
+					continue
+				}
 				uii.Verboseln("git> %s", line)
 			}
 		}
 	}()
 	status := <-execCmd.Start()
-	for len(execCmd.Stdout) > 0 || len(execCmd.Stderr) > 0 {
-		time.Sleep(10 * time.Millisecond)
-	}
+	<-doneChan
 
 	if status.Exit > 0 {
 		uii.ExitWithErrorCode(4, "Failed executing git command `%s` in `%s`. Got exit code: %v\n%s", command, dir, status.Exit, strings.Join(status.Stderr, "\n"))
