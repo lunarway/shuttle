@@ -5,7 +5,7 @@ require (
 	github.com/Masterminds/sprig v2.16.0+incompatible
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/go-cmd/cmd v1.0.3
+	github.com/go-cmd/cmd v1.2.0
 	github.com/go-test/deep v1.0.1 // indirect
 	github.com/google/uuid v1.0.0 // indirect
 	github.com/huandu/xstrings v1.2.0 // indirect
