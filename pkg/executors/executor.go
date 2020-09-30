@@ -24,13 +24,13 @@ type ActionExecutionContext struct {
 }
 
 // Execute is the command executor for the plan files
-func Execute(p config.ShuttleProjectContext, command string, args []string) {
+func Execute(p config.ShuttleProjectContext, command string, args []string, validateArgs bool) {
 	script, ok := p.Scripts[command]
 	if !ok {
 		p.UI.ExitWithErrorCode(2, "Script '%s' not found", command)
 	}
 
-	namedArgs := validateArguments(p, command, script.Args, args)
+	namedArgs := validateArguments(p, command, script.Args, args, validateArgs)
 
 	scriptContext := ScriptExecutionContext{
 		ScriptName: command,
@@ -53,13 +53,15 @@ func Execute(p config.ShuttleProjectContext, command string, args []string) {
 // scriptArgs.
 //
 // All detectable constraints are checked before reporting to the UI.
-func validateArguments(p config.ShuttleProjectContext, command string, scriptArgs []config.ShuttleScriptArgs, args []string) map[string]string {
+func validateArguments(p config.ShuttleProjectContext, command string, scriptArgs []config.ShuttleScriptArgs, args []string, validateArgs bool) map[string]string {
 	var validationErrors []validationError
 
 	namedArgs, parsingErrors := validateArgFormat(args)
 	validationErrors = append(validationErrors, parsingErrors...)
-	validationErrors = append(validationErrors, validateRequiredArgs(scriptArgs, namedArgs)...)
-	validationErrors = append(validationErrors, validateUnknownArgs(scriptArgs, namedArgs)...)
+	if validateArgs {
+		validationErrors = append(validationErrors, validateRequiredArgs(scriptArgs, namedArgs)...)
+		validationErrors = append(validationErrors, validateUnknownArgs(scriptArgs, namedArgs)...)
+	}
 	if len(validationErrors) != 0 {
 		sortValidationErrors(validationErrors)
 		var s strings.Builder
