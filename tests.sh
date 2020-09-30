@@ -2,6 +2,12 @@
 
 go build
 
+# exit right away if build fails
+buildExitCode=$?
+if [[ $buildExitCode -ne 0 ]]; then
+  exit $buildExitCode
+fi
+
 function assertRun() {
   result=$(./shuttle "$@" 2>&1)
   result_status=$?
@@ -154,6 +160,23 @@ test_run_shell_error_outputs_missing_arg() {
   assertErrorCode 1 -p examples/moon-base run required-arg
   if [[ ! "$result" =~ "required-arg" ]]; then
     fail "Expected output to contain the script name 'required-arg', but it was:\n$result"
+  fi
+}
+
+test_run_shell_error_outputs_missing_arg_disabled_validation() {
+  assertErrorCode 0 -p examples/moon-base run --validate=false required-arg
+  if [[ "$result" =~ "required-arg" ]]; then
+    fail "Expected output not to contain the script name 'required-arg', but it was:\n$result"
+  fi
+}
+
+test_run_shell_error_outputs_parsing_argument_error_with_disabled_validation() {
+  assertErrorCode 1 -p examples/moon-base run --validate=false required-arg a
+  if [[ ! "$result" =~ "not <argument>=<value>" ]]; then
+    fail "Expected output to contain argument format error, but it was:\n$result"
+  fi
+  if [[ "$result" =~ "not supplied but is required" ]]; then
+    fail "Expected validation of required arguments to be skipped, but it was not:\n$result"
   fi
 }
 
