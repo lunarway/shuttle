@@ -1,0 +1,5 @@
+{{ define "user" -}}
+Name: {{ .name }}
+Age: {{ .age }}
+Address: {{ template "address" .address }}
+{{ end }}

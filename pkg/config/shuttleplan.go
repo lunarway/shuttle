@@ -50,7 +50,8 @@ type ShuttleAction struct {
 
 // ShuttlePlanConfiguration is a ShuttlePlan sub-element
 type ShuttlePlanConfiguration struct {
-	Scripts map[string]ShuttlePlanScript `yaml:"scripts"`
+	Scripts          map[string]ShuttlePlanScript `yaml:"scripts"`
+	TemplateIncludes []string                     `yaml:"template-includes"`
 }
 
 // ShuttlePlan struct describes a plan
@@ -85,7 +86,7 @@ func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string
 		uii.Infoln("Using overloaded plan %v", planArgument)
 		return FetchPlan(getPlanFromPlanArgument(planArgument), projectPath, localShuttleDirectoryPath, uii, skipGitPlanPulling, "")
 	}
-	
+
 	switch {
 	case plan == "":
 		uii.Verboseln("Using no plan")

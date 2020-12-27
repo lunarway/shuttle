@@ -1,0 +1,8 @@
+template-includes:
+  - includes/user.tmpl
+  - includes/address.tmpl
+scripts:
+  test:
+    description: Run test for the project
+    actions:
+      - shell: go test

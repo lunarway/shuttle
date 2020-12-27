@@ -1,0 +1,15 @@
+plan: "../template-plan"
+vars:
+  docker:
+    image: earth-united/moon-base
+  users:
+  - name: Joe
+    age: 42
+    address:
+      road: Hillside Rd
+      number: 151
+  - name: Jane
+    age: 30
+    address:
+      road: Lakeville Avenue
+      number: 12

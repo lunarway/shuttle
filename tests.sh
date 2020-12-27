@@ -222,5 +222,9 @@ test_run_repo_say_sha() {
   fi
 }
 
+test_template_with_includes() {
+  assertErrorCode 0 -p examples/template-project template templates/use-template.tmpl -o use-template.txt
+}
+
 # Load and run shUnit2.
 . ./shunit2

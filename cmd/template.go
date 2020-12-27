@@ -50,7 +50,20 @@ var templateCmd = &cobra.Command{
 			return err
 		}
 
-		tmpl, err := template.New(templateName).Delims(leftDelim, rightDelim).Funcs(tmplFuncs.GetFuncMap()).ParseFiles(templatePath)
+		tmpl := template.New(templateName).Delims(leftDelim, rightDelim).Funcs(tmplFuncs.GetFuncMap())
+		for _, incl := range projectContext.Plan.TemplateIncludes {
+			includePath := resolveFirstPath([]string{
+				path.Join(projectContext.ProjectPath, incl),
+				path.Join(projectContext.LocalPlanPath, incl),
+			})
+			tmpl, err = tmpl.ParseGlob(includePath)
+			if err != nil {
+				uii.Errorln("Parse template include failed\nInclude: %s", incl)
+				return err
+			}
+		}
+
+		tmpl, err = tmpl.ParseFiles(templatePath)
 		if err != nil {
 			uii.Errorln("Parse template file failed\nFile: %s", templatePath)
 			return err

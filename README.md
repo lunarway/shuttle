@@ -25,6 +25,7 @@
 - [Installing](#installing)
 - [Functions](#functions)
 - [Release History](#release-history)
+- [Template Includes](#template-includes)
 
 ## What is shuttle?
 `shuttle` is a CLI for handling shared build and deploy tools between many projects no matter what technologies the project is using.
@@ -89,6 +90,7 @@ $ shuttle run build tag=v1
 * Create any script you like in the plan
 * Overwrite scripts in local projects when they defer from the plan
 * Write templates in plans and overwrite them in projects when they defer
+* Template includes in the Plan  
 * ...
 
 ## Documentation
@@ -212,3 +214,10 @@ Because of this they ignore errors and some YAML documents canont be parsed.
 
 See the [releases](https://github.com/lunarway/shuttle/releases) for more
 information on changes between releases.
+
+### Template Includes
+
+The Shuttle `plan.yaml` file may contain a `template-includes` root element as a list of paths to files.
+If includes, this is expected to be Golang templates that will be included.
+
+See [this example](examples/template-plan/plan.yaml).
