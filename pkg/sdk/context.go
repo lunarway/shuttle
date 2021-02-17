@@ -10,10 +10,10 @@ import (
 
 type ShuttleContext struct {
 	Variables                 config.DynamicYaml `yaml:"vars"` //temporarily include a dynamic representation of the variables here so the go-based plans can use this for templating so we're backwards compatible with the existing templates (for the time being)
-	ProjectPath               string
-	LocalPlanPath             string
-	LocalShuttleDirectoryPath string
-	TempDirectoryPath         string
+	ProjectPath               string `yaml:"-"`
+	LocalPlanPath             string `yaml:"-"`
+	LocalShuttleDirectoryPath string `yaml:"-"`
+	TempDirectoryPath         string `yaml:"-"`
 }
 
 func LoadShuttleContext(projectPath, localPlanPath string) (ShuttleContext, error) {
