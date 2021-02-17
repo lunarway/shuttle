@@ -13,7 +13,7 @@ import (
 type TemplateContext struct {
 	Vars        interface{}
 	Args        map[string]string
-	PlanPath 	string
+	PlanPath    string
 	ProjectPath string
 }
 
@@ -78,15 +78,17 @@ func Generate(templatePath, templateName, outputFilepath string, context Templat
 func GenerateManifest(templateFilename, outputFilename, env string, project ShuttleContext, args map[string]string) error {
 
 	templateFilepath, err := resolveTemplatePath(project, templateFilename)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	outputFolder := path.Join(project.TempDirectoryPath, "k8s-config", env)
 	os.MkdirAll(outputFolder, os.ModePerm)
 
 	context := TemplateContext{
-		Vars: project.Variables,
-		Args: args,
-		PlanPath: project.LocalPlanPath,
+		Vars:        project.Variables,
+		Args:        args,
+		PlanPath:    project.LocalPlanPath,
 		ProjectPath: project.ProjectPath,
 	}
 
@@ -98,14 +100,16 @@ func GenerateDockerfile(dockerfile string, project ShuttleContext, args map[stri
 
 	templateName := fmt.Sprintf("%s.tmpl", dockerfile)
 	templatePath, err := resolveTemplatePath(project, templateName)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	outputFolder := project.TempDirectoryPath
 
 	context := TemplateContext{
-		Vars: project.Variables,
-		Args: args,
-		PlanPath: project.LocalPlanPath,
+		Vars:        project.Variables,
+		Args:        args,
+		PlanPath:    project.LocalPlanPath,
 		ProjectPath: project.ProjectPath,
 	}
 

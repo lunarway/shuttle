@@ -39,8 +39,7 @@ func LoadShuttleContext(projectPath, localPlanPath string) (ShuttleContext, erro
 func LoadShuttleYaml(projectPath string) ([]byte, error) {
 	file, err := ioutil.ReadFile(path.Join(projectPath, "shuttle.yaml"))
 	if err != nil {
-		return nil, fmt.Errorf ("Failed to load shuttle configuration. \n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available. %w", err)
+		return nil, fmt.Errorf("Failed to load shuttle configuration. \n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available. %w", err)
 	}
 	return file, nil
 }
-
