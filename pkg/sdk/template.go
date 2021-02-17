@@ -35,7 +35,7 @@ func fileAvailable(name string) bool {
 	return true
 }
 
-func resolveTemplatePath(project ShuttleContext, templateName string) (string, error) {
+func ResolveTemplatePath(project ShuttleContext, templateName string) (string, error) {
 	templatePath := resolveFirstPath([]string{
 		path.Join(project.ProjectPath, "templates", templateName),
 		path.Join(project.ProjectPath, templateName),
@@ -72,46 +72,4 @@ func Generate(templatePath, templateName, outputFilepath string, context Templat
 		return err
 	}
 	return nil
-}
-
-//convenience method for generating k8s manifests
-func GenerateManifest(templateFilename, outputFilename, env string, project ShuttleContext, args map[string]string) error {
-
-	templateFilepath, err := resolveTemplatePath(project, templateFilename)
-	if err != nil {
-		return err
-	}
-
-	outputFolder := path.Join(project.TempDirectoryPath, "k8s-config", env)
-	os.MkdirAll(outputFolder, os.ModePerm)
-
-	context := TemplateContext{
-		Vars:        project.Variables,
-		Args:        args,
-		PlanPath:    project.LocalPlanPath,
-		ProjectPath: project.ProjectPath,
-	}
-
-	return Generate(templateFilepath, templateFilename, path.Join(outputFolder, outputFilename), context, "{{", "}}")
-}
-
-//convenience method for generating docker files
-func GenerateDockerfile(dockerfile string, project ShuttleContext, args map[string]string) error {
-
-	templateName := fmt.Sprintf("%s.tmpl", dockerfile)
-	templatePath, err := resolveTemplatePath(project, templateName)
-	if err != nil {
-		return err
-	}
-
-	outputFolder := project.TempDirectoryPath
-
-	context := TemplateContext{
-		Vars:        project.Variables,
-		Args:        args,
-		PlanPath:    project.LocalPlanPath,
-		ProjectPath: project.ProjectPath,
-	}
-
-	return Generate(templatePath, dockerfile, path.Join(outputFolder, dockerfile), context, "{{", "}}")
 }
