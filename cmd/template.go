@@ -21,6 +21,7 @@ type context struct {
 }
 
 var templateOutput, leftDelimArg, rightDelimArg, delimsArg string
+var ignoreProjectOverrides bool
 var templateCmd = &cobra.Command{
 	Use:   "template [template]",
 	Short: "Execute a template",
@@ -35,12 +36,24 @@ var templateCmd = &cobra.Command{
 			namedArgs[parts[0]] = parts[1]
 		}
 
-		templatePath := resolveFirstPath([]string{
-			path.Join(projectContext.ProjectPath, "templates", templateName),
-			path.Join(projectContext.ProjectPath, templateName),
+		planPaths := []string{
 			path.Join(projectContext.LocalPlanPath, "templates", templateName),
 			path.Join(projectContext.LocalPlanPath, templateName),
-		})
+		}
+
+		projectPaths := []string{
+			path.Join(projectContext.ProjectPath, "templates", templateName),
+			path.Join(projectContext.ProjectPath, templateName),
+		}
+
+		var paths []string
+		if ignoreProjectOverrides {
+			paths = planPaths
+		} else {
+			paths = append(projectPaths, planPaths...)
+		}
+
+		templatePath := resolveFirstPath(paths)
 		if templatePath == "" {
 			return fmt.Errorf("template `%s` not found", templateName)
 		}
@@ -90,6 +103,7 @@ func init() {
 	templateCmd.Flags().StringVarP(&delimsArg, "delims", "", "", "Select delims for templating. Split by ','. If ',' is in the delims, then use --left-delim and --right-delim instead")
 	templateCmd.Flags().StringVarP(&leftDelimArg, "left-delim", "", "", "Select delims for templating. Defaults to '{{'")
 	templateCmd.Flags().StringVarP(&rightDelimArg, "right-delim", "", "", "Select delims for templating. Defaults to '}}'")
+	templateCmd.Flags().BoolVarP(&ignoreProjectOverrides, "ignore-project-overrides", "", false, "Set flag to ignore template files located in the project folder")
 	rootCmd.AddCommand(templateCmd)
 }
 
