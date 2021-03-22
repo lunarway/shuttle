@@ -6,12 +6,13 @@ import (
 	"path/filepath"
 
 	"github.com/lunarway/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/errors"
 
 	go_cmd "github.com/go-cmd/cmd"
 )
 
 // Build builds the docker image from a shuttle plan
-func executeShell(context ActionExecutionContext) {
+func executeShell(context ActionExecutionContext) error {
 	//log.Printf("Exec: %s", context.Action.Shell)
 	//cmdAndArgs := strings.Split(s.Shell, " ")
 	//cmd := cmdAndArgs[0]
@@ -64,8 +65,9 @@ func executeShell(context ActionExecutionContext) {
 	<-doneChan
 
 	if status.Exit > 0 {
-		context.ScriptContext.Project.UI.ExitWithErrorCode(4, "Failed executing script `%s`: shell script `%s`\nExit code: %v", context.ScriptContext.ScriptName, context.Action.Shell, status.Exit)
+		return errors.NewExitCode(4, "Failed executing script `%s`: shell script `%s`\nExit code: %v", context.ScriptContext.ScriptName, context.Action.Shell, status.Exit)
 	}
+	return nil
 }
 
 func init() {

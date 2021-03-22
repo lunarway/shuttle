@@ -13,7 +13,8 @@ var (
 		Short: "Run a git command for the plan",
 		Run: func(cmd *cobra.Command, args []string) {
 			skipGitPlanPulling = true
-			context := getProjectContext()
+			context, err := getProjectContext()
+			checkError(err)
 			git.RunGitPlanCommand(strings.Join(args, " "), context.LocalPlanPath, context.UI)
 		},
 	}

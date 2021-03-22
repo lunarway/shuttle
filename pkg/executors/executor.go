@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/lunarway/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/errors"
 )
 
 // ScriptExecutionContext gives context to the execution of a plan script
@@ -24,13 +25,16 @@ type ActionExecutionContext struct {
 }
 
 // Execute is the command executor for the plan files
-func Execute(p config.ShuttleProjectContext, command string, args []string, validateArgs bool) {
+func Execute(p config.ShuttleProjectContext, command string, args []string, validateArgs bool) error {
 	script, ok := p.Scripts[command]
 	if !ok {
-		p.UI.ExitWithErrorCode(2, "Script '%s' not found", command)
+		return errors.NewExitCode(2, "Script '%s' not found", command)
 	}
 
-	namedArgs := validateArguments(p, command, script.Args, args, validateArgs)
+	namedArgs, err := validateArguments(p, command, script.Args, args, validateArgs)
+	if err != nil {
+		return err
+	}
 
 	scriptContext := ScriptExecutionContext{
 		ScriptName: command,
@@ -45,15 +49,19 @@ func Execute(p config.ShuttleProjectContext, command string, args []string, vali
 			Action:        action,
 			ActionIndex:   actionIndex,
 		}
-		executeAction(actionContext)
+		err := executeAction(actionContext)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // validateArguments parses and validates args against available arguments in
 // scriptArgs.
 //
 // All detectable constraints are checked before reporting to the UI.
-func validateArguments(p config.ShuttleProjectContext, command string, scriptArgs []config.ShuttleScriptArgs, args []string, validateArgs bool) map[string]string {
+func validateArguments(p config.ShuttleProjectContext, command string, scriptArgs []config.ShuttleScriptArgs, args []string, validateArgs bool) (map[string]string, error) {
 	var validationErrors []validationError
 
 	namedArgs, parsingErrors := validateArgFormat(args)
@@ -70,9 +78,9 @@ func validateArguments(p config.ShuttleProjectContext, command string, scriptArg
 			fmt.Fprintf(&s, " %s\n", e)
 		}
 		fmt.Fprintf(&s, "\n%s", expectedArgumentsHelp(command, scriptArgs))
-		p.UI.ExitWithError(s.String())
+		return nil, errors.NewExitCode(2, s.String())
 	}
-	return namedArgs
+	return namedArgs, nil
 }
 
 type validationError struct {
@@ -154,11 +162,10 @@ func expectedArgumentsHelp(command string, args []config.ShuttleScriptArgs) stri
 	return s.String()
 }
 
-func executeAction(context ActionExecutionContext) {
+func executeAction(context ActionExecutionContext) error {
 	for _, executor := range executors {
 		if executor.match(context.Action) {
-			executor.execute(context)
-			return
+			return executor.execute(context)
 		}
 	}
 
@@ -166,7 +173,7 @@ func executeAction(context ActionExecutionContext) {
 }
 
 type actionMatchFunc = func(config.ShuttleAction) bool
-type actionExecutionFunc = func(ActionExecutionContext)
+type actionExecutionFunc = func(ActionExecutionContext) error
 
 type actionExecutor struct {
 	match   actionMatchFunc

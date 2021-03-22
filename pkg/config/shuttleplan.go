@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"path"
@@ -8,9 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"fmt"
-	"os"
-
+	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/git"
 	"github.com/lunarway/shuttle/pkg/ui"
 	"gopkg.in/yaml.v2"
@@ -80,16 +79,16 @@ func (p *ShuttlePlanConfiguration) Load(planPath string) *ShuttlePlanConfigurati
 }
 
 // FetchPlan so it exists locally and return path to that plan
-func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool, planArgument string) string {
+func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool, planArgument string) (string, error) {
 	if isPlanArgumentAPlan(planArgument) {
 		uii.Infoln("Using overloaded plan %v", planArgument)
 		return FetchPlan(getPlanFromPlanArgument(planArgument), projectPath, localShuttleDirectoryPath, uii, skipGitPlanPulling, "")
 	}
-	
+
 	switch {
 	case plan == "":
 		uii.Verboseln("Using no plan")
-		return ""
+		return "", nil
 	case git.IsGitPlan(plan):
 		uii.Verboseln("Using git plan at '%s'", plan)
 		return git.GetGitPlan(plan, localShuttleDirectoryPath, uii, skipGitPlanPulling, planArgument)
@@ -97,12 +96,13 @@ func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string
 		panic(fmt.Sprintf("Plan '%v' is not valid: non-git http/https is not supported yet", plan))
 	case isFilePath(plan, true):
 		uii.Verboseln("Using local plan at '%s'", plan)
-		return plan
+		return plan, nil
 	case isFilePath(plan, false):
 		uii.Verboseln("Using local plan at '%s'", plan)
-		return path.Join(projectPath, plan)
+		return path.Join(projectPath, plan), nil
+	default:
+		return "", errors.NewExitCode(2, "Unknown plan path '%s'", plan)
 	}
-	panic("Unknown plan path '" + plan + "'")
 }
 
 func isFilePath(path string, matchOnlyAbs bool) bool {
@@ -115,14 +115,4 @@ func isMatching(r string, content string) bool {
 		panic(err)
 	}
 	return match
-}
-
-// CheckIfError should be used to naively panics if an error is not nil.
-func CheckIfError(err error) {
-	if err == nil {
-		return
-	}
-
-	fmt.Printf("\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf("error: %s", err))
-	os.Exit(1)
 }

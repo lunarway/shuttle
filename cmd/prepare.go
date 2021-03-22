@@ -10,7 +10,8 @@ var (
 		Short: "Load external resources",
 		Long:  `Load external resources as a preparation step, before starting to use shuttle`,
 		Run: func(cmd *cobra.Command, args []string) {
-			getProjectContext()
+			_, err := getProjectContext()
+			checkError(err)
 		},
 	}
 )

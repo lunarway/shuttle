@@ -14,8 +14,11 @@ var runCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var commandName = args[0]
-		context := getProjectContext()
-		executors.Execute(context, commandName, args[1:], validateArgs)
+		context, err := getProjectContext()
+		checkError(err)
+
+		err = executors.Execute(context, commandName, args[1:], validateArgs)
+		checkError(err)
 	},
 }
 
@@ -31,12 +34,11 @@ func init() {
 			runCmd.Usage()
 			return
 		}
-		context := getProjectContext()
-		err := executors.Help(context.Scripts, scripts[0], os.Stdout, flagTemplate)
-		if err != nil {
-			context.UI.ExitWithError(err.Error())
-			return
-		}
+		context, err := getProjectContext()
+		checkError(err)
+
+		err = executors.Help(context.Scripts, scripts[0], os.Stdout, flagTemplate)
+		checkError(err)
 	})
 	runCmd.Flags().StringVar(&flagTemplate, "template", "", "Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].")
 	runCmd.Flags().BoolVar(&validateArgs, "validate", true, "Validate arguments against script definition in plan and exit with 1 on unknown or missing arguments")

@@ -44,21 +44,23 @@ Available fields are:
 			TempDirectoryPath string
 		}
 		uii = uii.SetUserLevel(ui.LevelError)
-		context := getProjectContext()
+		context, err := getProjectContext()
+		checkError(err)
+
 		var templ string
 		if planFlagTemplate != "" {
 			templ = planFlagTemplate
 		} else {
 			templ = planDefaultTempl
 		}
-		err := ui.Template(os.Stdout, "plan", templ, templData{
+		err = ui.Template(os.Stdout, "plan", templ, templData{
 			Plan:              context.Config.Plan,
 			PlanRaw:           context.Config.PlanRaw,
 			LocalPlanPath:     context.LocalPlanPath,
 			ProjectPath:       context.ProjectPath,
 			TempDirectoryPath: context.TempDirectoryPath,
 		})
-		context.UI.CheckIfError(err)
+		checkError(err)
 	},
 }
 

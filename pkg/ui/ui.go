@@ -80,22 +80,3 @@ func (ui *UI) Errorln(format string, args ...interface{}) {
 		fmt.Fprintf(os.Stderr, "\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf(format, args...))
 	}
 }
-
-// ExitWithError doc
-func (ui *UI) ExitWithError(format string, args ...interface{}) {
-	ui.ExitWithErrorCode(1, format, args...)
-}
-
-// ExitWithErrorCode doc
-func (ui *UI) ExitWithErrorCode(code int, format string, args ...interface{}) {
-	ui.Errorln("shuttle failed\n"+format, args...)
-	os.Exit(code)
-}
-
-// CheckIfError doc
-func (ui *UI) CheckIfError(err error) {
-	if err == nil {
-		return
-	}
-	ui.ExitWithError("error: %s", err)
-}
