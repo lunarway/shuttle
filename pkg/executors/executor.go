@@ -1,6 +1,7 @@
 package executors
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -25,7 +26,7 @@ type ActionExecutionContext struct {
 }
 
 // Execute is the command executor for the plan files
-func Execute(p config.ShuttleProjectContext, command string, args []string, validateArgs bool) error {
+func Execute(ctx context.Context, p config.ShuttleProjectContext, command string, args []string, validateArgs bool) error {
 	script, ok := p.Scripts[command]
 	if !ok {
 		return errors.NewExitCode(2, "Script '%s' not found", command)
@@ -49,7 +50,7 @@ func Execute(p config.ShuttleProjectContext, command string, args []string, vali
 			Action:        action,
 			ActionIndex:   actionIndex,
 		}
-		err := executeAction(actionContext)
+		err := executeAction(ctx, actionContext)
 		if err != nil {
 			return err
 		}
@@ -162,10 +163,10 @@ func expectedArgumentsHelp(command string, args []config.ShuttleScriptArgs) stri
 	return s.String()
 }
 
-func executeAction(context ActionExecutionContext) error {
+func executeAction(ctx context.Context, context ActionExecutionContext) error {
 	for _, executor := range executors {
 		if executor.match(context.Action) {
-			return executor.execute(context)
+			return executor.execute(ctx, context)
 		}
 	}
 
@@ -173,7 +174,7 @@ func executeAction(context ActionExecutionContext) error {
 }
 
 type actionMatchFunc = func(config.ShuttleAction) bool
-type actionExecutionFunc = func(ActionExecutionContext) error
+type actionExecutionFunc = func(context.Context, ActionExecutionContext) error
 
 type actionExecutor struct {
 	match   actionMatchFunc

@@ -6,3 +6,8 @@ vars:
     field:
       key: value
   run-as-root: false
+scripts:
+  serve:
+    description: Serve starts an nginx image as a long running process.
+    actions:
+    - shell: docker run --rm -i --name shuttle-nginx nginx

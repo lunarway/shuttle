@@ -8,7 +8,7 @@ require (
 	github.com/aokoli/goutils v1.0.1 // indirect
 	github.com/cli/safeexec v1.0.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/go-cmd/cmd v1.2.0
+	github.com/go-cmd/cmd v1.3.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.0.0 // indirect
 	github.com/huandu/xstrings v1.2.0 // indirect
