@@ -1,0 +1,5 @@
+scripts:
+  hello:
+    description: Say hello
+    actions:
+    - shell: echo "Hello world"
