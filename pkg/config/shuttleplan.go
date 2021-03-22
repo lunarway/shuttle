@@ -49,7 +49,8 @@ type ShuttleAction struct {
 
 // ShuttlePlanConfiguration is a ShuttlePlan sub-element
 type ShuttlePlanConfiguration struct {
-	Scripts map[string]ShuttlePlanScript `yaml:"scripts"`
+	Documentation string                       `yaml:"documentation"`
+	Scripts       map[string]ShuttlePlanScript `yaml:"scripts"`
 }
 
 // ShuttlePlan struct describes a plan
@@ -89,7 +90,7 @@ func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string
 	case plan == "":
 		uii.Verboseln("Using no plan")
 		return "", nil
-	case git.IsGitPlan(plan):
+	case git.IsPlan(plan):
 		uii.Verboseln("Using git plan at '%s'", plan)
 		return git.GetGitPlan(plan, localShuttleDirectoryPath, uii, skipGitPlanPulling, planArgument)
 	case isMatching("^http://|^https://", plan):

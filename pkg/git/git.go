@@ -14,21 +14,21 @@ import (
 	go_cmd "github.com/go-cmd/cmd"
 )
 
-type gitPlan struct {
-	isGitPlan  bool
-	protocol   string
-	user       string
-	host       string
-	repository string
-	head       string
+type Plan struct {
+	IsGitPlan  bool
+	Protocol   string
+	User       string
+	Host       string
+	Repository string
+	Head       string
 }
 
 var gitRegex = regexp.MustCompile(`^((git://((?P<user>[^@]+)@)?(?P<repository1>(?P<host>[^:]+):(?P<path>[^#]*)))|((?P<protocol>https)://(?P<repository2>.*\.git)))(#(?P<head>.*))?$`)
 
-func parseGitPlan(plan string) gitPlan {
+func ParsePlan(plan string) Plan {
 	if !gitRegex.MatchString(plan) {
-		return gitPlan{
-			isGitPlan: false,
+		return Plan{
+			IsGitPlan: false,
 		}
 	}
 
@@ -53,29 +53,29 @@ func parseGitPlan(plan string) gitPlan {
 		head = "master"
 	}
 
-	return gitPlan{
-		isGitPlan:  true,
-		protocol:   protocol,
-		user:       result["user"],
-		host:       result["host"],
-		repository: repository,
-		head:       head,
+	return Plan{
+		IsGitPlan:  true,
+		Protocol:   protocol,
+		User:       result["user"],
+		Host:       result["host"],
+		Repository: repository,
+		Head:       head,
 	}
 }
 
-// IsGitPlan returns true if specified plan is a git plan
-func IsGitPlan(plan string) bool {
-	parsedGitPlan := parseGitPlan(plan)
-	return parsedGitPlan.isGitPlan
+// IsPlan returns true if specified plan is a git plan
+func IsPlan(plan string) bool {
+	parsedGitPlan := ParsePlan(plan)
+	return parsedGitPlan.IsGitPlan
 }
 
 // GetGitPlan will pull git repository and return its path
 func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool, planArgument string) (string, error) {
-	parsedGitPlan := parseGitPlan(plan)
+	parsedGitPlan := ParsePlan(plan)
 
 	if strings.HasPrefix(planArgument, "#") {
-		parsedGitPlan.head = planArgument[1:]
-		uii.EmphasizeInfoln("Overload git plan branch/tag/sha with %v", parsedGitPlan.head)
+		parsedGitPlan.Head = planArgument[1:]
+		uii.EmphasizeInfoln("Overload git plan branch/tag/sha with %v", parsedGitPlan.Head)
 	}
 
 	planPath := path.Join(localShuttleDirectoryPath, "plan")
@@ -105,14 +105,14 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 			if err != nil {
 				return "", err
 			}
-			err = gitCmd(fmt.Sprintf("checkout %s", parsedGitPlan.head), planPath, uii)
+			err = gitCmd(fmt.Sprintf("checkout %s", parsedGitPlan.Head), planPath, uii)
 			if err != nil {
 				return "", err
 			}
 			status := getStatus(planPath)
 			if !status.isDetached {
-				uii.Infoln("Pulling latest plan changes on %v", parsedGitPlan.head)
-				err = gitCmd(fmt.Sprintf("pull origin %v", parsedGitPlan.head), planPath, uii)
+				uii.Infoln("Pulling latest plan changes on %v", parsedGitPlan.Head)
+				err = gitCmd(fmt.Sprintf("pull origin %v", parsedGitPlan.Head), planPath, uii)
 				if err != nil {
 					return "", err
 				}
@@ -130,16 +130,16 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 		}
 
 		var cloneArg string
-		if parsedGitPlan.protocol == "https" {
-			cloneArg = "https://" + parsedGitPlan.repository
-		} else if parsedGitPlan.protocol == "ssh" {
-			cloneArg = parsedGitPlan.user + "@" + parsedGitPlan.repository
+		if parsedGitPlan.Protocol == "https" {
+			cloneArg = "https://" + parsedGitPlan.Repository
+		} else if parsedGitPlan.Protocol == "ssh" {
+			cloneArg = parsedGitPlan.User + "@" + parsedGitPlan.Repository
 		} else {
-			panic(fmt.Sprintf("Unknown protocol '%s'", parsedGitPlan.protocol))
+			panic(fmt.Sprintf("Unknown protocol '%s'", parsedGitPlan.Protocol))
 		}
 
 		uii.Infoln("Cloning plan %s", cloneArg)
-		err = gitCmd(fmt.Sprintf("clone %v --branch %v plan", cloneArg, parsedGitPlan.head), localShuttleDirectoryPath, uii)
+		err = gitCmd(fmt.Sprintf("clone %v --branch %v plan", cloneArg, parsedGitPlan.Head), localShuttleDirectoryPath, uii)
 		if err != nil {
 			return "", err
 		}
