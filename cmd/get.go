@@ -7,6 +7,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/templates"
 	"github.com/lunarway/shuttle/pkg/ui"
 
@@ -26,7 +27,8 @@ var getCmd = &cobra.Command{
 	//Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		uii = uii.SetContext(ui.LevelError)
-		context := getProjectContext()
+		context, err := getProjectContext()
+		checkError(err)
 		path := args[0]
 		var templ string
 		if getFlagTemplate != "" {
@@ -35,7 +37,7 @@ var getCmd = &cobra.Command{
 		value := templates.TmplGet(path, context.Config.Variables)
 		if templ != "" {
 			err := ui.Template(os.Stdout, "get", templ, value)
-			context.UI.CheckIfError(err)
+			checkError(err)
 			return
 		}
 		switch value.(type) {
@@ -44,7 +46,7 @@ var getCmd = &cobra.Command{
 		default:
 			x, err := yaml.Marshal(value)
 			if err != nil {
-				uii.ExitWithErrorCode(9, "Could not yaml encoded %s\nError: %s", value, err)
+				checkError(errors.NewExitCode(9, "Could not yaml encode value '%s'\nError: %s", value, err))
 			}
 			fmt.Print(strings.TrimRight(string(x), "\n"))
 		}

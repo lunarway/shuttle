@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/ui"
 
 	go_cmd "github.com/go-cmd/cmd"
@@ -69,7 +70,7 @@ func IsGitPlan(plan string) bool {
 }
 
 // GetGitPlan will pull git repository and return its path
-func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool, planArgument string) string {
+func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool, planArgument string) (string, error) {
 	parsedGitPlan := parseGitPlan(plan)
 
 	if strings.HasPrefix(planArgument, "#") {
@@ -83,7 +84,7 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 	for _, planAlreadyValidated := range plansAlreadyValidated {
 		if planAlreadyValidated == planPath {
 			uii.Verboseln("Shuttle already validated plan. Skipping further plan validation")
-			return planPath
+			return planPath, nil
 		}
 	}
 
@@ -91,30 +92,42 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 		status := getStatus(planPath)
 
 		if status.mergeState {
-			uii.ExitWithErrorCode(9, "Plan's cloned output is in merge state. Please resolve merge conflicts and the try again")
+			return "", errors.NewExitCode(9, "Plan's cloned output is in merge state. Please resolve merge conflicts and the try again")
 		} else if status.changes {
 			uii.EmphasizeInfoln("Found %v files locally changed in plan", len(status.files))
 			uii.EmphasizeInfoln("Skipping plan pull because of changes")
 		} else {
 			if skipGitPlanPulling {
 				uii.Verboseln("Skipping git plan pulling")
-				return planPath
+				return planPath, nil
 			}
-			gitCmd("fetch origin", planPath, uii)
-			gitCmd(fmt.Sprintf("checkout %s", parsedGitPlan.head), planPath, uii)
+			err := gitCmd("fetch origin", planPath, uii)
+			if err != nil {
+				return "", err
+			}
+			err = gitCmd(fmt.Sprintf("checkout %s", parsedGitPlan.head), planPath, uii)
+			if err != nil {
+				return "", err
+			}
 			status := getStatus(planPath)
 			if !status.isDetached {
 				uii.Infoln("Pulling latest plan changes on %v", parsedGitPlan.head)
-				gitCmd(fmt.Sprintf("pull origin %v", parsedGitPlan.head), planPath, uii)
+				err = gitCmd(fmt.Sprintf("pull origin %v", parsedGitPlan.head), planPath, uii)
+				if err != nil {
+					return "", err
+				}
 				status = getStatus(planPath)
 			} else {
 				uii.EmphasizeInfoln("Skipping plan pull because its running on detached head")
 			}
 			uii.Verboseln("Using %s - branch %s - commit %s", plan, status.branch, status.commit)
 		}
-		return planPath
+		return planPath, nil
 	} else {
-		os.MkdirAll(localShuttleDirectoryPath, os.ModePerm)
+		err := os.MkdirAll(localShuttleDirectoryPath, os.ModePerm)
+		if err != nil {
+			return "", fmt.Errorf("create '%s' directory: %w", localShuttleDirectoryPath, err)
+		}
 
 		var cloneArg string
 		if parsedGitPlan.protocol == "https" {
@@ -126,10 +139,13 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 		}
 
 		uii.Infoln("Cloning plan %s", cloneArg)
-		gitCmd(fmt.Sprintf("clone %v --branch %v plan", cloneArg, parsedGitPlan.head), localShuttleDirectoryPath, uii)
+		err = gitCmd(fmt.Sprintf("clone %v --branch %v plan", cloneArg, parsedGitPlan.head), localShuttleDirectoryPath, uii)
+		if err != nil {
+			return "", err
+		}
 	}
 
-	return planPath
+	return planPath, nil
 }
 
 func RunGitPlanCommand(command string, plan string, uii ui.UI) {
@@ -203,7 +219,7 @@ func expandHome(path string) string {
 	return strings.Replace(path, "~/", usr.HomeDir+"/", 1)
 }
 
-func gitCmd(command string, dir string, uii ui.UI) {
+func gitCmd(command string, dir string, uii ui.UI) error {
 	cmdOptions := go_cmd.Options{
 		Buffered:  true,
 		Streaming: true,
@@ -234,6 +250,7 @@ func gitCmd(command string, dir string, uii ui.UI) {
 	<-doneChan
 
 	if status.Exit > 0 {
-		uii.ExitWithErrorCode(4, "Failed executing git command `%s` in `%s`. Got exit code: %v\n%s", command, dir, status.Exit, strings.Join(status.Stderr, "\n"))
+		return errors.NewExitCode(4, "Failed executing git command `%s` in `%s`. Got exit code: %v\n%s", command, dir, status.Exit, strings.Join(status.Stderr, "\n"))
 	}
+	return nil
 }

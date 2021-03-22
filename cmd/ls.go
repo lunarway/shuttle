@@ -29,18 +29,20 @@ var lsCmd = &cobra.Command{
 	Use:   "ls [command]",
 	Short: "List possible commands",
 	Run: func(cmd *cobra.Command, args []string) {
-		context := getProjectContext()
+		context, err := getProjectContext()
+		checkError(err)
+
 		var templ string
 		if lsFlagTemplate != "" {
 			templ = lsFlagTemplate
 		} else {
 			templ = lsDefaultTempl
 		}
-		err := ui.Template(os.Stdout, "ls", templ, templData{
+		err = ui.Template(os.Stdout, "ls", templ, templData{
 			Scripts: context.Scripts,
 			Max:     calculateRightPadForKeys(context.Scripts),
 		})
-		context.UI.CheckIfError(err)
+		checkError(err)
 	},
 }
 

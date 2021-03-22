@@ -157,7 +157,7 @@ test_run_shell_error_outputs_script_name() {
 }
 
 test_run_shell_error_outputs_missing_arg() {
-  assertErrorCode 1 -p examples/moon-base run required-arg
+  assertErrorCode 2 -p examples/moon-base run required-arg
   if [[ ! "$result" =~ "required-arg" ]]; then
     fail "Expected output to contain the script name 'required-arg', but it was:\n$result"
   fi
@@ -171,7 +171,7 @@ test_run_shell_error_outputs_missing_arg_disabled_validation() {
 }
 
 test_run_shell_error_outputs_parsing_argument_error_with_disabled_validation() {
-  assertErrorCode 1 -p examples/moon-base run --validate=false required-arg a
+  assertErrorCode 2 -p examples/moon-base run --validate=false required-arg a
   if [[ ! "$result" =~ "not <argument>=<value>" ]]; then
     fail "Expected output to contain argument format error, but it was:\n$result"
   fi
@@ -181,7 +181,7 @@ test_run_shell_error_outputs_parsing_argument_error_with_disabled_validation() {
 }
 
 test_run_shell_error_outputs_unknown_argument() {
-  assertErrorCode 1 -p examples/moon-base run required-arg a=baz foo=bar
+  assertErrorCode 2 -p examples/moon-base run required-arg a=baz foo=bar
   assertContains "'foo' unknown" "$result"
 }
 

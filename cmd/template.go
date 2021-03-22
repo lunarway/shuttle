@@ -28,7 +28,8 @@ var templateCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var templateName = args[0]
-		projectContext := getProjectContext()
+		projectContext, err := getProjectContext()
+		checkError(err)
 
 		namedArgs := map[string]string{}
 		for _, arg := range args[1:] {

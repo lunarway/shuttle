@@ -20,7 +20,9 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			uii = uii.SetContext(ui.LevelSilent)
 
-			context := getProjectContext()
+			context, err := getProjectContext()
+			checkError(err)
+
 			variable := args[0]
 
 			var found bool

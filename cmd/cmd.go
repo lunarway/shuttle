@@ -97,8 +97,8 @@ Read more about shuttle at https://github.com/lunarway/shuttle`, version),
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		var uii = ui.Create()
-		uii.ExitWithErrorCode(1, "%s", err)
+		uii = ui.Create()
+		checkError(err)
 	}
 }
 
@@ -114,7 +114,7 @@ If none of above is used, then the argument will expect a full plan spec.`)
 	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Print verbose output")
 }
 
-func getProjectContext() config.ShuttleProjectContext {
+func getProjectContext() (config.ShuttleProjectContext, error) {
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
@@ -136,6 +136,9 @@ func getProjectContext() config.ShuttleProjectContext {
 	}
 
 	var c config.ShuttleProjectContext
-	c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling, plan)
-	return c
+	_, err = c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling, plan)
+	if err != nil {
+		return config.ShuttleProjectContext{}, err
+	}
+	return c, nil
 }
