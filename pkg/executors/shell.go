@@ -1,6 +1,7 @@
 package executors
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,7 +13,7 @@ import (
 )
 
 // Build builds the docker image from a shuttle plan
-func executeShell(context ActionExecutionContext) error {
+func executeShell(ctx context.Context, context ActionExecutionContext) error {
 	//log.Printf("Exec: %s", context.Action.Shell)
 	//cmdAndArgs := strings.Split(s.Shell, " ")
 	//cmd := cmdAndArgs[0]
@@ -61,13 +62,29 @@ func executeShell(context ActionExecutionContext) error {
 
 	// Run and wait for Cmd to return, discard Status
 	context.ScriptContext.Project.UI.Titleln("shell: %s", context.Action.Shell)
-	status := <-execCmd.Start()
-	<-doneChan
 
-	if status.Exit > 0 {
-		return errors.NewExitCode(4, "Failed executing script `%s`: shell script `%s`\nExit code: %v", context.ScriptContext.ScriptName, context.Action.Shell, status.Exit)
+	// stop cmd if context is cancelled
+	go func() {
+		select {
+		case <-ctx.Done():
+			err := execCmd.Stop()
+			if err != nil {
+				context.ScriptContext.Project.UI.Errorln("Failed to stop script '%s': %v", context.Action.Shell, err)
+			}
+		case <-doneChan:
+		}
+	}()
+
+	select {
+	case status := <-execCmd.Start():
+		<-doneChan
+		if status.Exit > 0 {
+			return errors.NewExitCode(4, "Failed executing script `%s`: shell script `%s`\nExit code: %v", context.ScriptContext.ScriptName, context.Action.Shell, status.Exit)
+		}
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
-	return nil
 }
 
 func init() {

@@ -1,6 +1,7 @@
 package executors
 
 import (
+	"context"
 	"io"
 	"log"
 	"os"
@@ -11,7 +12,7 @@ import (
 )
 
 // Build builds the docker image from a shuttle plan
-func executeDocker(context ActionExecutionContext) error {
+func executeDocker(ctx context.Context, context ActionExecutionContext) error {
 	dockerFilePath := path.Join(context.ScriptContext.Project.LocalPlanPath, context.Action.Dockerfile)
 	projectPath := context.ScriptContext.Project.ProjectPath
 	execCmd := exec.Command("docker", "build", "-f", dockerFilePath, projectPath)

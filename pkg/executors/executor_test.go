@@ -1,8 +1,12 @@
 package executors
 
 import (
+	"context"
+	"fmt"
 	"testing"
+	"time"
 
+	"github.com/go-cmd/cmd"
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -139,4 +143,59 @@ func TestSortValidationErrors(t *testing.T) {
 			assert.Equal(t, tc.output, tc.input, "output not as expected")
 		})
 	}
+}
+
+// TestExecute_contextCancellation tests that scripts are closed when the
+// context is cancelled.
+func TestExecute_contextCancellation(t *testing.T) {
+	imageName := fmt.Sprintf("shuttle-test-execute-cancellation-%d", time.Now().UnixNano())
+	t.Logf("Starting image %s", imageName)
+	projectContext := config.ShuttleProjectContext{
+		Scripts: map[string]config.ShuttlePlanScript{
+			"serve": {
+				Description: "",
+				Actions: []config.ShuttleAction{
+					{
+						Shell: fmt.Sprintf("docker run --rm -i --name %s nginx", imageName),
+					},
+				},
+				Args: []config.ShuttleScriptArgs{},
+			},
+		},
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		// let the container start before stopping it
+		time.Sleep(500 * time.Millisecond)
+		cancel()
+	}()
+
+	err := Execute(ctx, projectContext, "serve", nil, true)
+	assert.EqualError(t, err, context.Canceled.Error())
+
+	// sadly we need to give the docker some time before "docker ps" shows the
+	// containers
+	time.Sleep(500 * time.Millisecond)
+	images := runningDockerImages(t, imageName)
+	assert.Len(t, images, 0, "expected no images to be running")
+}
+
+func runningDockerImages(t *testing.T, imageName string) []string {
+	t.Helper()
+	cmd := cmd.NewCmd("docker", "ps", "-a", "--format", "{{ .Names }}")
+	status := <-cmd.Start()
+	t.Logf("docker ps: stderr: %v", status.Stderr)
+
+	t.Logf("Docker containers")
+	for _, container := range status.Stdout {
+		t.Logf("- %s", container)
+		if container == imageName {
+			t.Errorf("Container '%s still exists in docker but shouldn't", container)
+		}
+	}
+	if status.Exit != 0 {
+		t.Fatal("Failed to check running docker images")
+	}
+	return nil
 }
