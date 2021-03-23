@@ -17,6 +17,7 @@
 </p>
 
 ## Table of contents
+
 - [What is shuttle?](#what-is-shuttle)
 - [Status](#status)
 - [How?](#how)
@@ -27,10 +28,12 @@
 - [Release History](#release-history)
 
 ## What is shuttle?
+
 `shuttle` is a CLI for handling shared build and deploy tools between many projects no matter what technologies the project is using.
 
 ## Status
-*DISCLAIMER: shuttle is in beta, so stuff may change. However we are using shuttle heavily at Lunar Way and we use it to deploy to production, so it is pretty battle proven.*
+
+_DISCLAIMER: shuttle is in beta, so stuff may change. However we are using shuttle heavily at Lunar Way and we use it to deploy to production, so it is pretty battle proven._
 
 [![Build Status](https://travis-ci.com/lunarway/shuttle.svg?branch=master)](https://travis-ci.com/lunarway/shuttle) [![Go Report Card](https://goreportcard.com/badge/github.com/lunarway/shuttle)](https://goreportcard.com/report/github.com/lunarway/shuttle)
 
@@ -44,14 +47,14 @@ scripts:
   build:
     description: Build the docker image
     args:
-    - name: tag
-      required: true
+      - name: tag
+        required: true
     actions:
-    - shell: docker -f $plan/Dockerfile build -t (shuttle get docker.image):$tag
+      - shell: docker -f $plan/Dockerfile build -t (shuttle get docker.image):$tag
   test:
     description: Run test for the project
     actions:
-    - shell: go test
+      - shell: go test
 ```
 
 The `plan.yaml` is located at the root of the plan directory which is located elsewhere of the actual project using it. The plan directory can be locally stored or in a git repository. The directory structure could be something like:
@@ -85,11 +88,12 @@ $ shuttle run build tag=v1
 ```
 
 ## Features
-* Fetch shuttle plans from git repositories
-* Create any script you like in the plan
-* Overwrite scripts in local projects when they defer from the plan
-* Write templates in plans and overwrite them in projects when they defer
-* ...
+
+- Fetch shuttle plans from git repositories
+- Create any script you like in the plan
+- Overwrite scripts in local projects when they defer from the plan
+- Write templates in plans and overwrite them in projects when they defer
+- ...
 
 ## Documentation
 
@@ -112,26 +116,28 @@ plan: git@github.com:lunarway/shuttle-example-go-plan.git
 ```
 
 ### Git Plan
+
 When using a git plan a url should look like:
 
-* `https://github.com/lunarway/shuttle-example-go-plan.git`
-* `git@github.com:lunarway/shuttle-example-go-plan.git`
-* `https://github.com/lunarway/shuttle-example-go-plan.git#change-build`
-* `git@github.com:lunarway/shuttle-example-go-plan.git#change-build`
+- `https://github.com/lunarway/shuttle-example-go-plan.git`
+- `git@github.com:lunarway/shuttle-example-go-plan.git`
+- `https://github.com/lunarway/shuttle-example-go-plan.git#change-build`
+- `git@github.com:lunarway/shuttle-example-go-plan.git#change-build`
 
 The `#change-build` points the plan to a specific branch, which by default would be `master`.
 It can also be used to point to a tag or a git SHA, like this:
 
-* `https://github.com/lunarway/shuttle-example-go-plan.git#v1.2.3`
-* `git@github.com:lunarway/shuttle-example-go-plan.git#46ce3cc`
+- `https://github.com/lunarway/shuttle-example-go-plan.git#v1.2.3`
+- `git@github.com:lunarway/shuttle-example-go-plan.git#46ce3cc`
 
 ### Overloading the plan
+
 It is possible to overload the plan specified in `shuttle.yaml` file by using the `--plan` argument
 or the `SHUTTLE_PLAN_OVERLOAD` environment variable. Following arguments are supported
 
-* A path to a local plan like `--plan ../local-checkout-of-plan`. Absolute paths is also supported
-* Another git plan like `--plan git://github.com/some-org/some-plan`
-* A git tag to append to the plan like `--plan #some-branch`, `--plan #some-tag` or a SHA `--plan #2b52c21`
+- A path to a local plan like `--plan ../local-checkout-of-plan`. Absolute paths is also supported
+- Another git plan like `--plan git://github.com/some-org/some-plan`
+- A git tag to append to the plan like `--plan #some-branch`, `--plan #some-tag` or a SHA `--plan #2b52c21`
 
 ## Installing
 
@@ -154,6 +160,7 @@ sudo mv shuttle-linux-amd64 /usr/local/bin/shuttle
 ## Functions
 
 ### `shuttle get <variable>`
+
 Used to get a variable defined in shuttle.yaml
 
 ```console
@@ -165,6 +172,7 @@ $ shuttle get does.not.exist
 ```
 
 ### `shuttle plan`
+
 Inspect the plan in use for a project.
 Use the `template` flag to customize the output to your needs.
 
@@ -174,7 +182,9 @@ https://github.com/lunarway/shuttle-example-go-plan.git
 ```
 
 ### `shuttle has <variable>`
+
 It is possible to easily check if a variable or script is defined
+
 ```console
 shuttle has some.variable
 shuttle has --script integration
@@ -188,29 +198,30 @@ $ shuttle has my.docker.image --stdout
 ```
 
 ### Template functions
+
 The `template` command along with commands taking a `--template` flag has multiple templating functions available.
 The [masterminds/sprig](http://masterminds.github.io/sprig) v3.2.2 functions are available along with those described below.
 
 Examples are based on the below `shuttle.yaml` file.
 
-|Function|Description|Example|Output|
-|---|---|---|---|
-|`array <path> <value>`|Get array from path. If value is a map, the values of the map is returned in deterministic order. | `array "args" .` | `helloworld`|
-|`fileExists <file-path>`|Returns whether a file exists.|`fileExists ".gitignore"`|`true`|
-|`fromYaml <value>`| Unmarshal YAML string to a `map[string]interface{}`. In case of YAML parsing errors the `Error` key in the result contains the error message. See notes below on usage.|`fromYaml "api: v1"` | `map[api:v1]`
-|`get <path> <value>`|Get a value from a field path. `.` is read as nested nested objects| `get "docker.image" .` | `earth-united/moon-base`|
-|`getFileContent <file-path>`|Get raw contents of a file.|`getFileContent ".gitignore"`|`dist/`<br>`vendor/`<br>`...`|
-|`getFiles <directory-path>`|Returns a slice of files in the provided directory as [`os.FileInfo`](https://golang.org/pkg/os/#FileInfo) structs.|`{{ range $i, $f := (getFiles "./") }}{{ .Name }} {{ end }}`| `.git .gitignore ...`
-|`int <path> <value>`|Get int value without formatting. Note that this is a direct `int` cast ie. value `1.2` will generate an error.|`int "replicas" .`|`1`
-|`is <value-a> <value-b>`|Equality indication by Go's `==` comparison.|`is "foo" "bar"`| `false`|
-|`isnt <value-a> <value-b>`|Inequality indication by Go's `!=` comparison.|`isnt "foo" "bar"`| `true`|
-|`objectArray <path> <value>`|Get object key-value pairs from path. Each key-value is returned in a `{ Key Value}` object. | `{{ range objectArray "docker" . }}{{ .Key }} -> {{ .Value }}{{ end }}` | `image -> earth-united/moon-base`|
-|`rightPad <string> <padding>`|Add space padding to the right of a string.|`{{ rightPad "padded" 10 }}string`|`padded    string`
-|`strConst <value>`|Convert string to upper snake casing converting `.` to `_`.|`strConst "a.value"` | `A_VALUE`|
-|`string <path> <value>`|Format any value as a string.|`string "replicas" .` | `"1"` |
-|`toYaml <value>`| Marshal value to YAML. In case of non-parsable string an empty string is returned. See notes below on usage.|`toYaml (get "args" .)`| `- hello`<br>`- world`|
-|`trim <string>`|Trim leading and trailing whitespaces. Uses [`strings.TrimSpace`](https://golang.org/pkg/strings/#TrimSpace).|`trim " a string "`|`a string`
-|`upperFirst <string>`|Upper case first character in string.|`upperFirst "a string"`|`A string`|
+| Function                      | Description                                                                                                                                                             | Example                                                                 | Output                            |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------- |
+| `array <path> <value>`        | Get array from path. If value is a map, the values of the map is returned in deterministic order.                                                                       | `array "args" .`                                                        | `helloworld`                      |
+| `fileExists <file-path>`      | Returns whether a file exists.                                                                                                                                          | `fileExists ".gitignore"`                                               | `true`                            |
+| `fromYaml <value>`            | Unmarshal YAML string to a `map[string]interface{}`. In case of YAML parsing errors the `Error` key in the result contains the error message. See notes below on usage. | `fromYaml "api: v1"`                                                    | `map[api:v1]`                     |
+| `get <path> <value>`          | Get a value from a field path. `.` is read as nested nested objects                                                                                                     | `get "docker.image" .`                                                  | `earth-united/moon-base`          |
+| `getFileContent <file-path>`  | Get raw contents of a file.                                                                                                                                             | `getFileContent ".gitignore"`                                           | `dist/`<br>`vendor/`<br>`...`     |
+| `getFiles <directory-path>`   | Returns a slice of files in the provided directory as [`os.FileInfo`](https://golang.org/pkg/os/#FileInfo) structs.                                                     | `{{ range $i, $f := (getFiles "./") }}{{ .Name }} {{ end }}`            | `.git .gitignore ...`             |
+| `int <path> <value>`          | Get int value without formatting. Note that this is a direct `int` cast ie. value `1.2` will generate an error.                                                         | `int "replicas" .`                                                      | `1`                               |
+| `is <value-a> <value-b>`      | Equality indication by Go's `==` comparison.                                                                                                                            | `is "foo" "bar"`                                                        | `false`                           |
+| `isnt <value-a> <value-b>`    | Inequality indication by Go's `!=` comparison.                                                                                                                          | `isnt "foo" "bar"`                                                      | `true`                            |
+| `objectArray <path> <value>`  | Get object key-value pairs from path. Each key-value is returned in a `{ Key Value}` object.                                                                            | `{{ range objectArray "docker" . }}{{ .Key }} -> {{ .Value }}{{ end }}` | `image -> earth-united/moon-base` |
+| `rightPad <string> <padding>` | Add space padding to the right of a string.                                                                                                                             | `{{ rightPad "padded" 10 }}string`                                      | `padded string`                   |
+| `strConst <value>`            | Convert string to upper snake casing converting `.` to `_`.                                                                                                             | `strConst "a.value"`                                                    | `A_VALUE`                         |
+| `string <path> <value>`       | Format any value as a string.                                                                                                                                           | `string "replicas" .`                                                   | `"1"`                             |
+| `toYaml <value>`              | Marshal value to YAML. In case of non-parsable string an empty string is returned. See notes below on usage.                                                            | `toYaml (get "args" .)`                                                 | `- hello`<br>`- world`            |
+| `trim <string>`               | Trim leading and trailing whitespaces. Uses [`strings.TrimSpace`](https://golang.org/pkg/strings/#TrimSpace).                                                           | `trim " a string "`                                                     | `a string`                        |
+| `upperFirst <string>`         | Upper case first character in string.                                                                                                                                   | `upperFirst "a string"`                                                 | `A string`                        |
 
 ```yaml
 plan: ../the-plan
@@ -219,12 +230,13 @@ vars:
     image: earth-united/moon-base
   replicas: 1
   args:
-  - 'hello'
-  - 'world'
+    - hello
+    - world
 ```
 
 **Notes on YAML parsers**: The `toYaml` and `fromYaml` template functions are intented to be used inside file templates (not `template` flags).
 Because of this they ignore errors and some YAML documents canont be parsed.
+
 ## Release History
 
 See the [releases](https://github.com/lunarway/shuttle/releases) for more
