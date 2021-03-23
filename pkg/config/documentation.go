@@ -26,7 +26,7 @@ func (p *ShuttleProjectContext) DocumentationURL() (string, error) {
 	switch {
 	case git.IsPlan(ref):
 		return normalizeGitPlan(git.ParsePlan(ref))
-	case isMatching("^(http|https)://", ref):
+	case isHTTPSPlan(ref):
 		return ref, nil
 	case filepath.IsAbs(ref), strings.HasPrefix(ref, "./"), strings.HasPrefix(ref, "../"):
 		return "", errors.NewExitCode(2, "Local plan has no documentation")

@@ -187,14 +187,6 @@ func RunGitPlanCommand(command string, plan string, uii ui.UI) {
 	}
 }
 
-func isMatching(r string, content string) bool {
-	match, err := regexp.MatchString(r, content)
-	if err != nil {
-		panic(err)
-	}
-	return match
-}
-
 func checkIfError(err error) {
 	if err == nil {
 		return
