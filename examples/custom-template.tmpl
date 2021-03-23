@@ -1,5 +1,10 @@
 # Custom docker file template not located inside a project
-FROM golang:{{ get "GO_VERSION" .Args }}-alpine as builder
+{{-
+  $imageTag :=
+    get "GO_VERSION" .Args |
+    printf "%s-alpine"
+}}
+FROM golang:{{ $imageTag }} as builder
 
 LABEL custom=field
 
