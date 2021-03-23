@@ -2,8 +2,7 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
+	"os"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -61,22 +60,27 @@ type ShuttlePlan struct {
 }
 
 // Load loads a plan from project path and shuttle config
-func (p *ShuttlePlanConfiguration) Load(planPath string) *ShuttlePlanConfiguration {
+func (p *ShuttlePlanConfiguration) Load(planPath string) (*ShuttlePlanConfiguration, error) {
 	if planPath == "" {
-		return p
-	}
-	var configPath = path.Join(planPath, "plan.yaml")
-	//log.Printf("configpath: %s", configPath)
-	yamlFile, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
-	}
-	err = yaml.Unmarshal(yamlFile, p)
-	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
+		return p, nil
 	}
 
-	return p
+	configPath := path.Join(planPath, "plan.yaml")
+
+	file, err := os.Open(configPath)
+	if err != nil {
+		return p, errors.NewExitCode(2, "Failed to open plan configuration: %s\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.", err)
+	}
+	defer file.Close()
+
+	decoder := yaml.NewDecoder(file)
+	decoder.SetStrict(true)
+	err = decoder.Decode(p)
+	if err != nil {
+		return p, errors.NewExitCode(1, "Failed to load plan configuration: %s\n\nThis is likely an issue with the referenced plan. Please, contact the plan maintainers.", err)
+	}
+
+	return p, nil
 }
 
 // FetchPlan so it exists locally and return path to that plan

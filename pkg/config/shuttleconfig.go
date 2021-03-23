@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -16,7 +15,7 @@ type DynamicYaml = map[string]interface{}
 
 // ShuttleConfig describes the actual config for each project
 type ShuttleConfig struct {
-	Plan      string                       `yaml:"not_plan"`
+	Plan      string                       `yaml:"-"`
 	PlanRaw   interface{}                  `yaml:"plan"`
 	Variables DynamicYaml                  `yaml:"vars"`
 	Scripts   map[string]ShuttlePlanScript `yaml:"scripts"`
@@ -36,7 +35,7 @@ type ShuttleProjectContext struct {
 
 // Setup the ShuttleProjectContext for a specific path
 func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool, skipGitPlanPulling bool, planArgument string) (*ShuttleProjectContext, error) {
-	_, err := c.Config.getConf(uii, projectPath)
+	_, err := c.Config.getConf(projectPath)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +60,10 @@ func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool,
 	if err != nil {
 		return nil, err
 	}
-	c.Plan.Load(c.LocalPlanPath)
+	_, err = c.Plan.Load(c.LocalPlanPath)
+	if err != nil {
+		return nil, err
+	}
 	c.Scripts = make(map[string]ShuttlePlanScript)
 	for scriptName, script := range c.Plan.Scripts {
 		c.Scripts[scriptName] = script
@@ -73,18 +75,24 @@ func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool,
 }
 
 // getConf loads the ShuttleConfig from yaml file in the project path
-func (c *ShuttleConfig) getConf(uii ui.UI, projectPath string) (*ShuttleConfig, error) {
-	var configPath = path.Join(projectPath, "shuttle.yaml")
-
-	//log.Printf("configpath: %s", configPath)
-
-	yamlFile, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		return nil, errors.NewExitCode(2, "Failed to load shuttle configuration: %s\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.", err)
+func (c *ShuttleConfig) getConf(projectPath string) (*ShuttleConfig, error) {
+	if projectPath == "" {
+		return c, nil
 	}
-	err = yaml.Unmarshal(yamlFile, c)
+
+	configPath := path.Join(projectPath, "shuttle.yaml")
+
+	file, err := os.Open(configPath)
 	if err != nil {
-		return nil, errors.NewExitCode(2, "Failed to parse shuttle configuration: %s\n\nMake sure your 'shuttle.yaml' is valid.", err)
+		return c, errors.NewExitCode(2, "Failed to load shuttle configuration: %s\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.", err)
+	}
+	defer file.Close()
+
+	decoder := yaml.NewDecoder(file)
+	decoder.SetStrict(true)
+	err = decoder.Decode(c)
+	if err != nil {
+		return c, errors.NewExitCode(2, "Failed to parse shuttle configuration: %s\n\nMake sure your 'shuttle.yaml' is valid.", err)
 	}
 
 	switch c.PlanRaw {

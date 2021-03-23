@@ -1,0 +1,8 @@
+plan: .
+vars:
+  squad: nasa
+scripts:
+  shout:
+    description: Shout hello
+    actions:
+    - shell: echo "HELLO WORLD"
