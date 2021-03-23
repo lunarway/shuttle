@@ -32,7 +32,7 @@ func TestShuttleProjectContext_Documentation(t *testing.T) {
 			err:     errors.New("exit code 1 - Could not detect protocol for plan 'something-odd'"),
 		},
 		{
-			name:    "unknown git plan protocol",
+			name:    "unknown plan reference protocol",
 			planRef: "something-odd",
 			docsRef: "",
 			result:  "",
