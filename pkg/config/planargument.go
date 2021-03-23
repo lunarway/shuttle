@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/lunarway/shuttle/pkg/git"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/lunarway/shuttle/pkg/git"
 )
 
 func isPlanArgumentAFilePlan(planArgument string) bool {
@@ -12,7 +13,7 @@ func isPlanArgumentAFilePlan(planArgument string) bool {
 }
 
 func isPlanArgumentAPlan(planArgument string) bool {
-	return planArgument != "" && (git.IsGitPlan(planArgument) || isPlanArgumentAFilePlan(planArgument))
+	return planArgument != "" && (git.IsPlan(planArgument) || isPlanArgumentAFilePlan(planArgument))
 }
 
 func getPlanFromPlanArgument(planArgument string) string {

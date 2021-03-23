@@ -92,7 +92,24 @@ $ shuttle run build tag=v1
 * ...
 
 ## Documentation
-*Documentation is under development*
+
+Plan documentation can be inspected using the `shuttle documentation` command.
+
+When writing shuttle plans you can hint as to where to find documentation for the plan.
+Users of the plan will open the specified URL when requesting documentation.
+
+```yaml
+# plan.yaml
+documentation: https://docs.my-corp.com
+```
+
+If no specific `documentation` field is set in the plan it will be inferred from the plan reference.
+In below example shuttle will open `https://github.com/lunarway/shuttle-example-go-plan.git`
+
+```yaml
+# shuttle.yaml
+plan: git@github.com:lunarway/shuttle-example-go-plan.git
+```
 
 ### Git Plan
 When using a git plan a url should look like:

@@ -49,7 +49,8 @@ type ShuttleAction struct {
 
 // ShuttlePlanConfiguration is a ShuttlePlan sub-element
 type ShuttlePlanConfiguration struct {
-	Scripts map[string]ShuttlePlanScript `yaml:"scripts"`
+	Documentation string                       `yaml:"documentation"`
+	Scripts       map[string]ShuttlePlanScript `yaml:"scripts"`
 }
 
 // ShuttlePlan struct describes a plan
@@ -89,10 +90,10 @@ func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string
 	case plan == "":
 		uii.Verboseln("Using no plan")
 		return "", nil
-	case git.IsGitPlan(plan):
+	case git.IsPlan(plan):
 		uii.Verboseln("Using git plan at '%s'", plan)
 		return git.GetGitPlan(plan, localShuttleDirectoryPath, uii, skipGitPlanPulling, planArgument)
-	case isMatching("^http://|^https://", plan):
+	case isHTTPSPlan(plan):
 		panic(fmt.Sprintf("Plan '%v' is not valid: non-git http/https is not supported yet", plan))
 	case isFilePath(plan, true):
 		uii.Verboseln("Using local plan at '%s'", plan)
@@ -109,10 +110,8 @@ func isFilePath(path string, matchOnlyAbs bool) bool {
 	return filepath.IsAbs(path) == matchOnlyAbs
 }
 
-func isMatching(r string, content string) bool {
-	match, err := regexp.MatchString(r, content)
-	if err != nil {
-		panic(err)
-	}
-	return match
+var httpsRegexp = regexp.MustCompile("^(http|https)://")
+
+func isHTTPSPlan(plan string) bool {
+	return httpsRegexp.MatchString(plan)
 }
