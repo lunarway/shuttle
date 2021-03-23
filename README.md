@@ -189,7 +189,7 @@ $ shuttle has my.docker.image --stdout
 
 ### Template functions
 The `template` command along with commands taking a `--template` flag has multiple templating functions available.
-The [masterminds/sprig](http://masterminds.github.io/sprig) functions are available along with those described below.
+The [masterminds/sprig](http://masterminds.github.io/sprig) v3.2.2 functions are available along with those described below.
 
 Examples are based on the below `shuttle.yaml` file.
 
