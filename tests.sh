@@ -186,7 +186,7 @@ test_run_shell_error_outputs_unknown_argument() {
 }
 
 test_template_local_path() {
-  assertErrorCode 0 -p examples/moon-base template ../custom-template.tmpl -o Dockerfile-custom
+  assertErrorCode 0 -p examples/moon-base template ../custom-template.tmpl -o Dockerfile-custom GO_VERSION=1.16
 }
 
 test_template_local_path_alternate_delims() {
