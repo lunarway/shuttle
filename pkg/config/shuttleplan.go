@@ -48,6 +48,7 @@ type ShuttleAction struct {
 
 // ShuttlePlanConfiguration is a ShuttlePlan sub-element
 type ShuttlePlanConfiguration struct {
+	Vars          map[string]interface{}       `yaml:"vars"`
 	Documentation string                       `yaml:"documentation"`
 	Scripts       map[string]ShuttlePlanScript `yaml:"scripts"`
 }
@@ -77,7 +78,7 @@ func (p *ShuttlePlanConfiguration) Load(planPath string) (*ShuttlePlanConfigurat
 	decoder.SetStrict(true)
 	err = decoder.Decode(p)
 	if err != nil {
-		return p, errors.NewExitCode(1, "Failed to load plan configuration: %s\n\nThis is likely an issue with the referenced plan. Please, contact the plan maintainers.", err)
+		return p, errors.NewExitCode(1, "Failed to load plan configuration from '%s': %s\n\nThis is likely an issue with the referenced plan. Please, contact the plan maintainers.", configPath, err)
 	}
 
 	return p, nil

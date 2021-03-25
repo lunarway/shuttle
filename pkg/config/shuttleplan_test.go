@@ -21,7 +21,7 @@ func TestShuttlePlanConfiguration_Load(t *testing.T) {
 		{
 			name:  "unknown field",
 			input: "testdata/unknown_field",
-			err:   errors.New("exit code 1 - Failed to load plan configuration: yaml: unmarshal errors:\n  line 1: field unknown not found in type config.ShuttlePlanConfiguration\n\nThis is likely an issue with the referenced plan. Please, contact the plan maintainers."),
+			err:   errors.New("exit code 1 - Failed to load plan configuration from 'testdata/unknown_field/plan.yaml': yaml: unmarshal errors:\n  line 1: field unknown not found in type config.ShuttlePlanConfiguration\n\nThis is likely an issue with the referenced plan. Please, contact the plan maintainers."),
 		},
 		{
 			name:  "unknown file",
@@ -33,6 +33,9 @@ func TestShuttlePlanConfiguration_Load(t *testing.T) {
 			input: "testdata/valid",
 			err:   nil,
 			config: ShuttlePlanConfiguration{
+				Vars: map[string]interface{}{
+					"shared": "var",
+				},
 				Scripts: map[string]ShuttlePlanScript{
 					"hello": {
 						Description: "Say hello",

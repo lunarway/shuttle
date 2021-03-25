@@ -1,3 +1,5 @@
+vars:
+  shared: var
 scripts:
   hello:
     description: Say hello
