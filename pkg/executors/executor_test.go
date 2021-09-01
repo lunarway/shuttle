@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-cmd/cmd"
 	"github.com/lunarway/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -145,12 +146,55 @@ func TestSortValidationErrors(t *testing.T) {
 	}
 }
 
+func TestExecute(t *testing.T) {
+	tt := []struct {
+		name   string
+		script string
+		err    error
+	}{
+		{
+			name:   "cat file with line over 80k characters",
+			script: "cat testdata/large.log",
+			err:    nil,
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			verboseUI := ui.Create()
+			verboseUI.SetUserLevel(ui.LevelVerbose)
+
+			err := Execute(context.Background(), config.ShuttleProjectContext{
+				ProjectPath: ".",
+				UI:          verboseUI,
+				Scripts: map[string]config.ShuttlePlanScript{
+					"test": {
+						Actions: []config.ShuttleAction{
+							{
+								Shell: tc.script,
+							},
+						},
+					},
+				},
+			}, "test", nil, true)
+
+			if tc.err != nil {
+				assert.EqualError(t, err, tc.err.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 // TestExecute_contextCancellation tests that scripts are closed when the
 // context is cancelled.
 func TestExecute_contextCancellation(t *testing.T) {
 	imageName := fmt.Sprintf("shuttle-test-execute-cancellation-%d", time.Now().UnixNano())
 	t.Logf("Starting image %s", imageName)
+	verboseUI := ui.Create()
+	verboseUI.SetUserLevel(ui.LevelVerbose)
 	projectContext := config.ShuttleProjectContext{
+		UI: verboseUI,
 		Scripts: map[string]config.ShuttlePlanScript{
 			"serve": {
 				Description: "",

@@ -7,7 +7,7 @@ scripts:
   test-go:
     description: 'run tests written in go'
     actions:
-    - shell: go test ./pkg/... -run Test*
+    - shell: go test -v ./pkg/... -run Test*
   test-shell:
     description: 'run tests written in shell'
     actions:
