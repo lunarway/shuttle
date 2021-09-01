@@ -10,6 +10,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sync"
+	"syscall"
+	"time"
 
 	"github.com/lunarway/shuttle/pkg/config"
 	shuttleerrors "github.com/lunarway/shuttle/pkg/errors"
@@ -32,6 +34,13 @@ func executeShell(ctx context.Context, context ActionExecutionContext) error {
 		return fmt.Errorf("get stderr pipe: %w", err)
 	}
 
+	// Set process group ID so the cmd and all its children become a new process
+	// group. This allows Stop to SIGTERM the cmd's process group without killing
+	// this process (i.e. this code here). Note that this does not support
+	// windows. this is copied from go-cmd:
+	// https://github.com/go-cmd/cmd/blob/9e40bcc1acc0e559af2c2e99ae5674ae25cde397/cmd_darwin.go#L15
+	execCmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
 	err = execCmd.Start()
 	if err != nil {
 		return fmt.Errorf("start command: %w", err)
@@ -48,7 +57,7 @@ func executeShell(ctx context.Context, context ActionExecutionContext) error {
 	go stdScanner(&wg, stderr, context.ScriptContext.Project.UI.Errorln)
 	go stdScanner(&wg, stdout, context.ScriptContext.Project.UI.Infoln)
 
-	err = execCmd.Wait()
+	err = waitOrStop(ctx, execCmd, 5*time.Second)
 	if err != nil {
 		var exitError *exec.ExitError
 		if errors.As(err, &exitError) {
@@ -61,6 +70,69 @@ func executeShell(ctx context.Context, context ActionExecutionContext) error {
 	}
 
 	return nil
+}
+
+// waitOrStop waits for the already-started command cmd by calling its Wait
+// method.
+//
+// If cmd does not return before ctx is done, waitOrStop sends it the given
+// interrupt signal. If killDelay is positive, waitOrStop waits that additional
+// period for Wait to return before sending os.Kill.
+//
+// This function is inspired by
+// https://github.com/golang/go/blob/cacac8bdc5c93e7bc71df71981fdf32dded017bf/src/cmd/go/script_test.go#L1091
+// and adapted to a non-test context along with handling group termination.
+func waitOrStop(ctx context.Context, cmd *exec.Cmd, killDelay time.Duration) error {
+	interruptChan := make(chan error)
+	go func() {
+		select {
+		case interruptChan <- nil:
+			return
+		case <-ctx.Done():
+		}
+
+		// Signal the process group (-pid), not just the process, so that the
+		// process and all its children are signaled. Else, child procs can keep
+		// running and keep the stdout/stderr fd open and cause cmd.Wait to hang.
+		err := syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
+		if err == nil {
+			err = ctx.Err() // Report ctx.Err() as the reason we interrupted.
+		} else if err.Error() == "os: process already finished" {
+			interruptChan <- nil
+			return
+		}
+
+		if killDelay > 0 {
+			timer := time.NewTimer(killDelay)
+			select {
+			// Report ctx.Err() as the reason we interrupted the process...
+			case interruptChan <- ctx.Err():
+				timer.Stop()
+				return
+			// ...but after killDelay has elapsed, fall back to a stronger signal.
+			case <-timer.C:
+			}
+
+			// Wait still hasn't returned.
+			// Kill the process harder to make sure that it exits.
+			//
+			// Ignore any error: if cmd.Process has already terminated, we still
+			// want to send ctx.Err() (or the error from the Interrupt call)
+			// to properly attribute the signal that may have terminated it.
+			_ = cmd.Process.Kill()
+		}
+
+		interruptChan <- err
+	}()
+
+	waitErr := cmd.Wait()
+
+	interruptErr := <-interruptChan
+	if interruptErr != nil {
+		return interruptErr
+	}
+
+	return waitErr
 }
 
 func setupCommandEnvironmentVariables(execCmd *exec.Cmd, context ActionExecutionContext) {
