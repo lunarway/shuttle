@@ -1,0 +1,6 @@
+plan: false
+scripts:
+  say:
+    description: Write output
+    actions:
+      - shell: echo "$project"
