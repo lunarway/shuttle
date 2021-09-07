@@ -121,6 +121,8 @@ func getProjectContext() (config.ShuttleProjectContext, error) {
 		os.Exit(1)
 	}
 
+	projectFlagSet := rootCmd.Flags().Changed("project")
+
 	var fullProjectPath string
 	if path.IsAbs(projectPath) {
 		fullProjectPath = projectPath
@@ -136,7 +138,7 @@ func getProjectContext() (config.ShuttleProjectContext, error) {
 	}
 
 	var c config.ShuttleProjectContext
-	_, err = c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling, plan)
+	_, err = c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling, plan, projectFlagSet)
 	if err != nil {
 		return config.ShuttleProjectContext{}, err
 	}

@@ -36,8 +36,8 @@ type ShuttleProjectContext struct {
 }
 
 // Setup the ShuttleProjectContext for a specific path
-func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool, skipGitPlanPulling bool, planArgument string) (*ShuttleProjectContext, error) {
-	projectPath, err := c.Config.getConf(projectPath)
+func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool, skipGitPlanPulling bool, planArgument string, strictConfigLookup bool) (*ShuttleProjectContext, error) {
+	projectPath, err := c.Config.getConf(projectPath, strictConfigLookup)
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +77,12 @@ func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool,
 }
 
 // getConf loads the ShuttleConfig from yaml file in the project path
-func (c *ShuttleConfig) getConf(projectPath string) (string, error) {
+func (c *ShuttleConfig) getConf(projectPath string, strictConfigLookup bool) (string, error) {
 	if projectPath == "" {
 		return projectPath, nil
 	}
 
-	file, err := locateShuttleConfigurationFile(projectPath)
+	file, err := locateShuttleConfigurationFile(projectPath, strictConfigLookup)
 	if err != nil {
 		return "", shuttleerrors.NewExitCode(2, "Failed to load shuttle configuration: %s\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.", err)
 	}
@@ -105,7 +105,7 @@ func (c *ShuttleConfig) getConf(projectPath string) (string, error) {
 	return path.Dir(file.Name()), nil
 }
 
-func locateShuttleConfigurationFile(startPath string) (*os.File, error) {
+func locateShuttleConfigurationFile(startPath string, strictConfigLookup bool) (*os.File, error) {
 	var err error
 	for {
 		configPath := path.Join(startPath, "shuttle.yaml")
@@ -116,6 +116,10 @@ func locateShuttleConfigurationFile(startPath string) (*os.File, error) {
 			if os.IsNotExist(err) {
 				if startPath == "" || startPath == "/" {
 					err = errors.New("shuttle.yaml file not found")
+					break
+				}
+
+				if strictConfigLookup {
 					break
 				}
 
