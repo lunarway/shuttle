@@ -105,6 +105,8 @@ func (c *ShuttleConfig) getConf(projectPath string, strictConfigLookup bool) (st
 	return path.Dir(file.Name()), nil
 }
 
+var errShuttleFileNotFound = errors.New("shuttle.yaml file not found")
+
 func locateShuttleConfigurationFile(startPath string, strictConfigLookup bool) (*os.File, error) {
 	var err error
 	for {
@@ -115,11 +117,12 @@ func locateShuttleConfigurationFile(startPath string, strictConfigLookup bool) (
 		if err != nil {
 			if os.IsNotExist(err) {
 				if startPath == "" || startPath == "/" {
-					err = errors.New("shuttle.yaml file not found")
+					err = errShuttleFileNotFound
 					break
 				}
 
 				if strictConfigLookup {
+					err = errShuttleFileNotFound
 					break
 				}
 

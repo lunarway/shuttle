@@ -9,11 +9,12 @@ import (
 
 func TestShuttleConfig_getConf(t *testing.T) {
 	tt := []struct {
-		name      string
-		input     string
-		err       error
-		config    ShuttleConfig
-		foundPath string
+		name       string
+		input      string
+		strictMode bool
+		err        error
+		config     ShuttleConfig
+		foundPath  string
 	}{
 		{
 			name:  "empty path",
@@ -80,12 +81,18 @@ func TestShuttleConfig_getConf(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:       "subdir of shuttle.yaml file in strict mode",
+			input:      "testdata/valid/subdir",
+			strictMode: true,
+			err:        errors.New("exit code 2 - Failed to load shuttle configuration: shuttle.yaml file not found\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available."),
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			c := &ShuttleConfig{}
 
-			path, err := c.getConf(tc.input)
+			path, err := c.getConf(tc.input, tc.strictMode)
 
 			if tc.err != nil {
 				assert.EqualError(t, err, tc.err.Error(), "error not as expected")
