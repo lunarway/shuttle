@@ -1,11 +1,13 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
-	"github.com/lunarway/shuttle/pkg/errors"
+	shuttleerrors "github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/ui"
 	"gopkg.in/yaml.v2"
 )
@@ -34,8 +36,8 @@ type ShuttleProjectContext struct {
 }
 
 // Setup the ShuttleProjectContext for a specific path
-func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool, skipGitPlanPulling bool, planArgument string) (*ShuttleProjectContext, error) {
-	_, err := c.Config.getConf(projectPath)
+func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool, skipGitPlanPulling bool, planArgument string, strictConfigLookup bool) (*ShuttleProjectContext, error) {
+	projectPath, err := c.Config.getConf(projectPath, strictConfigLookup)
 	if err != nil {
 		return nil, err
 	}
@@ -75,16 +77,14 @@ func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool,
 }
 
 // getConf loads the ShuttleConfig from yaml file in the project path
-func (c *ShuttleConfig) getConf(projectPath string) (*ShuttleConfig, error) {
+func (c *ShuttleConfig) getConf(projectPath string, strictConfigLookup bool) (string, error) {
 	if projectPath == "" {
-		return c, nil
+		return projectPath, nil
 	}
 
-	configPath := path.Join(projectPath, "shuttle.yaml")
-
-	file, err := os.Open(configPath)
+	file, err := locateShuttleConfigurationFile(projectPath, strictConfigLookup)
 	if err != nil {
-		return c, errors.NewExitCode(2, "Failed to load shuttle configuration: %s\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.", err)
+		return "", shuttleerrors.NewExitCode(2, "Failed to load shuttle configuration: %s\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.", err)
 	}
 	defer file.Close()
 
@@ -92,7 +92,7 @@ func (c *ShuttleConfig) getConf(projectPath string) (*ShuttleConfig, error) {
 	decoder.SetStrict(true)
 	err = decoder.Decode(c)
 	if err != nil {
-		return c, errors.NewExitCode(2, "Failed to parse shuttle configuration: %s\n\nMake sure your 'shuttle.yaml' is valid.", err)
+		return "", shuttleerrors.NewExitCode(2, "Failed to parse shuttle configuration: %s\n\nMake sure your 'shuttle.yaml' is valid.", err)
 	}
 
 	switch c.PlanRaw {
@@ -101,6 +101,53 @@ func (c *ShuttleConfig) getConf(projectPath string) (*ShuttleConfig, error) {
 	default:
 		c.Plan = c.PlanRaw.(string)
 	}
+	// return the path where the shuttle.yaml file was found
+	return path.Dir(file.Name()), nil
+}
 
-	return c, nil
+var errShuttleFileNotFound = errors.New("shuttle.yaml file not found")
+
+func locateShuttleConfigurationFile(startPath string, strictConfigLookup bool) (*os.File, error) {
+	var err error
+	for {
+		configPath := path.Join(startPath, "shuttle.yaml")
+
+		var file *os.File
+		file, err = os.Open(configPath)
+		if err != nil {
+			if os.IsNotExist(err) {
+				if startPath == "" || startPath == "/" {
+					err = errShuttleFileNotFound
+					break
+				}
+
+				if strictConfigLookup {
+					err = errShuttleFileNotFound
+					break
+				}
+
+				startPath = removeLastDirectory(startPath)
+				continue
+			}
+			break
+		}
+
+		return file, nil
+	}
+
+	return nil, err
+}
+
+func removeLastDirectory(projectPath string) string {
+	parts := strings.Split(projectPath, "/")
+
+	newProjectPath := strings.Join(parts[0:len(parts)-1], "/")
+
+	// when handling the root path / the split and join will produce an empty
+	// string so to keep the absolute path set the root path directly.
+	if path.IsAbs(projectPath) && newProjectPath == "" {
+		return "/"
+	}
+
+	return newProjectPath
 }
