@@ -174,11 +174,11 @@ b:
 			input: input{
 				path: "a",
 				data: fromYaml(`a:
-  b: b 
-  d: d 
-  e: e 
-  g: g 
-  h: h 
+  b: b
+  d: d
+  e: e
+  g: g
+  h: h
   f: f
   c: c
 `),
@@ -395,4 +395,42 @@ func fromYaml(data string) interface{} {
 		log.Fatalf("faild to read yaml: %v", err)
 	}
 	return m
+}
+
+func TestTmplGetFiles(t *testing.T) {
+	tt := []struct {
+		name      string
+		directory string
+
+		files []string
+		err   error
+	}{
+		{
+			name:      "existing directory",
+			directory: "testdata/dir",
+
+			files: []string{
+				"file.test",
+			},
+			err: nil,
+		},
+		{
+			name:      "non-existing directory",
+			directory: "testdata/no-dir",
+
+			files: nil,
+			err:   nil,
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			files := TmplGetFiles(tc.directory)
+
+			var foundFiles []string
+			for _, f := range files {
+				foundFiles = append(foundFiles, f.Name())
+			}
+			assert.Equal(t, tc.files, foundFiles)
+		})
+	}
 }

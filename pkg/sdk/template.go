@@ -2,12 +2,13 @@ package sdk
 
 import (
 	"fmt"
-	"github.com/lunarway/shuttle/pkg/templates"
-	"github.com/pkg/errors"
 	"io"
 	"os"
 	"path"
 	"text/template"
+
+	"github.com/lunarway/shuttle/pkg/templates"
+	"github.com/pkg/errors"
 )
 
 type TemplateContext struct {
@@ -49,7 +50,20 @@ func ResolveTemplatePath(project ShuttleContext, templateName string) (string, e
 }
 
 func Generate(templatePath, templateName, outputFilepath string, context TemplateContext, leftDelim, rightDelim string) error {
+	file, err := os.Create(outputFilepath)
+	if err != nil {
+		return errors.WithMessagef(err, "create template output file '%s'", outputFilepath)
+	}
 
+	err = renderTemplate(templatePath, templateName, file, context, leftDelim, rightDelim)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func renderTemplate(templatePath, templateName string, output io.Writer, context TemplateContext, leftDelim, rightDelim string) error {
 	tmpl, err := template.New(templateName).
 		Delims(leftDelim, rightDelim).
 		Funcs(templates.GetFuncMap()).
@@ -58,14 +72,6 @@ func Generate(templatePath, templateName, outputFilepath string, context Templat
 	if err != nil {
 		return err
 	}
-
-	var output io.Writer
-
-	file, err := os.Create(outputFilepath)
-	if err != nil {
-		return errors.WithMessagef(err, "create template output file '%s'", outputFilepath)
-	}
-	output = file
 
 	err = tmpl.ExecuteTemplate(output, path.Base(templatePath), context)
 	if err != nil {

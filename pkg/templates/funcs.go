@@ -47,7 +47,6 @@ func GetFuncMap() template.FuncMap {
 	return f
 }
 
-// TODO: Add description
 func TmplGet(path string, input interface{}) interface{} {
 	if !strings.Contains(path, ".") {
 		return getInner(path, input)
@@ -70,7 +69,6 @@ func TmplStrConst(value string) string {
 	return value
 }
 
-// TODO: Add description
 func TmplString(path string, input interface{}) string {
 	value := TmplGet(path, input)
 	if value == nil {
@@ -79,7 +77,6 @@ func TmplString(path string, input interface{}) string {
 	return fmt.Sprintf("%v", value)
 }
 
-// TODO: Add description
 func TmplInt(path string, input interface{}) int {
 	value := TmplGet(path, input)
 	if value == nil {
@@ -161,44 +158,41 @@ func TmplUpperFirst(s string) string {
 	return fmt.Sprintf("%s%s", strings.ToUpper(s[0:1]), s[1:])
 }
 
-// TmplToYaml takes an interface, marshals it to yaml, and returns a string. It will
-// always return a string, even on marshal error (empty string).
+// TmplToYaml takes an interface, marshals it to yaml, and returns a string.
 //
 // This is designed to be called from a template.
 //
 // Borrowed from github.com/helm/helm/pkg/chartutil
-func TmplToYaml(v interface{}) string {
+func TmplToYaml(v interface{}) (string, error) {
 	data, err := yaml.Marshal(v)
 	if err != nil {
-		// Swallow errors inside of a template.
-		return ""
+		return "", err
 	}
-	return string(data)
+	return string(data), nil
 }
 
 // TmplFromYaml converts a YAML document into a map[string]interface{}.
 //
 // This is not a general-purpose YAML parser, and will not parse all valid
-// YAML documents. Additionally, because its intended use is within templates
-// it tolerates errors. It will insert the returned error message string into
-// m["Error"] in the returned map.
+// YAML documents.
 //
 // Borrowed from github.com/helm/helm/pkg/chartutil
-func TmplFromYaml(str string) map[string]interface{} {
+func TmplFromYaml(str string) (map[string]interface{}, error) {
 	m := map[string]interface{}{}
 
-	if err := yaml.Unmarshal([]byte(str), &m); err != nil {
-		m["Error"] = err.Error()
+	err := yaml.Unmarshal([]byte(str), &m)
+	if err != nil {
+		return nil, err
 	}
-	return m
+	return m, nil
 }
 
-func TmplGetFileContent(filePath string) string {
+func TmplGetFileContent(filePath string) (string, error) {
 	byteContent, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return "" // TODO: Print error to shuttle output
+		return "", err
 	}
-	return string(byteContent)
+	return string(byteContent), nil
 }
 
 func TmplFileExists(filePath string) bool {
@@ -211,7 +205,7 @@ func TmplFileExists(filePath string) bool {
 func TmplGetFiles(directoryPath string) []os.FileInfo {
 	files, err := ioutil.ReadDir(directoryPath)
 	if err != nil {
-		return []os.FileInfo{} // TODO: Print error to shuttle output
+		return []os.FileInfo{}
 	}
 	sort.Slice(files, func(i, j int) bool {
 		return files[i].Name() < files[j].Name()
@@ -219,7 +213,6 @@ func TmplGetFiles(directoryPath string) []os.FileInfo {
 	return files
 }
 
-// TODO: Add description
 func getInner(property string, input interface{}) interface{} {
 	switch t := input.(type) {
 	default:
