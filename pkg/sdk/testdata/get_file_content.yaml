@@ -1,0 +1,2 @@
+bar: baz
+{{ getFileContent (string "path" .Vars) }}
