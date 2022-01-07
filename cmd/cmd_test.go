@@ -36,7 +36,6 @@ func TestRoot(t *testing.T) {
 			rootCmd.SetArgs(tc.input)
 			err := rootCmd.Execute()
 
-			//cmd, err := rootCmd.ExecuteC()
 			assert.Equal(t, tc.output, buf.String())
 			assert.NoError(t, err)
 		})
