@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRunNoErr(t *testing.T) {
+func TestRoot(t *testing.T) {
 	strings := func(s ...string) []string {
 		return s
 	}
