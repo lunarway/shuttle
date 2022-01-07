@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
 )
@@ -53,7 +51,7 @@ Available fields are:
 		} else {
 			templ = planDefaultTempl
 		}
-		err = ui.Template(os.Stdout, "plan", templ, templData{
+		err = ui.Template(cmd.OutOrStdout(), "plan", templ, templData{
 			Plan:              context.Config.Plan,
 			PlanRaw:           context.Config.PlanRaw,
 			LocalPlanPath:     context.LocalPlanPath,

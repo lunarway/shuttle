@@ -1,6 +1,7 @@
 package browser
 
 import (
+	"io"
 	"os"
 	"os/exec"
 	"runtime"
@@ -14,15 +15,15 @@ import (
 
 // Command returns an exec.Cmd instance respecting runtime.GOOS and $BROWSER
 // environment variable.
-func Command(url string) (*exec.Cmd, error) {
+func Command(url string, errOutput io.Writer) (*exec.Cmd, error) {
 	launcher := os.Getenv("BROWSER")
 	if launcher != "" {
-		return fromBrowserEnv(launcher, url)
+		return fromBrowserEnv(launcher, url, errOutput)
 	}
-	return forOS(runtime.GOOS, url), nil
+	return forOS(runtime.GOOS, url, errOutput), nil
 }
 
-func forOS(goos, url string) *exec.Cmd {
+func forOS(goos, url string, errOutput io.Writer) *exec.Cmd {
 	exe := "open"
 	var args []string
 	switch goos {
@@ -38,12 +39,12 @@ func forOS(goos, url string) *exec.Cmd {
 	}
 
 	cmd := exec.Command(exe, args...)
-	cmd.Stderr = os.Stderr
+	cmd.Stderr = errOutput
 	return cmd
 }
 
 // fromBrowserEnv parses the BROWSER string based on shell splitting rules.
-func fromBrowserEnv(launcher, url string) (*exec.Cmd, error) {
+func fromBrowserEnv(launcher, url string, errOutput io.Writer) (*exec.Cmd, error) {
 	args, err := shlex.Split(launcher)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func fromBrowserEnv(launcher, url string) (*exec.Cmd, error) {
 
 	args = append(args, url)
 	cmd := exec.Command(exe, args[1:]...)
-	cmd.Stderr = os.Stderr
+	cmd.Stderr = errOutput
 	return cmd, nil
 }
 

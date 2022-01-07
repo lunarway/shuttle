@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -36,7 +35,7 @@ var getCmd = &cobra.Command{
 		}
 		value := templates.TmplGet(path, context.Config.Variables)
 		if templ != "" {
-			err := ui.Template(os.Stdout, "get", templ, value)
+			err := ui.Template(cmd.OutOrStdout(), "get", templ, value)
 			checkError(err)
 			return
 		}

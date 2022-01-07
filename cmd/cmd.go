@@ -86,7 +86,7 @@ Read more about shuttle at https://github.com/lunarway/shuttle`, version),
 		if verboseFlag {
 			uii = uii.SetUserLevel(ui.LevelVerbose)
 		}
-
+		uii.SetOutput(cmd.OutOrStdout(), cmd.ErrOrStderr())
 		uii.Verboseln("Running shuttle")
 		uii.Verboseln("- version: %s", version)
 		uii.Verboseln("- commit: %s", commit)
