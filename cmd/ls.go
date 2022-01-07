@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
@@ -38,7 +36,7 @@ var lsCmd = &cobra.Command{
 		} else {
 			templ = lsDefaultTempl
 		}
-		err = ui.Template(os.Stdout, "ls", templ, templData{
+		err = ui.Template(cmd.OutOrStdout(), "ls", templ, templData{
 			Scripts: context.Scripts,
 			Max:     calculateRightPadForKeys(context.Scripts),
 		})

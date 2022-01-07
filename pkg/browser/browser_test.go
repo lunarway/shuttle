@@ -2,6 +2,7 @@ package browser
 
 import (
 	"errors"
+	"io"
 	"reflect"
 	"testing"
 )
@@ -69,7 +70,7 @@ func TestForOS(t *testing.T) {
 		}()
 
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := forOS(tt.args.goos, tt.args.url)
+			cmd := forOS(tt.args.goos, tt.args.url, io.Discard)
 			if !reflect.DeepEqual(cmd.Args, tt.want) {
 				t.Errorf("ForOS() = %v, want %v", cmd.Args, tt.want)
 			}

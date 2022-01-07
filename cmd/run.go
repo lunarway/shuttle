@@ -31,8 +31,8 @@ var (
 )
 
 func init() {
-	runCmd.SetHelpFunc(func(f *cobra.Command, args []string) {
-		scripts := f.Flags().Args()
+	runCmd.SetHelpFunc(func(cmd *cobra.Command, args []string) {
+		scripts := cmd.Flags().Args()
 		if len(scripts) == 0 {
 			runCmd.Usage()
 			return
@@ -40,7 +40,7 @@ func init() {
 		context, err := getProjectContext()
 		checkError(err)
 
-		err = executors.Help(context.Scripts, scripts[0], os.Stdout, flagTemplate)
+		err = executors.Help(context.Scripts, scripts[0], cmd.OutOrStdout(), flagTemplate)
 		checkError(err)
 	})
 	runCmd.Flags().StringVar(&flagTemplate, "template", "", "Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].")

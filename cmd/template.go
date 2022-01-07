@@ -78,7 +78,7 @@ var templateCmd = &cobra.Command{
 		}
 		var output io.Writer
 		if templateOutput == "" {
-			output = os.Stdout
+			output = cmd.OutOrStdout()
 		} else {
 			// TODO: This is probably not the right place to initialize the temp dir?
 			os.MkdirAll(projectContext.TempDirectoryPath, os.ModePerm)

@@ -27,7 +27,7 @@ and respects the BROWSER environment variable.`,
 		checkError(err)
 		uii.Infoln("Documentation available at: %s", url)
 
-		browseCmd, err := browser.Command(url)
+		browseCmd, err := browser.Command(url, cmd.ErrOrStderr())
 		checkError(err)
 
 		err = browseCmd.Run()

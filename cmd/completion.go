@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
@@ -87,9 +86,9 @@ Installing bash completion on Linux
 		uii = uii.SetContext(ui.LevelSilent)
 		switch args[0] {
 		case "zsh":
-			runCompletionZsh(os.Stdout, rootCmd)
+			runCompletionZsh(cmd.OutOrStdout(), rootCmd)
 		case "bash":
-			rootCmd.GenBashCompletion(os.Stdout)
+			rootCmd.GenBashCompletion(cmd.OutOrStdout())
 		default:
 		}
 	},
