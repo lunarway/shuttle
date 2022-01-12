@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLsNoErr(t *testing.T) {
+func TestLs(t *testing.T) {
 	strings := func(s ...string) []string {
 		return s
 	}
