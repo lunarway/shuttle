@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRoot(t *testing.T) {
+func TestLsNoErr(t *testing.T) {
 	strings := func(s ...string) []string {
 		return s
 	}
@@ -17,14 +17,14 @@ func TestRoot(t *testing.T) {
 		output string
 	}{
 		{
-			name:   "list actions",
+			name:   "list one action",
 			input:  strings("-p", "../examples/no-plan-project", "ls"),
 			output: "Available Scripts:\n  hello        \n",
 		},
 		{
-			name:   "test moonbase build",
-			input:  strings("-p", "../examples/no-plan-project", "run", "hello"),
-			output: "Hello no plan project\n",
+			name:   "list actions",
+			input:  strings("-p", "../examples/repo-project/", "ls"),
+			output: "Pulling latest plan changes on master\nAvailable Scripts:\n  build        Build the docker image\n  deploy       Deploys the image to a kubernetes environment\n  push         Push the docker image\n  say          Say something\n  test         Run test for the project\n",
 		},
 	}
 
