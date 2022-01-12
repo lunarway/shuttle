@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetNoErr(t *testing.T) {
+func TestGet(t *testing.T) {
 	strings := func(s ...string) []string {
 		return s
 	}
