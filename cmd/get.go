@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -46,7 +47,7 @@ var getCmd = &cobra.Command{
 			if err != nil {
 				checkError(errors.NewExitCode(9, "Could not yaml encode value '%s'\nError: %s", value, err))
 			}
-			cmd.Print(strings.TrimRight(string(x), "\n"))
+			fmt.Fprint(cmd.OutOrStdout(), strings.TrimRight(string(x), "\n"))
 		}
 	},
 }
