@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
+	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/templates"
 	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
@@ -13,11 +13,13 @@ var (
 	lookupInScripts bool
 	outputAsStdout  bool
 	hasCmd          = &cobra.Command{
-		Use:   "has [variable]",
-		Short: "Check if a variable (or script) is defined",
-		Args:  cobra.ExactArgs(1),
+		Use:           "has [variable]",
+		Short:         "Check if a variable (or script) is defined",
+		Args:          cobra.ExactArgs(1),
+		SilenceUsage:  true,
+		SilenceErrors: true,
 		//Long:  ``,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			uii = uii.SetContext(ui.LevelSilent)
 
 			context, err := getProjectContext()
@@ -39,11 +41,12 @@ var (
 				} else {
 					fmt.Print("false")
 				}
+				return nil
 			} else {
 				if found {
-					os.Exit(0)
+					return nil
 				} else {
-					os.Exit(1)
+					return errors.NewExitCode(1, "")
 				}
 			}
 		},
