@@ -23,8 +23,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var shell string
-
 // completionCmd represents the completion command
 var completionCmd = &cobra.Command{
 	Use:   "completion <shell>",
