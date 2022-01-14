@@ -1,42 +1,30 @@
 package cmd
 
 import (
-	"bytes"
+	"fmt"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestHasNoErr(t *testing.T) {
+func TestHas(t *testing.T) {
 	strings := func(s ...string) []string {
 		return s
 	}
-	tt := []struct {
-		name   string
-		input  []string
-		output string
-	}{
+
+	testCases := []testCase{
 		{
-			name:   "has variable",
-			input:  strings("-p", "../examples/repo-project", "has", "docker.baseImage"),
-			output: "",
+			name:      "has variable",
+			input:     strings("-p", "../examples/repo-project", "has", "docker.baseImage"),
+			stdoutput: "",
+			erroutput: "",
+			err:       nil,
+		},
+		{
+			name:      "has wrong argument switch",
+			input:     strings("-j", "../examples/repo-project", "has", "docker.baseImage"),
+			stdoutput: "",
+			erroutput: "",
+			err:       fmt.Errorf("unknown shorthand flag: 'j' in -j"),
 		},
 	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			buf := new(bytes.Buffer)
-			rootCmd.SetOut(buf)
-			rootCmd.SetErr(buf)
-			rootCmd.SetArgs(tc.input)
-			err := rootCmd.Execute()
-
-			assert.NoError(t, err)
-
-			if tc.output != "" {
-				assert.Equal(t, tc.output, buf.String())
-			}
-
-		})
-	}
+	executeTestCases(t, testCases)
 }
