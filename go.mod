@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/cli/safeexec v1.0.0
-	github.com/go-cmd/cmd v1.3.0
+	github.com/go-cmd/cmd v1.4.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1
