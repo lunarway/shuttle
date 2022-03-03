@@ -35,7 +35,7 @@
 
 _DISCLAIMER: shuttle is in beta, so stuff may change. However we are using shuttle heavily at Lunar Way and we use it to deploy to production, so it is pretty battle proven._
 
-[![Build Status](https://travis-ci.com/lunarway/shuttle.svg?branch=master)](https://travis-ci.com/lunarway/shuttle) [![Go Report Card](https://goreportcard.com/badge/github.com/lunarway/shuttle)](https://goreportcard.com/report/github.com/lunarway/shuttle)
+[![Go Report Card](https://goreportcard.com/badge/github.com/lunarway/shuttle)](https://goreportcard.com/report/github.com/lunarway/shuttle)
 
 ## How?
 
