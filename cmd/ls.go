@@ -14,39 +14,38 @@ Available Scripts:
 {{- end}}
 `
 
-var (
-	lsFlagTemplate string
-)
-
 type templData struct {
 	Scripts map[string]config.ShuttlePlanScript
 	Max     int
 }
 
-var lsCmd = &cobra.Command{
-	Use:   "ls [command]",
-	Short: "List possible commands",
-	Run: func(cmd *cobra.Command, args []string) {
-		context, err := getProjectContext()
-		checkError(err)
+func newLsCmd(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+	var lsFlagTemplate string
 
-		var templ string
-		if lsFlagTemplate != "" {
-			templ = lsFlagTemplate
-		} else {
-			templ = lsDefaultTempl
-		}
-		err = ui.Template(cmd.OutOrStdout(), "ls", templ, templData{
-			Scripts: context.Scripts,
-			Max:     calculateRightPadForKeys(context.Scripts),
-		})
-		checkError(err)
-	},
-}
+	lsCmd := &cobra.Command{
+		Use:   "ls [command]",
+		Short: "List possible commands",
+		Run: func(cmd *cobra.Command, args []string) {
+			context, err := contextProvider()
+			checkError(uii, err)
 
-func init() {
+			var templ string
+			if lsFlagTemplate != "" {
+				templ = lsFlagTemplate
+			} else {
+				templ = lsDefaultTempl
+			}
+			err = ui.Template(cmd.OutOrStdout(), "ls", templ, templData{
+				Scripts: context.Scripts,
+				Max:     calculateRightPadForKeys(context.Scripts),
+			})
+			checkError(uii, err)
+		},
+	}
+
 	lsCmd.Flags().StringVar(&lsFlagTemplate, "template", "", "Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].")
-	rootCmd.AddCommand(lsCmd)
+
+	return lsCmd
 }
 
 func calculateRightPadForKeys(m map[string]config.ShuttlePlanScript) int {

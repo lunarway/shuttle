@@ -13,14 +13,8 @@ import (
 )
 
 var (
-	projectPath        string
-	uii                ui.UI = ui.Create()
-	verboseFlag        bool
-	clean              bool
-	skipGitPlanPulling bool
-	plan               string
-	version            = "<dev-version>"
-	commit             = "<unspecified-commit>"
+	version = "<dev-version>"
+	commit  = "<unspecified-commit>"
 )
 
 const rootCmdCompletion = `
@@ -73,36 +67,37 @@ __shuttle_custom_func() {
 `
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "shuttle",
-	Short: "A CLI for handling shared build and deploy tools between many projects no matter what technologies the project is using.",
-	Long: fmt.Sprintf(`shuttle %s
+func newRoot(uii *ui.UI) (*cobra.Command, contextProvider) {
+	var (
+		verboseFlag        bool
+		projectPath        string
+		clean              bool
+		skipGitPlanPulling bool
+		plan               string
+	)
+
+	rootCmd := &cobra.Command{
+		Use:   "shuttle",
+		Short: "A CLI for handling shared build and deploy tools between many projects no matter what technologies the project is using.",
+		Long: fmt.Sprintf(`shuttle %s
 
 A CLI for handling shared build and deploy tools between many
 projects no matter what technologies the project is using.
 
 Read more about shuttle at https://github.com/lunarway/shuttle`, version),
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if verboseFlag {
-			uii = uii.SetUserLevel(ui.LevelVerbose)
-		}
-		uii.SetOutput(cmd.OutOrStdout(), cmd.ErrOrStderr())
-		uii.Verboseln("Running shuttle")
-		uii.Verboseln("- version: %s", version)
-		uii.Verboseln("- commit: %s", commit)
-		uii.Verboseln("- project-path: %s", projectPath)
-	},
-	BashCompletionFunction: rootCmdCompletion,
-}
-
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		uii = ui.Create()
-		checkError(err)
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if verboseFlag {
+				*uii = uii.SetUserLevel(ui.LevelVerbose)
+			}
+			uii.SetOutput(cmd.OutOrStdout(), cmd.ErrOrStderr())
+			uii.Verboseln("Running shuttle")
+			uii.Verboseln("- version: %s", version)
+			uii.Verboseln("- commit: %s", commit)
+			uii.Verboseln("- project-path: %s", projectPath)
+		},
+		BashCompletionFunction: rootCmdCompletion,
 	}
-}
 
-func init() {
 	rootCmd.PersistentFlags().StringVarP(&projectPath, "project", "p", ".", "Project path")
 	rootCmd.PersistentFlags().BoolVarP(&clean, "clean", "c", false, "Start from clean setup")
 	rootCmd.PersistentFlags().BoolVar(&skipGitPlanPulling, "skip-pull", false, "Skip git plan pulling step")
@@ -112,9 +107,46 @@ for the selected plan.
 Select a version of a git plan by using #branch, #sha or #tag
 If none of above is used, then the argument will expect a full plan spec.`)
 	rootCmd.PersistentFlags().BoolVarP(&verboseFlag, "verbose", "v", false, "Print verbose output")
+
+	ctxProvider := func() (config.ShuttleProjectContext, error) {
+		return getProjectContext(rootCmd, uii, projectPath, clean, plan, skipGitPlanPulling)
+	}
+
+	return rootCmd, ctxProvider
 }
 
-func getProjectContext() (config.ShuttleProjectContext, error) {
+func Execute() {
+	rootCmd := initializedRoot()
+
+	if err := rootCmd.Execute(); err != nil {
+		uii := ui.Create()
+		checkError(&uii, err)
+	}
+}
+
+func initializedRoot() *cobra.Command {
+	uii := ui.Create()
+
+	rootCmd, ctxProvider := newRoot(&uii)
+
+	rootCmd.AddCommand(newDocumentationCommand(&uii, ctxProvider))
+	rootCmd.AddCommand(newCompletionCmd(&uii))
+	rootCmd.AddCommand(newGetCmd(&uii, ctxProvider))
+	rootCmd.AddCommand(newGitPlanCmd(&uii, ctxProvider))
+	rootCmd.AddCommand(newHasCmd(&uii, ctxProvider))
+	rootCmd.AddCommand(newLsCmd(&uii, ctxProvider))
+	rootCmd.AddCommand(newPlanCmd(&uii, ctxProvider))
+	rootCmd.AddCommand(newPrepareCmd(&uii, ctxProvider))
+	rootCmd.AddCommand(newRunCmd(&uii, ctxProvider))
+	rootCmd.AddCommand(newTemplateCmd(&uii, ctxProvider))
+	rootCmd.AddCommand(newVersionCmd(&uii))
+
+	return rootCmd
+}
+
+type contextProvider func() (config.ShuttleProjectContext, error)
+
+func getProjectContext(rootCmd *cobra.Command, uii *ui.UI, projectPath string, clean bool, plan string, skipGitPlanPulling bool) (config.ShuttleProjectContext, error) {
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
@@ -138,7 +170,7 @@ func getProjectContext() (config.ShuttleProjectContext, error) {
 	}
 
 	var c config.ShuttleProjectContext
-	_, err = c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling, plan, projectFlagSet)
+	_, err = c.Setup(fullProjectPath, *uii, clean, skipGitPlanPulling, plan, projectFlagSet)
 	if err != nil {
 		return config.ShuttleProjectContext{}, err
 	}

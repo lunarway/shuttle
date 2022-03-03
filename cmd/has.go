@@ -9,10 +9,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	lookupInScripts bool
-	outputAsStdout  bool
-	hasCmd          = &cobra.Command{
+func newHasCmd(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+	var (
+		lookupInScripts bool
+		outputAsStdout  bool
+	)
+
+	hasCmd := &cobra.Command{
 		Use:           "has [variable]",
 		Short:         "Check if a variable (or script) is defined",
 		Args:          cobra.ExactArgs(1),
@@ -20,10 +23,10 @@ var (
 		SilenceErrors: true,
 		//Long:  ``,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			uii = uii.SetContext(ui.LevelSilent)
+			*uii = uii.SetContext(ui.LevelSilent)
 
-			context, err := getProjectContext()
-			checkError(err)
+			context, err := contextProvider()
+			checkError(uii, err)
 
 			variable := args[0]
 
@@ -51,10 +54,9 @@ var (
 			}
 		},
 	}
-)
 
-func init() {
 	hasCmd.Flags().BoolVar(&lookupInScripts, "script", false, "Lookup existence in scripts instead of vars")
 	hasCmd.Flags().BoolVarP(&outputAsStdout, "stdout", "o", false, "Print result to stdout instead of exit code as `true` or `false`")
-	rootCmd.AddCommand(hasCmd)
+
+	return hasCmd
 }

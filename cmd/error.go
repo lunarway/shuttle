@@ -6,9 +6,10 @@ import (
 	"os"
 
 	shuttleerrors "github.com/lunarway/shuttle/pkg/errors"
+	"github.com/lunarway/shuttle/pkg/ui"
 )
 
-func checkError(err error) {
+func checkError(uii *ui.UI, err error) {
 	if err == nil {
 		return
 	}

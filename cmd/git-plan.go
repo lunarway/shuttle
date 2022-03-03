@@ -4,22 +4,22 @@ import (
 	"strings"
 
 	"github.com/lunarway/shuttle/pkg/git"
+	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
 )
 
-var (
-	gitPlanCmd = &cobra.Command{
+func newGitPlanCmd(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+	gitPlanCmd := &cobra.Command{
 		Use:   "git-plan [...git_args]",
 		Short: "Run a git command for the plan",
 		Run: func(cmd *cobra.Command, args []string) {
-			skipGitPlanPulling = true
-			context, err := getProjectContext()
-			checkError(err)
+			// TODO: this is no longer possible to configure
+			// skipGitPlanPulling = true
+			context, err := contextProvider()
+			checkError(uii, err)
 			git.RunGitPlanCommand(strings.Join(args, " "), context.LocalPlanPath, context.UI)
 		},
 	}
-)
 
-func init() {
-	rootCmd.AddCommand(gitPlanCmd)
+	return gitPlanCmd
 }
