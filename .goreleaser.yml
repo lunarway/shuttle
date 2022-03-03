@@ -11,17 +11,17 @@ builds:
       - "-s -w -X github.com/lunarway/shuttle/cmd.version={{.Version}} -X github.com/lunarway/shuttle/cmd.commit={{.Commit}}"
 
 archives:
-- id: archives
-  format: binary
-  name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
-  replacements:
-    darwin: darwin
-    linux: linux
-    windows: windows
-    386: i386
+  - id: archives
+    format: binary
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
+    replacements:
+      darwin: darwin
+      linux: linux
+      windows: windows
+      386: i386
 
 checksum:
-  name_template: '{{ .ProjectName }}-checksums.txt'
+  name_template: "{{ .ProjectName }}-checksums.txt"
 
 snapshot:
   name_template: "git-{{.Commit}}"
@@ -30,8 +30,4 @@ release:
   name_template: "v{{.Version}}"
 
 changelog:
-  sort: asc
-  filters:
-    exclude:
-    - '^docs:'
-    - '^test:'
+  skip: true
