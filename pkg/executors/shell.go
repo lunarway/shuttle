@@ -19,7 +19,7 @@ import (
 
 // Build builds the docker image from a shuttle plan
 func executeShell(ctx context.Context, context ActionExecutionContext) error {
-	execCmd := exec.CommandContext(ctx, "sh", "-c", fmt.Sprintf("cd '%s'; %s", context.ScriptContext.Project.ProjectPath, context.Action.Shell))
+	execCmd := exec.Command("sh", "-c", fmt.Sprintf("cd '%s'; %s", context.ScriptContext.Project.ProjectPath, context.Action.Shell))
 	context.ScriptContext.Project.UI.Verboseln("Starting shell command: %+v", execCmd.String())
 
 	setupCommandEnvironmentVariables(execCmd, context)
@@ -41,25 +41,35 @@ func executeShell(ctx context.Context, context ActionExecutionContext) error {
 	// https://github.com/go-cmd/cmd/blob/9e40bcc1acc0e559af2c2e99ae5674ae25cde397/cmd_darwin.go#L15
 	execCmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
+	go func() {
+		select {
+		case <-ctx.Done():
+			fmt.Println("Send interrupt to process")
+			err := execCmd.Process.Signal(os.Interrupt)
+			if err != nil {
+				fmt.Printf("Failed to signal process to stop: %v\n", err)
+			}
+		}
+	}()
+
+	fmt.Println("Starting process")
 	err = execCmd.Start()
 	if err != nil {
 		return fmt.Errorf("start command: %w", err)
 	}
 
+	// unusual use of sync.WaitGroup here. The os/exec.Cmd#Wait must not be called
+	// before the stdout and stderr streams are closed. Because of this we wait
+	// for the scanner Go routines to complete before moving on to waiting on the
+	// command.
 	var wg sync.WaitGroup
 	wg.Add(2)
-	// unusual use of sync.WaitGroup here. The os/exec.Cmd#Wait method will wait
-	// for the stdout and stderr streams to be read but to be sure that the
-	// execution does not move on before our scanner Go routines have returned we
-	// add this wait.
-	defer wg.Wait()
-
 	go stdScanner(&wg, stderr, context.ScriptContext.Project.UI.Errorln)
 	go stdScanner(&wg, stdout, context.ScriptContext.Project.UI.Infoln)
-
+	fmt.Println("Waiting for scanners")
 	wg.Wait()
 
-	err = waitOrStop(ctx, execCmd, 5*time.Second)
+	err = waitOrStop(ctx, execCmd, 10*time.Second)
 	if err != nil {
 		var exitError *exec.ExitError
 		if errors.As(err, &exitError) {

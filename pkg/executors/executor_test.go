@@ -212,16 +212,20 @@ func TestExecute_contextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		// let the container start before stopping it
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(1 * time.Second)
+		t.Log("Cancelling context")
 		cancel()
 	}()
 
+	t.Log("Executing script")
 	err := Execute(ctx, projectContext, "serve", nil, true)
 	assert.EqualError(t, err, context.Canceled.Error())
 
+	t.Log("Waiting for container to start")
 	// sadly we need to give the docker some time before "docker ps" shows the
 	// containers
 	time.Sleep(500 * time.Millisecond)
+	t.Log("Checking of container is still running")
 	images := runningDockerImages(t, imageName)
 	assert.Len(t, images, 0, "expected no images to be running")
 }
