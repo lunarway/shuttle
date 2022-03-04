@@ -7,13 +7,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	showCommit bool
-	versionCmd = &cobra.Command{
+func newVersion(uii *ui.UI) *cobra.Command {
+	var showCommit bool
+
+	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Info about version of shuttle",
 		Run: func(cmd *cobra.Command, args []string) {
-			uii = uii.SetContext(ui.LevelSilent)
+			*uii = uii.SetContext(ui.LevelSilent)
 			if showCommit {
 				fmt.Println(commit)
 			} else {
@@ -21,9 +22,8 @@ var (
 			}
 		},
 	}
-)
 
-func init() {
 	versionCmd.Flags().BoolVar(&showCommit, "commit", false, "Get git commit sha for current version")
-	rootCmd.AddCommand(versionCmd)
+
+	return versionCmd
 }

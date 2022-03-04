@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	tmplFuncs "github.com/lunarway/shuttle/pkg/templates"
+	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -20,92 +21,94 @@ type context struct {
 	ProjectPath string
 }
 
-var templateOutput, leftDelimArg, rightDelimArg, delimsArg string
-var ignoreProjectOverrides bool
-var templateCmd = &cobra.Command{
-	Use:   "template [template]",
-	Short: "Execute a template",
-	Args:  cobra.MinimumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var templateName = args[0]
-		projectContext, err := getProjectContext()
-		checkError(err)
+func newTemplate(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+	var templateOutput, leftDelimArg, rightDelimArg, delimsArg string
+	var ignoreProjectOverrides bool
 
-		namedArgs := map[string]string{}
-		for _, arg := range args[1:] {
-			parts := strings.SplitN(arg, "=", 2)
-			namedArgs[parts[0]] = parts[1]
-		}
+	templateCmd := &cobra.Command{
+		Use:   "template [template]",
+		Short: "Execute a template",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var templateName = args[0]
+			projectContext, err := contextProvider()
+			checkError(uii, err)
 
-		planPaths := []string{
-			path.Join(projectContext.LocalPlanPath, "templates", templateName),
-			path.Join(projectContext.LocalPlanPath, templateName),
-		}
-
-		projectPaths := []string{
-			path.Join(projectContext.ProjectPath, "templates", templateName),
-			path.Join(projectContext.ProjectPath, templateName),
-		}
-
-		var paths []string
-		if ignoreProjectOverrides {
-			paths = planPaths
-		} else {
-			paths = append(projectPaths, planPaths...)
-		}
-
-		templatePath := resolveFirstPath(paths)
-		if templatePath == "" {
-			return fmt.Errorf("template `%s` not found", templateName)
-		}
-
-		leftDelim, rightDelim, err := parseDelims(leftDelimArg, rightDelimArg, delimsArg)
-		if err != nil {
-			return err
-		}
-
-		tmpl, err := template.New(templateName).Delims(leftDelim, rightDelim).Funcs(tmplFuncs.GetFuncMap()).ParseFiles(templatePath)
-		if err != nil {
-			uii.Errorln("Parse template file failed\nFile: %s", templatePath)
-			return err
-		}
-
-		context := context{
-			Args:        namedArgs,
-			Vars:        projectContext.Config.Variables,
-			PlanPath:    projectContext.LocalPlanPath,
-			ProjectPath: projectContext.ProjectPath,
-		}
-		var output io.Writer
-		if templateOutput == "" {
-			output = cmd.OutOrStdout()
-		} else {
-			// TODO: This is probably not the right place to initialize the temp dir?
-			os.MkdirAll(projectContext.TempDirectoryPath, os.ModePerm)
-			templateOutputPath := path.Join(projectContext.TempDirectoryPath, templateOutput)
-			file, err := os.Create(templateOutputPath)
-			if err != nil {
-				return errors.WithMessagef(err, "create template output file '%s'", templateOutputPath)
+			namedArgs := map[string]string{}
+			for _, arg := range args[1:] {
+				parts := strings.SplitN(arg, "=", 2)
+				namedArgs[parts[0]] = parts[1]
 			}
-			output = file
-		}
 
-		err = tmpl.ExecuteTemplate(output, path.Base(templatePath), context)
-		if err != nil {
-			uii.Errorln("Failed to execute template\nPlan: %s\nProject: %s", context.PlanPath, context.ProjectPath)
-			return err
-		}
-		return nil
-	},
-}
+			planPaths := []string{
+				path.Join(projectContext.LocalPlanPath, "templates", templateName),
+				path.Join(projectContext.LocalPlanPath, templateName),
+			}
 
-func init() {
+			projectPaths := []string{
+				path.Join(projectContext.ProjectPath, "templates", templateName),
+				path.Join(projectContext.ProjectPath, templateName),
+			}
+
+			var paths []string
+			if ignoreProjectOverrides {
+				paths = planPaths
+			} else {
+				paths = append(projectPaths, planPaths...)
+			}
+
+			templatePath := resolveFirstPath(paths)
+			if templatePath == "" {
+				return fmt.Errorf("template `%s` not found", templateName)
+			}
+
+			leftDelim, rightDelim, err := parseDelims(leftDelimArg, rightDelimArg, delimsArg)
+			if err != nil {
+				return err
+			}
+
+			tmpl, err := template.New(templateName).Delims(leftDelim, rightDelim).Funcs(tmplFuncs.GetFuncMap()).ParseFiles(templatePath)
+			if err != nil {
+				uii.Errorln("Parse template file failed\nFile: %s", templatePath)
+				return err
+			}
+
+			context := context{
+				Args:        namedArgs,
+				Vars:        projectContext.Config.Variables,
+				PlanPath:    projectContext.LocalPlanPath,
+				ProjectPath: projectContext.ProjectPath,
+			}
+			var output io.Writer
+			if templateOutput == "" {
+				output = cmd.OutOrStdout()
+			} else {
+				// TODO: This is probably not the right place to initialize the temp dir?
+				os.MkdirAll(projectContext.TempDirectoryPath, os.ModePerm)
+				templateOutputPath := path.Join(projectContext.TempDirectoryPath, templateOutput)
+				file, err := os.Create(templateOutputPath)
+				if err != nil {
+					return errors.WithMessagef(err, "create template output file '%s'", templateOutputPath)
+				}
+				output = file
+			}
+
+			err = tmpl.ExecuteTemplate(output, path.Base(templatePath), context)
+			if err != nil {
+				uii.Errorln("Failed to execute template\nPlan: %s\nProject: %s", context.PlanPath, context.ProjectPath)
+				return err
+			}
+			return nil
+		},
+	}
+
 	templateCmd.Flags().StringVarP(&templateOutput, "output", "o", "", "Select filename to output file to in temporary directory")
 	templateCmd.Flags().StringVarP(&delimsArg, "delims", "", "", "Select delims for templating. Split by ','. If ',' is in the delims, then use --left-delim and --right-delim instead")
 	templateCmd.Flags().StringVarP(&leftDelimArg, "left-delim", "", "", "Select delims for templating. Defaults to '{{'")
 	templateCmd.Flags().StringVarP(&rightDelimArg, "right-delim", "", "", "Select delims for templating. Defaults to '}}'")
 	templateCmd.Flags().BoolVarP(&ignoreProjectOverrides, "ignore-project-overrides", "", false, "Set flag to ignore template files located in the project folder")
-	rootCmd.AddCommand(templateCmd)
+
+	return templateCmd
 }
 
 func resolveFirstPath(paths []string) string {

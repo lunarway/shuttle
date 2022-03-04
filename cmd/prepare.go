@@ -1,21 +1,20 @@
 package cmd
 
 import (
+	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
 )
 
-var (
-	prepareCmd = &cobra.Command{
+func newPrepare(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+	prepareCmd := &cobra.Command{
 		Use:   "prepare",
 		Short: "Load external resources",
 		Long:  `Load external resources as a preparation step, before starting to use shuttle`,
 		Run: func(cmd *cobra.Command, args []string) {
-			_, err := getProjectContext()
-			checkError(err)
+			_, err := contextProvider()
+			checkError(uii, err)
 		},
 	}
-)
 
-func init() {
-	rootCmd.AddCommand(prepareCmd)
+	return prepareCmd
 }

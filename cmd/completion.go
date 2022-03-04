@@ -23,11 +23,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// completionCmd represents the completion command
-var completionCmd = &cobra.Command{
-	Use:   "completion <shell>",
-	Short: `Output shell completion code`,
-	Long: `Output shell completion code for the specified shell (bash or zsh).
+func newCompletion(uii *ui.UI) *cobra.Command {
+	completionCmd := &cobra.Command{
+		Use:   "completion <shell>",
+		Short: `Output shell completion code`,
+		Long: `Output shell completion code for the specified shell (bash or zsh).
 The shell code must be evaluated to provide interactive
 completion of shuttle commands.  This can be done by sourcing it from
 the .bash_profile.
@@ -73,27 +73,26 @@ Installing bash completion on Linux
     Set the shuttle completion code for zsh[1] to autoload on startup
 
     	shuttle completion zsh > "${fpath[1]}/_shuttle"`,
-	ValidArgs: []string{"bash", "zsh"},
-	Args: func(cmd *cobra.Command, args []string) error {
-		if cobra.ExactArgs(1)(cmd, args) != nil || cobra.OnlyValidArgs(cmd, args) != nil {
-			return fmt.Errorf("only %v arguments are allowed", cmd.ValidArgs)
-		}
-		return nil
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-		uii = uii.SetContext(ui.LevelSilent)
-		switch args[0] {
-		case "zsh":
-			runCompletionZsh(cmd.OutOrStdout(), rootCmd)
-		case "bash":
-			rootCmd.GenBashCompletion(cmd.OutOrStdout())
-		default:
-		}
-	},
-}
+		ValidArgs: []string{"bash", "zsh"},
+		Args: func(cmd *cobra.Command, args []string) error {
+			if cobra.ExactArgs(1)(cmd, args) != nil || cobra.OnlyValidArgs(cmd, args) != nil {
+				return fmt.Errorf("only %v arguments are allowed", cmd.ValidArgs)
+			}
+			return nil
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			*uii = uii.SetContext(ui.LevelSilent)
+			switch args[0] {
+			case "zsh":
+				runCompletionZsh(cmd.OutOrStdout(), cmd.Root())
+			case "bash":
+				cmd.Root().GenBashCompletion(cmd.OutOrStdout())
+			default:
+			}
+		},
+	}
 
-func init() {
-	rootCmd.AddCommand(completionCmd)
+	return completionCmd
 }
 
 // this writes a zsh completion script that wraps the bash completion script.
