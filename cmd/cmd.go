@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -88,7 +89,6 @@ Read more about shuttle at https://github.com/lunarway/shuttle`, version),
 			if verboseFlag {
 				*uii = uii.SetUserLevel(ui.LevelVerbose)
 			}
-			uii.SetOutput(cmd.OutOrStdout(), cmd.ErrOrStderr())
 			uii.Verboseln("Running shuttle")
 			uii.Verboseln("- version: %s", version)
 			uii.Verboseln("- commit: %s", commit)
@@ -114,19 +114,20 @@ If none of above is used, then the argument will expect a full plan spec.`)
 	return rootCmd, ctxProvider
 }
 
-func Execute() {
-	rootCmd := initializedRoot()
+func Execute(out, err io.Writer) {
+	rootCmd, uii := initializedRoot(out, err)
 
 	if err := rootCmd.Execute(); err != nil {
-		uii := ui.Create()
-		checkError(&uii, err)
+		checkError(uii, err)
 	}
 }
 
-func initializedRoot() *cobra.Command {
-	uii := ui.Create()
+func initializedRoot(out, err io.Writer) (*cobra.Command, *ui.UI) {
+	uii := ui.Create(out, err)
 
 	rootCmd, ctxProvider := newRoot(&uii)
+	rootCmd.SetOut(out)
+	rootCmd.SetErr(err)
 
 	rootCmd.AddCommand(newDocumentation(&uii, ctxProvider))
 	rootCmd.AddCommand(newCompletion(&uii))
@@ -140,7 +141,7 @@ func initializedRoot() *cobra.Command {
 	rootCmd.AddCommand(newTemplate(&uii, ctxProvider))
 	rootCmd.AddCommand(newVersion(&uii))
 
-	return rootCmd
+	return rootCmd, &uii
 }
 
 type contextProvider func() (config.ShuttleProjectContext, error)

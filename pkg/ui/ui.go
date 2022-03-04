@@ -3,7 +3,6 @@ package ui
 import (
 	"fmt"
 	"io"
-	"os"
 )
 
 // UI is the abstraction of handling terminal output for shuttle
@@ -17,19 +16,14 @@ type UI struct {
 }
 
 // Create doc
-func Create() UI {
+func Create(out, err io.Writer) UI {
 	return UI{
 		EffectiveLevel: LevelInfo,
 		DefaultLevel:   LevelInfo,
 		UserLevelSet:   false,
-		Out:            os.Stdout,
-		Err:            os.Stderr,
+		Out:            out,
+		Err:            err,
 	}
-}
-
-func (ui *UI) SetOutput(out io.Writer, err io.Writer) {
-	ui.Out = out
-	ui.Err = err
 }
 
 // SetUserLevel doc
