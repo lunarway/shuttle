@@ -34,18 +34,6 @@ function assertContains() {
   fi
 }
 
-test_moon_base_builds() {
-  assertRun -p examples/moon-base run build tag=test
-}
-
-test_moon_base_builds_with_absolute_path() {
-  assertRun -p $(pwd)/examples/moon-base run build tag=test
-}
-
-test_venus_base_fails() {
-  assertErrorCode 2 -p examples/venus-base run build tag=test
-  assertContains "Failed to load shuttle configuration" "$result"
-}
 
 test_can_get_variable_from_local_plan() {
   result=$(./shuttle -p examples/moon-base get docker.image 2>&1)
@@ -144,47 +132,6 @@ test_can_execute_shuttle_version_without_error() {
   ./shuttle version --commit &>/dev/null
 }
 
-test_run_shell_error_outputs_exit_code() {
-  assertErrorCode 4 -p examples/moon-base run crash
-  assertContains "Exit code: 1" "$result"
-}
-
-test_run_shell_error_outputs_script_name() {
-  assertErrorCode 4 -p examples/moon-base run crash
-  if [[ ! "$result" =~ "crash" ]]; then
-    fail "Expected output to contain the script name 'crash', but it was:\n$result"
-  fi
-}
-
-test_run_shell_error_outputs_missing_arg() {
-  assertErrorCode 2 -p examples/moon-base run required-arg
-  if [[ ! "$result" =~ "required-arg" ]]; then
-    fail "Expected output to contain the script name 'required-arg', but it was:\n$result"
-  fi
-}
-
-test_run_shell_error_outputs_missing_arg_disabled_validation() {
-  assertErrorCode 0 -p examples/moon-base run --validate=false required-arg
-  if [[ "$result" =~ "required-arg" ]]; then
-    fail "Expected output not to contain the script name 'required-arg', but it was:\n$result"
-  fi
-}
-
-test_run_shell_error_outputs_parsing_argument_error_with_disabled_validation() {
-  assertErrorCode 2 -p examples/moon-base run --validate=false required-arg a
-  if [[ ! "$result" =~ "not <argument>=<value>" ]]; then
-    fail "Expected output to contain argument format error, but it was:\n$result"
-  fi
-  if [[ "$result" =~ "not supplied but is required" ]]; then
-    fail "Expected validation of required arguments to be skipped, but it was not:\n$result"
-  fi
-}
-
-test_run_shell_error_outputs_unknown_argument() {
-  assertErrorCode 2 -p examples/moon-base run required-arg a=baz foo=bar
-  assertContains "'foo' unknown" "$result"
-}
-
 test_template_local_path() {
   assertErrorCode 0 -p examples/moon-base template ../custom-template.tmpl -o Dockerfile-custom GO_VERSION=1.16
 }
@@ -192,34 +139,6 @@ test_template_local_path() {
 test_template_local_path_alternate_delims() {
   result=$(./shuttle -p examples/moon-base template ../custom-template-alternate-delims.tmpl --delims ">>,<<")
   assertEquals "FROM earth-united/moon-base" "$result"
-}
-
-test_run_repo_say_branch() {
-  result=$(./shuttle -p examples/repo-project-branched run say)
-  if [[ ! "$result" =~ "something clever" ]]; then
-    fail "Expected output to contain 'something clever', but it was:\n$result"
-  fi
-}
-
-test_run_repo_say() {
-  result=$(./shuttle -p examples/repo-project run say)
-  if [[ ! "$result" =~ "something masterly" ]]; then
-    fail "Expected output to contain 'something masterly', but it was:\n$result"
-  fi
-}
-
-test_run_repo_say_tagged() {
-  result=$(./shuttle -p examples/repo-project --plan "#tagged" run say)
-  if [[ ! "$result" =~ "something tagged" ]]; then
-    fail "Expected output to contain 'something tagged', but it was:\n$result"
-  fi
-}
-
-test_run_repo_say_sha() {
-  result=$(./shuttle -p examples/repo-project --plan "#2b52c21" run say)
-  if [[ ! "$result" =~ "something minor" ]]; then
-    fail "Expected output to contain 'something minor', but it was:\n$result"
-  fi
 }
 
 test_run_sub_dir_say() {
