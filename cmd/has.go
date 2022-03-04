@@ -26,7 +26,9 @@ func newHas(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 			uii.SetContext(ui.LevelSilent)
 
 			context, err := contextProvider()
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
 
 			variable := args[0]
 

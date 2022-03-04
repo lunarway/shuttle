@@ -12,12 +12,17 @@ func newGitPlan(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	gitPlanCmd := &cobra.Command{
 		Use:   "git-plan [...git_args]",
 		Short: "Run a git command for the plan",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: this is no longer possible to configure
 			// skipGitPlanPulling = true
 			context, err := contextProvider()
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
+
 			git.RunGitPlanCommand(strings.Join(args, " "), context.LocalPlanPath, context.UI)
+
+			return nil
 		},
 	}
 

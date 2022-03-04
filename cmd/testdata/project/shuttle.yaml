@@ -1,0 +1,14 @@
+plan: false
+scripts:
+  hello_stdout:
+    actions:
+      - shell: echo "Hello stdout"
+  hello_stderr:
+    actions:
+      - shell: '>&2 echo "Hello stderr"'
+  exit_0:
+    actions:
+      - shell: exit 0
+  exit_1:
+    actions:
+      - shell: exit 1

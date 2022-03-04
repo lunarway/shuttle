@@ -28,10 +28,12 @@ func executeTestCases(t *testing.T, testCases []testCase) {
 			if tc.err == nil {
 				assert.NoError(t, err)
 			} else {
-				assert.EqualError(t, tc.err, err.Error())
+				assert.EqualError(t, err, tc.err.Error())
 			}
-			assert.Equal(t, tc.stdoutput, stdBuf.String())
-			assert.Equal(t, tc.erroutput, errBuf.String())
+			t.Logf("STDOUT: %s", stdBuf.String())
+			t.Logf("STDERR: %s", errBuf.String())
+			assert.Equal(t, tc.stdoutput, stdBuf.String(), "std output not as expected")
+			assert.Equal(t, tc.erroutput, errBuf.String(), "err output not as expected")
 		})
 	}
 }

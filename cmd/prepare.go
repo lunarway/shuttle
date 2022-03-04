@@ -10,9 +10,13 @@ func newPrepare(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		Use:   "prepare",
 		Short: "Load external resources",
 		Long:  `Load external resources as a preparation step, before starting to use shuttle`,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			_, err := contextProvider()
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
+
+			return nil
 		},
 	}
 

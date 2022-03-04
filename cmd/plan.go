@@ -34,7 +34,7 @@ Available fields are:
 		Example: `Get the raw plan string as it is written in the shuttle.yaml file:
   shuttle plan --template '{{.PlanRaw}}'`,
 		Args: cobra.ExactArgs(0),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			type templData struct {
 				LocalPlanPath     string
 				Plan              string
@@ -44,7 +44,9 @@ Available fields are:
 			}
 			uii.SetUserLevel(ui.LevelError)
 			context, err := contextProvider()
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
 
 			var templ string
 			if planFlagTemplate != "" {
@@ -59,7 +61,11 @@ Available fields are:
 				ProjectPath:       context.ProjectPath,
 				TempDirectoryPath: context.TempDirectoryPath,
 			})
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
+
+			return nil
 		},
 	}
 

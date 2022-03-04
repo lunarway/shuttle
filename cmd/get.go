@@ -19,11 +19,14 @@ func newGet(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		Use:   "get [variable]",
 		Short: "Get a variable value",
 		Args:  cobra.ExactArgs(1),
-		//Long:  ``,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			uii.SetContext(ui.LevelError)
-			context, err := contextProvider()
-			checkError(uii, err)
+
+      context, err := contextProvider()
+			if err != nil {
+				return err
+			}
+
 			path := args[0]
 			var templ string
 			if getFlagTemplate != "" {
@@ -32,8 +35,11 @@ func newGet(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 			value := templates.TmplGet(path, context.Config.Variables)
 			if templ != "" {
 				err := ui.Template(cmd.OutOrStdout(), "get", templ, value)
-				checkError(uii, err)
-				return
+				if err != nil {
+					return err
+				}
+
+				return nil
 			}
 			switch value.(type) {
 			case nil:
@@ -41,10 +47,12 @@ func newGet(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 			default:
 				x, err := yaml.Marshal(value)
 				if err != nil {
-					checkError(uii, errors.NewExitCode(9, "Could not yaml encode value '%s'\nError: %s", value, err))
+					return errors.NewExitCode(9, "Could not yaml encode value '%s'\nError: %s", value, err)
 				}
 				fmt.Fprint(cmd.OutOrStdout(), strings.TrimRight(string(x), "\n"))
 			}
+
+			return nil
 		},
 	}
 

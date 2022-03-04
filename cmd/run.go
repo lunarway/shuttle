@@ -17,18 +17,27 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	)
 
 	runCmd := &cobra.Command{
-		Use:   "run [command]",
-		Short: "Run a plan script",
-		Long:  `Specify which plan script to run`,
-		Args:  cobra.MinimumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		Use:          "run [command]",
+		Short:        "Run a plan script",
+		Long:         `Specify which plan script to run`,
+		Args:         cobra.MinimumNArgs(1),
+		SilenceUsage: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
 			var commandName = args[0]
 			context, err := contextProvider()
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
+
 			ctx, cancel := withSignal(stdcontext.Background(), uii)
 			defer cancel()
+
 			err = executors.Execute(ctx, context, commandName, args[1:], validateArgs)
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
+
+			return nil
 		},
 	}
 
