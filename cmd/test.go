@@ -32,6 +32,8 @@ func executeTestCases(t *testing.T, testCases []testCase) {
 			}
 			assert.Equal(t, tc.stdoutput, stdBuf.String())
 			assert.Equal(t, tc.erroutput, errBuf.String())
+			t.Logf("STDOUT: %s", stdBuf.String())
+			t.Logf("ERROUT: %s", errBuf.String())
 		})
 	}
 }
