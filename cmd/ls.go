@@ -19,7 +19,7 @@ type templData struct {
 	Max     int
 }
 
-func newLsCmd(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newLs(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	var lsFlagTemplate string
 
 	lsCmd := &cobra.Command{

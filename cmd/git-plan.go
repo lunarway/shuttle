@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newGitPlanCmd(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newGitPlan(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	gitPlanCmd := &cobra.Command{
 		Use:   "git-plan [...git_args]",
 		Short: "Run a git command for the plan",

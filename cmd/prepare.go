@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newPrepareCmd(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newPrepare(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	prepareCmd := &cobra.Command{
 		Use:   "prepare",
 		Short: "Load external resources",

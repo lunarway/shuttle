@@ -11,7 +11,7 @@ var (
 	planFlagTemplate string
 )
 
-func newPlanCmd(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newPlan(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	planCmd := &cobra.Command{
 		Use:   "plan",
 		Short: "Output plan information to stdout",

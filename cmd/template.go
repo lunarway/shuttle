@@ -21,7 +21,7 @@ type context struct {
 	ProjectPath string
 }
 
-func newTemplateCmd(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newTemplate(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	var templateOutput, leftDelimArg, rightDelimArg, delimsArg string
 	var ignoreProjectOverrides bool
 

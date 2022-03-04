@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newVersionCmd(uii *ui.UI) *cobra.Command {
+func newVersion(uii *ui.UI) *cobra.Command {
 	var showCommit bool
 
 	versionCmd := &cobra.Command{

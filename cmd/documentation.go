@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newDocumentationCommand(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newDocumentation(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	documentationCommand := &cobra.Command{
 		Use:     "documentation",
 		Aliases: []string{"docs"},

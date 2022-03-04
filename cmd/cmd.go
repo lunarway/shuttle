@@ -66,7 +66,6 @@ __shuttle_custom_func() {
 }
 `
 
-// rootCmd represents the base command when called without any subcommands
 func newRoot(uii *ui.UI) (*cobra.Command, contextProvider) {
 	var (
 		verboseFlag        bool
@@ -129,17 +128,17 @@ func initializedRoot() *cobra.Command {
 
 	rootCmd, ctxProvider := newRoot(&uii)
 
-	rootCmd.AddCommand(newDocumentationCommand(&uii, ctxProvider))
-	rootCmd.AddCommand(newCompletionCmd(&uii))
-	rootCmd.AddCommand(newGetCmd(&uii, ctxProvider))
-	rootCmd.AddCommand(newGitPlanCmd(&uii, ctxProvider))
-	rootCmd.AddCommand(newHasCmd(&uii, ctxProvider))
-	rootCmd.AddCommand(newLsCmd(&uii, ctxProvider))
-	rootCmd.AddCommand(newPlanCmd(&uii, ctxProvider))
-	rootCmd.AddCommand(newPrepareCmd(&uii, ctxProvider))
-	rootCmd.AddCommand(newRunCmd(&uii, ctxProvider))
-	rootCmd.AddCommand(newTemplateCmd(&uii, ctxProvider))
-	rootCmd.AddCommand(newVersionCmd(&uii))
+	rootCmd.AddCommand(newDocumentation(&uii, ctxProvider))
+	rootCmd.AddCommand(newCompletion(&uii))
+	rootCmd.AddCommand(newGet(&uii, ctxProvider))
+	rootCmd.AddCommand(newGitPlan(&uii, ctxProvider))
+	rootCmd.AddCommand(newHas(&uii, ctxProvider))
+	rootCmd.AddCommand(newLs(&uii, ctxProvider))
+	rootCmd.AddCommand(newPlan(&uii, ctxProvider))
+	rootCmd.AddCommand(newPrepare(&uii, ctxProvider))
+	rootCmd.AddCommand(newRun(&uii, ctxProvider))
+	rootCmd.AddCommand(newTemplate(&uii, ctxProvider))
+	rootCmd.AddCommand(newVersion(&uii))
 
 	return rootCmd
 }

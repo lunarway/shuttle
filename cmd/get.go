@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newGetCmd(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newGet(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	var getFlagTemplate string
 	getCmd := &cobra.Command{
 		Use:   "get [variable]",

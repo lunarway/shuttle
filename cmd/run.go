@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newRunCmd(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	var (
 		flagTemplate string
 		validateArgs bool

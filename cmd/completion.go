@@ -23,8 +23,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// completionCmd represents the completion command
-func newCompletionCmd(uii *ui.UI) *cobra.Command {
+func newCompletion(uii *ui.UI) *cobra.Command {
 	completionCmd := &cobra.Command{
 		Use:   "completion <shell>",
 		Short: `Output shell completion code`,

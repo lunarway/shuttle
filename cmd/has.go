@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newHasCmd(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newHas(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	var (
 		lookupInScripts bool
 		outputAsStdout  bool
