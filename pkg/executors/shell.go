@@ -55,7 +55,7 @@ func executeShell(ctx context.Context, context ActionExecutionContext) error {
 	defer func() {
 		wg.Wait()
 		// Do we actually see a race here????
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(1 * time.Second)
 	}()
 
 	go stdScanner(&wg, stderr, context.ScriptContext.Project.UI.Errorln)
