@@ -21,9 +21,7 @@ func executeTestCases(t *testing.T, testCases []testCase) {
 			stdBuf := new(bytes.Buffer)
 			errBuf := new(bytes.Buffer)
 
-			rootCmd := initializedRoot()
-			rootCmd.SetOut(stdBuf)
-			rootCmd.SetErr(errBuf)
+			rootCmd, _ := initializedRoot(stdBuf, errBuf)
 			rootCmd.SetArgs(tc.input)
 
 			err := rootCmd.Execute()
