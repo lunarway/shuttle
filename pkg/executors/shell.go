@@ -52,7 +52,11 @@ func executeShell(ctx context.Context, context ActionExecutionContext) error {
 	// for the stdout and stderr streams to be read but to be sure that the
 	// execution does not move on before our scanner Go routines have returned we
 	// add this wait.
-	defer wg.Wait()
+	defer func() {
+		wg.Wait()
+		// Do we actually see a race here????
+		time.Sleep(100 * time.Millisecond)
+	}()
 
 	go stdScanner(&wg, stderr, context.ScriptContext.Project.UI.Errorln)
 	go stdScanner(&wg, stdout, context.ScriptContext.Project.UI.Infoln)
