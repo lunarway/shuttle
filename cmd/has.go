@@ -23,7 +23,7 @@ func newHas(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		SilenceErrors: true,
 		//Long:  ``,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			*uii = uii.SetContext(ui.LevelSilent)
+			uii.SetContext(ui.LevelSilent)
 
 			context, err := contextProvider()
 			if err != nil {

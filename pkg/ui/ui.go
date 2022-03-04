@@ -3,7 +3,6 @@ package ui
 import (
 	"fmt"
 	"io"
-	"os"
 )
 
 // UI is the abstraction of handling terminal output for shuttle
@@ -17,50 +16,34 @@ type UI struct {
 }
 
 // Create doc
-func Create() UI {
-	return UI{
+func Create(out, err io.Writer) *UI {
+	return &UI{
 		EffectiveLevel: LevelInfo,
 		DefaultLevel:   LevelInfo,
 		UserLevelSet:   false,
-		Out:            os.Stdout,
-		Err:            os.Stderr,
+		Out:            out,
+		Err:            err,
 	}
-}
-
-func (ui *UI) SetOutput(out io.Writer, err io.Writer) {
-	ui.Out = out
-	ui.Err = err
 }
 
 // SetUserLevel doc
-func (ui *UI) SetUserLevel(level Level) UI {
-	return UI{
-		EffectiveLevel: level,
-		DefaultLevel:   ui.DefaultLevel,
-		UserLevel:      level,
-		UserLevelSet:   true,
-		Out:            ui.Out,
-		Err:            ui.Err,
-	}
+func (ui *UI) SetUserLevel(level Level) *UI {
+	ui.EffectiveLevel = level
+	ui.UserLevel = level
+	ui.UserLevelSet = true
+	return ui
 }
 
 // SetContext doc
-func (ui *UI) SetContext(level Level) UI {
-	var effectiveLevel Level
+func (ui *UI) SetContext(level Level) *UI {
 	if ui.UserLevelSet {
-		effectiveLevel = ui.UserLevel
+		ui.EffectiveLevel = ui.UserLevel
 	} else {
-		effectiveLevel = level
+		ui.EffectiveLevel = level
 	}
+	ui.DefaultLevel = level
 
-	return UI{
-		EffectiveLevel: effectiveLevel,
-		DefaultLevel:   level,
-		UserLevel:      ui.UserLevel,
-		UserLevelSet:   ui.UserLevelSet,
-		Out:            ui.Out,
-		Err:            ui.Err,
-	}
+	return ui
 }
 
 // Verboseln prints a formatted verbose message line.

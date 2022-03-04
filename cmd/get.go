@@ -20,8 +20,9 @@ func newGet(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		Short: "Get a variable value",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			*uii = uii.SetContext(ui.LevelError)
-			context, err := contextProvider()
+			uii.SetContext(ui.LevelError)
+
+      context, err := contextProvider()
 			if err != nil {
 				return err
 			}

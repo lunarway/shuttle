@@ -1,6 +1,7 @@
 package executors
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"testing"
@@ -160,7 +161,7 @@ func TestExecute(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			verboseUI := ui.Create()
+			verboseUI := ui.Create(&bytes.Buffer{}, &bytes.Buffer{})
 			verboseUI.SetUserLevel(ui.LevelVerbose)
 
 			err := Execute(context.Background(), config.ShuttleProjectContext{
@@ -191,7 +192,7 @@ func TestExecute(t *testing.T) {
 func TestExecute_contextCancellation(t *testing.T) {
 	imageName := fmt.Sprintf("shuttle-test-execute-cancellation-%d", time.Now().UnixNano())
 	t.Logf("Starting image %s", imageName)
-	verboseUI := ui.Create()
+	verboseUI := ui.Create(&bytes.Buffer{}, &bytes.Buffer{})
 	verboseUI.SetUserLevel(ui.LevelVerbose)
 	projectContext := config.ShuttleProjectContext{
 		UI: verboseUI,
