@@ -11,7 +11,7 @@ func TestRoot(t *testing.T) {
 	testCases := []testCase{
 		{
 			name:      "test moonbase build",
-			input:     strings("-v", "-p", "../examples/no-plan-project", "run", "hello"),
+			input:     strings("-p", "../examples/no-plan-project", "run", "hello"),
 			stdoutput: "Hello no plan project\n",
 			erroutput: "",
 			err:       nil,
