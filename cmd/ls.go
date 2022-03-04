@@ -25,9 +25,11 @@ func newLs(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	lsCmd := &cobra.Command{
 		Use:   "ls [command]",
 		Short: "List possible commands",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			context, err := contextProvider()
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
 
 			var templ string
 			if lsFlagTemplate != "" {
@@ -39,7 +41,11 @@ func newLs(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 				Scripts: context.Scripts,
 				Max:     calculateRightPadForKeys(context.Scripts),
 			})
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
+
+			return nil
 		},
 	}
 

@@ -32,7 +32,9 @@ func newTemplate(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var templateName = args[0]
 			projectContext, err := contextProvider()
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
 
 			namedArgs := map[string]string{}
 			for _, arg := range args[1:] {

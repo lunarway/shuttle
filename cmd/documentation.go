@@ -21,21 +21,30 @@ Usually this will target a hosted git repository, eg. GitHub README.
 The application to open the documentation is inferred from the operating system
 and respects the BROWSER environment variable.`,
 		Args: cobra.ExactArgs(0),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			context, err := contextProvider()
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
 
 			url, err := context.DocumentationURL()
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
+
 			uii.Infoln("Documentation available at: %s", url)
 
 			browseCmd, err := browser.Command(url, cmd.ErrOrStderr())
-			checkError(uii, err)
+			if err != nil {
+				return err
+			}
 
 			err = browseCmd.Run()
 			if err != nil {
-				checkError(uii, errors.NewExitCode(1, "Failed to open document reference: %v", err))
+				return errors.NewExitCode(1, "Failed to open document reference: %v", err)
 			}
+
+			return nil
 		},
 	}
 
