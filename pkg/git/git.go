@@ -70,7 +70,7 @@ func IsPlan(plan string) bool {
 }
 
 // GetGitPlan will pull git repository and return its path
-func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool, planArgument string) (string, error) {
+func GetGitPlan(plan string, localShuttleDirectoryPath string, uii *ui.UI, skipGitPlanPulling bool, planArgument string) (string, error) {
 	parsedGitPlan := ParsePlan(plan)
 
 	if strings.HasPrefix(planArgument, "#") {
@@ -148,7 +148,7 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii ui.UI, skipGi
 	return planPath, nil
 }
 
-func RunGitPlanCommand(command string, plan string, uii ui.UI) {
+func RunGitPlanCommand(command string, plan string, uii *ui.UI) {
 
 	cmdOptions := go_cmd.Options{
 		Buffered:  false,
@@ -211,7 +211,7 @@ func expandHome(path string) string {
 	return strings.Replace(path, "~/", usr.HomeDir+"/", 1)
 }
 
-func gitCmd(command string, dir string, uii ui.UI) error {
+func gitCmd(command string, dir string, uii *ui.UI) error {
 	cmdOptions := go_cmd.Options{
 		Buffered:  true,
 		Streaming: true,
