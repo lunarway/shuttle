@@ -81,7 +81,7 @@ Installing bash completion on Linux
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			*uii = uii.SetContext(ui.LevelSilent)
+			uii.SetContext(ui.LevelSilent)
 			switch args[0] {
 			case "zsh":
 				runCompletionZsh(cmd.OutOrStdout(), cmd.Root())

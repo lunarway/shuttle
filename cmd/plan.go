@@ -42,7 +42,7 @@ Available fields are:
 				ProjectPath       string
 				TempDirectoryPath string
 			}
-			*uii = uii.SetUserLevel(ui.LevelError)
+			uii.SetUserLevel(ui.LevelError)
 			context, err := contextProvider()
 			checkError(uii, err)
 

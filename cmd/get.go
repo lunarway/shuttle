@@ -21,7 +21,7 @@ func newGet(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		//Long:  ``,
 		Run: func(cmd *cobra.Command, args []string) {
-			*uii = uii.SetContext(ui.LevelError)
+			uii.SetContext(ui.LevelError)
 			context, err := contextProvider()
 			checkError(uii, err)
 			path := args[0]

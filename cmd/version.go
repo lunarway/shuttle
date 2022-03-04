@@ -14,7 +14,7 @@ func newVersion(uii *ui.UI) *cobra.Command {
 		Use:   "version",
 		Short: "Info about version of shuttle",
 		Run: func(cmd *cobra.Command, args []string) {
-			*uii = uii.SetContext(ui.LevelSilent)
+			uii.SetContext(ui.LevelSilent)
 			if showCommit {
 				fmt.Println(commit)
 			} else {

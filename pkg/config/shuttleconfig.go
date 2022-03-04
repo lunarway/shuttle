@@ -32,11 +32,11 @@ type ShuttleProjectContext struct {
 	LocalPlanPath             string
 	Plan                      ShuttlePlanConfiguration
 	Scripts                   map[string]ShuttlePlanScript
-	UI                        ui.UI
+	UI                        *ui.UI
 }
 
 // Setup the ShuttleProjectContext for a specific path
-func (c *ShuttleProjectContext) Setup(projectPath string, uii ui.UI, clean bool, skipGitPlanPulling bool, planArgument string, strictConfigLookup bool) (*ShuttleProjectContext, error) {
+func (c *ShuttleProjectContext) Setup(projectPath string, uii *ui.UI, clean bool, skipGitPlanPulling bool, planArgument string, strictConfigLookup bool) (*ShuttleProjectContext, error) {
 	projectPath, err := c.Config.getConf(projectPath, strictConfigLookup)
 	if err != nil {
 		return nil, err
