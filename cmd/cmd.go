@@ -129,17 +129,19 @@ func initializedRoot(out, err io.Writer) (*cobra.Command, *ui.UI) {
 	rootCmd.SetOut(out)
 	rootCmd.SetErr(err)
 
-	rootCmd.AddCommand(newDocumentation(uii, ctxProvider))
-	rootCmd.AddCommand(newCompletion(uii))
-	rootCmd.AddCommand(newGet(uii, ctxProvider))
-	rootCmd.AddCommand(newGitPlan(uii, ctxProvider))
-	rootCmd.AddCommand(newHas(uii, ctxProvider))
-	rootCmd.AddCommand(newLs(uii, ctxProvider))
-	rootCmd.AddCommand(newPlan(uii, ctxProvider))
-	rootCmd.AddCommand(newPrepare(uii, ctxProvider))
-	rootCmd.AddCommand(newRun(uii, ctxProvider))
-	rootCmd.AddCommand(newTemplate(uii, ctxProvider))
-	rootCmd.AddCommand(newVersion(uii))
+	rootCmd.AddCommand(
+		newDocumentation(uii, ctxProvider),
+		newCompletion(uii),
+		newGet(uii, ctxProvider),
+		newGitPlan(uii, ctxProvider),
+		newHas(uii, ctxProvider),
+		newLs(uii, ctxProvider),
+		newPlan(uii, ctxProvider),
+		newPrepare(uii, ctxProvider),
+		newRun(uii, ctxProvider),
+		newTemplate(uii, ctxProvider),
+		newVersion(uii),
+	)
 
 	return rootCmd, uii
 }
