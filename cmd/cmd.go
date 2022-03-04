@@ -87,7 +87,7 @@ projects no matter what technologies the project is using.
 Read more about shuttle at https://github.com/lunarway/shuttle`, version),
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if verboseFlag {
-				*uii = uii.SetUserLevel(ui.LevelVerbose)
+				uii.SetUserLevel(ui.LevelVerbose)
 			}
 			uii.Verboseln("Running shuttle")
 			uii.Verboseln("- version: %s", version)
@@ -125,23 +125,23 @@ func Execute(out, err io.Writer) {
 func initializedRoot(out, err io.Writer) (*cobra.Command, *ui.UI) {
 	uii := ui.Create(out, err)
 
-	rootCmd, ctxProvider := newRoot(&uii)
+	rootCmd, ctxProvider := newRoot(uii)
 	rootCmd.SetOut(out)
 	rootCmd.SetErr(err)
 
-	rootCmd.AddCommand(newDocumentation(&uii, ctxProvider))
-	rootCmd.AddCommand(newCompletion(&uii))
-	rootCmd.AddCommand(newGet(&uii, ctxProvider))
-	rootCmd.AddCommand(newGitPlan(&uii, ctxProvider))
-	rootCmd.AddCommand(newHas(&uii, ctxProvider))
-	rootCmd.AddCommand(newLs(&uii, ctxProvider))
-	rootCmd.AddCommand(newPlan(&uii, ctxProvider))
-	rootCmd.AddCommand(newPrepare(&uii, ctxProvider))
-	rootCmd.AddCommand(newRun(&uii, ctxProvider))
-	rootCmd.AddCommand(newTemplate(&uii, ctxProvider))
-	rootCmd.AddCommand(newVersion(&uii))
+	rootCmd.AddCommand(newDocumentation(uii, ctxProvider))
+	rootCmd.AddCommand(newCompletion(uii))
+	rootCmd.AddCommand(newGet(uii, ctxProvider))
+	rootCmd.AddCommand(newGitPlan(uii, ctxProvider))
+	rootCmd.AddCommand(newHas(uii, ctxProvider))
+	rootCmd.AddCommand(newLs(uii, ctxProvider))
+	rootCmd.AddCommand(newPlan(uii, ctxProvider))
+	rootCmd.AddCommand(newPrepare(uii, ctxProvider))
+	rootCmd.AddCommand(newRun(uii, ctxProvider))
+	rootCmd.AddCommand(newTemplate(uii, ctxProvider))
+	rootCmd.AddCommand(newVersion(uii))
 
-	return rootCmd, &uii
+	return rootCmd, uii
 }
 
 type contextProvider func() (config.ShuttleProjectContext, error)
@@ -170,7 +170,7 @@ func getProjectContext(rootCmd *cobra.Command, uii *ui.UI, projectPath string, c
 	}
 
 	var c config.ShuttleProjectContext
-	_, err = c.Setup(fullProjectPath, *uii, clean, skipGitPlanPulling, plan, projectFlagSet)
+	_, err = c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling, plan, projectFlagSet)
 	if err != nil {
 		return config.ShuttleProjectContext{}, err
 	}

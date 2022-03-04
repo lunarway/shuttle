@@ -85,7 +85,7 @@ func (p *ShuttlePlanConfiguration) Load(planPath string) (*ShuttlePlanConfigurat
 }
 
 // FetchPlan so it exists locally and return path to that plan
-func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, uii ui.UI, skipGitPlanPulling bool, planArgument string) (string, error) {
+func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, uii *ui.UI, skipGitPlanPulling bool, planArgument string) (string, error) {
 	if isPlanArgumentAPlan(planArgument) {
 		uii.Infoln("Using overloaded plan %v", planArgument)
 		return FetchPlan(getPlanFromPlanArgument(planArgument), projectPath, localShuttleDirectoryPath, uii, skipGitPlanPulling, "")
