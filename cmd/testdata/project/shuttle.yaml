@@ -1,4 +1,11 @@
 plan: false
+vars:
+  service: shuttle
+  boolVar: false
+  nested:
+    var: foo
+    sub:
+      field: baz
 scripts:
   hello_stdout:
     actions:

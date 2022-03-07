@@ -7,6 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func args(s ...string) []string {
+	return s
+}
+
 type testCase struct {
 	name      string
 	input     []string

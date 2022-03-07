@@ -5,14 +5,32 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	strings := func(s ...string) []string {
-		return s
-	}
 	testCases := []testCase{
 		{
-			name:      "get variable",
-			input:     strings("-p", "../examples/repo-project", "get", "docker.baseImage"),
-			stdoutput: "golang",
+			name:      "local plan",
+			input:     args("-p", "testdata/project", "get", "service"),
+			stdoutput: "shuttle",
+			erroutput: "",
+			err:       nil,
+		},
+		{
+			name:      "local plan with templating",
+			input:     args("-p", "testdata/project", "get", "nested", "--template", "{{ range $k, $v := . }}{{ $k }}{{ end }}"),
+			stdoutput: "subvar",
+			erroutput: "",
+			err:       nil,
+		},
+		{
+			name:      "local plan with templating function",
+			input:     args("-p", "testdata/project", "get", "nested", "--template", `{{ range objectArray "sub" . }}{{ .Key }}{{ end }}`),
+			stdoutput: "field",
+			erroutput: "",
+			err:       nil,
+		},
+		{
+			name:      "bool",
+			input:     args("-p", "testdata/project", "get", "boolVar"),
+			stdoutput: "false",
 			erroutput: "",
 			err:       nil,
 		},
