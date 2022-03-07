@@ -23,8 +23,9 @@ func newLs(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	var lsFlagTemplate string
 
 	lsCmd := &cobra.Command{
-		Use:   "ls [command]",
-		Short: "List possible commands",
+		Use:          "ls [command]",
+		Short:        "List possible commands",
+		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			context, err := contextProvider()
 			if err != nil {

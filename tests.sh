@@ -26,15 +26,6 @@ function assertContains() {
   fi
 }
 
-test_fails_getting_no_repo_plan() {
-  assertErrorCode 4 -p examples/bad/no-repo-project ls
-  assertContains "Failed executing git command \`clone" "$result"
-}
-
-test_fails_loading_invalid_shuttle_configuration() {
-  assertErrorCode 2 -p examples/bad/yaml-invalid ls
-  assertContains "Failed to parse shuttle configuration" "$result"
-}
 
 test_can_check_variable_exists() {
   ./shuttle -p examples/moon-base has run-as-root 2>&1
