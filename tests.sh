@@ -8,14 +8,6 @@ if [[ $buildExitCode -ne 0 ]]; then
   exit $buildExitCode
 fi
 
-function assertRun() {
-  result=$(./shuttle "$@" 2>&1)
-  result_status=$?
-  if [[ $result_status -gt 0 ]]; then
-    fail "Status code was $result_status\n$result"
-  fi
-}
-
 function assertErrorCode() {
   local expectedErrorCode=$1
   shift
@@ -32,32 +24,6 @@ function assertContains() {
   if [[ ! "$actualResult" =~ "$expectedResult" ]]; then
     fail "Expected output to contain '$expectedResult', but it was:\n$actualResult"
   fi
-}
-
-
-test_plan_from_relative_local_plan() {
-  result=$(./shuttle -p examples/moon-base plan 2>&1)
-  assertEquals "../station-plan" "$result"
-}
-
-test_plan_from_git_plan() {
-  result=$(./shuttle -p examples/repo-project plan 2>&1)
-  assertEquals "https://github.com/lunarway/shuttle-example-go-plan.git" "$result"
-}
-
-test_plan_from_git_plan_with_branch() {
-  result=$(./shuttle -p examples/repo-project-branched plan 2>&1)
-  assertEquals "https://github.com/lunarway/shuttle-example-go-plan.git#change-build" "$result"
-}
-
-test_plan_from_no_plan() {
-  result=$(./shuttle -p examples/no-plan-project plan 2>&1)
-  assertEquals "" "$result"
-}
-
-test_plan_with_template_from_no_plan() {
-  result=$(./shuttle -p examples/no-plan-project plan --template '{{.PlanRaw}}' 2>&1)
-  assertEquals "false" "$result"
 }
 
 test_fails_getting_no_repo_plan() {
