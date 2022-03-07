@@ -42,9 +42,9 @@ func newHas(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 
 			if outputAsStdout {
 				if found {
-					fmt.Print("true")
+					fmt.Fprint(cmd.OutOrStdout(), "true")
 				} else {
-					fmt.Print("false")
+					fmt.Fprint(cmd.OutOrStderr(), "false")
 				}
 				return nil
 			} else {
