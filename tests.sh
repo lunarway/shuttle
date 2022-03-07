@@ -35,21 +35,6 @@ function assertContains() {
 }
 
 
-test_can_get_variable_from_local_plan() {
-  result=$(./shuttle -p examples/moon-base get docker.image 2>&1)
-  assertEquals "earth-united/moon-base" "$result"
-}
-
-test_can_get_variable_from_local_plan_with_templating() {
-  result=$(./shuttle -p examples/moon-base get docker --template '{{ range $k, $v := . }}{{ $k }}{{ end }}' 2>&1)
-  assertEquals "image" "$result"
-}
-
-test_can_get_variable_from_local_plan_with_templating_functions() {
-  result=$(./shuttle -p examples/moon-base get env --template '{{ range objectArray "field" . }}{{ .Key }}{{ end }}' 2>&1)
-  assertEquals "key" "$result"
-}
-
 test_plan_from_relative_local_plan() {
   result=$(./shuttle -p examples/moon-base plan 2>&1)
   assertEquals "../station-plan" "$result"
@@ -75,11 +60,6 @@ test_plan_with_template_from_no_plan() {
   assertEquals "false" "$result"
 }
 
-test_can_get_variable_from_repo_plan() {
-  result=$(./shuttle -p examples/repo-project get docker.destImage 2>&1)
-  assertEquals "repo-project" "$result"
-}
-
 test_fails_getting_no_repo_plan() {
   assertErrorCode 4 -p examples/bad/no-repo-project ls
   assertContains "Failed executing git command \`clone" "$result"
@@ -88,13 +68,6 @@ test_fails_getting_no_repo_plan() {
 test_fails_loading_invalid_shuttle_configuration() {
   assertErrorCode 2 -p examples/bad/yaml-invalid ls
   assertContains "Failed to parse shuttle configuration" "$result"
-}
-
-test_get_a_boolean() {
-  result=$(./shuttle -p examples/moon-base get run-as-root 2>&1)
-  if [[ "$result" != "false" ]]; then
-    fail "Expected output to be 'false', but it was:\n$result"
-  fi
 }
 
 test_can_check_variable_exists() {
