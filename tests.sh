@@ -18,19 +18,6 @@ function assertErrorCode() {
   fi
 }
 
-function assertContains() {
-  local expectedResult=$1
-  local actualResult=$2
-  if [[ ! "$actualResult" =~ "$expectedResult" ]]; then
-    fail "Expected output to contain '$expectedResult', but it was:\n$actualResult"
-  fi
-}
-
-test_can_execute_shuttle_version_without_error() {
-  ./shuttle version &>/dev/null
-  ./shuttle version --commit &>/dev/null
-}
-
 test_template_local_path() {
   assertErrorCode 0 -p examples/moon-base template ../custom-template.tmpl -o Dockerfile-custom GO_VERSION=1.16
 }

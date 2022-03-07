@@ -16,9 +16,9 @@ func newVersion(uii *ui.UI) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			uii.SetContext(ui.LevelSilent)
 			if showCommit {
-				fmt.Println(commit)
+				fmt.Fprintln(cmd.OutOrStdout(), commit)
 			} else {
-				fmt.Println(version)
+				fmt.Fprintln(cmd.OutOrStdout(), version)
 			}
 		},
 	}
