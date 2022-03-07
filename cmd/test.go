@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"bytes"
+	"io/fs"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -39,5 +41,35 @@ func executeTestCases(t *testing.T, testCases []testCase) {
 			assert.Equal(t, tc.stdoutput, stdBuf.String(), "std output not as expected")
 			assert.Equal(t, tc.erroutput, errBuf.String(), "err output not as expected")
 		})
+	}
+}
+
+func removeShuttleDirectories(t *testing.T) {
+	t.Helper()
+
+	pwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
+
+	var directoriesToRemove []string
+	err = fs.WalkDir(os.DirFS(pwd), "testdata", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() && d.Name() == ".shuttle" {
+			directoriesToRemove = append(directoriesToRemove, path)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Errorf("Failed to cleanup .shuttle files: %v", err)
+	}
+
+	for _, d := range directoriesToRemove {
+		err := os.RemoveAll(d)
+		if err != nil {
+			t.Errorf("Failed to cleanup '%s': %v", d, err)
+		}
 	}
 }

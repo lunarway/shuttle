@@ -5,6 +5,10 @@ import (
 )
 
 func TestPlan(t *testing.T) {
+	t.Cleanup(func() {
+		removeShuttleDirectories(t)
+	})
+
 	testCases := []testCase{
 		{
 			name:      "no plan",

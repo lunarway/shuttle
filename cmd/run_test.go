@@ -2,45 +2,20 @@ package cmd
 
 import (
 	"errors"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
 )
 
-func removeShuttleDirectories(t *testing.T, pwd string) {
-	t.Helper()
-	var directoriesToRemove []string
-	err := fs.WalkDir(os.DirFS(pwd), "testdata", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() && d.Name() == ".shuttle" {
-			directoriesToRemove = append(directoriesToRemove, path)
-		}
-		return nil
-	})
-	if err != nil {
-		t.Errorf("Failed to cleanup .shuttle files: %v", err)
-	}
-
-	for _, d := range directoriesToRemove {
-		err := os.RemoveAll(d)
-		if err != nil {
-			t.Errorf("Failed to cleanup '%s': %v", d, err)
-		}
-	}
-}
-
 func TestRun(t *testing.T) {
+	t.Cleanup(func() {
+		removeShuttleDirectories(t)
+	})
+
 	pwd, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("Failed to get working directory: %v", err)
 	}
-
-	t.Cleanup(func() {
-		removeShuttleDirectories(t, pwd)
-	})
 
 	testCases := []testCase{
 		{
