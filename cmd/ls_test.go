@@ -5,6 +5,10 @@ import (
 )
 
 func TestLs(t *testing.T) {
+	t.Cleanup(func() {
+		removeShuttleDirectories(t)
+	})
+
 	testCases := []testCase{
 		{
 			name:      "list one action",

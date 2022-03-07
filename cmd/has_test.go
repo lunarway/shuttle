@@ -6,6 +6,10 @@ import (
 )
 
 func TestHas(t *testing.T) {
+	t.Cleanup(func() {
+		removeShuttleDirectories(t)
+	})
+
 	testCases := []testCase{
 		{
 			name:      "has variable",
