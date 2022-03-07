@@ -12,3 +12,9 @@ scripts:
   exit_1:
     actions:
       - shell: exit 1
+  required_arg:
+    args:
+      - name: foo
+        required: true
+    actions:
+      - shell: echo $foo
