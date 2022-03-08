@@ -1,0 +1,7 @@
+# Custom docker file template not located inside a project
+{{-
+  $imageTag :=
+    get "GO_VERSION" .Args |
+    printf "%s-alpine"
+}}
+FROM golang:{{ $imageTag }}
