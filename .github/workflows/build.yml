@@ -29,7 +29,5 @@ jobs:
         run: |
           go build
       - name: Tests
-        # GitHub actions does not support our shunit2 tests so we skip them for
-        # now and will migrate them to Go instead.
         run: |
-          ./shuttle run test-go
+          ./shuttle run test
