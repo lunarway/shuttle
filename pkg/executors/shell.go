@@ -51,9 +51,6 @@ func executeShell(ctx context.Context, context ActionExecutionContext) error {
 		}
 	}()
 
-	// Run and wait for Cmd to return, discard Status
-	context.ScriptContext.Project.UI.Titleln("shell: %s", context.Action.Shell)
-
 	// stop cmd if context is cancelled
 	go func() {
 		select {
