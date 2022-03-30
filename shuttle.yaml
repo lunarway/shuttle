@@ -7,7 +7,7 @@ scripts:
   test:
     description: Run shuttle test suite
     actions:
-      - shell: go test -v ./pkg/... -run Test*
+      - shell: go test -v ./...
   release:
     description: Prepare for a release of shuttle.
     args:
