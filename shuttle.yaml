@@ -1,4 +1,9 @@
 plan: false
+vars:
+  service: shuttle
+  domain: developer-productivity
+  squad: aura
+
 scripts:
   build:
     description: build code
