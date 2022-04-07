@@ -16,15 +16,8 @@ func TestLs(t *testing.T) {
 		},
 		{
 			name:      "list one action",
-			input:     args("-p", "../examples/no-plan-project", "ls"),
-			stdoutput: "Available Scripts:\n  hello        \n",
-			erroutput: "",
-			err:       nil,
-		},
-		{
-			name:      "list actions",
-			input:     args("-p", "../examples/repo-project/", "ls"),
-			stdoutput: "Pulling latest plan changes on master\nAvailable Scripts:\n  build        Build the docker image\n  deploy       Deploys the image to a kubernetes environment\n  push         Push the docker image\n  say          Say something\n  test         Run test for the project\n",
+			input:     args("-p", "testdata/project", "ls"),
+			stdoutput: "Available Scripts:\n  exit_0         \n  exit_1         \n  hello_stderr   \n  hello_stdout   \n  required_arg   \n",
 			erroutput: "",
 			err:       nil,
 		},
