@@ -6,10 +6,6 @@ import (
 )
 
 func TestLs(t *testing.T) {
-	t.Cleanup(func() {
-		removeShuttleDirectories(t)
-	})
-
 	testCases := []testCase{
 		{
 			name:      "invalid shuttle.yaml file",
