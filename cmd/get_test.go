@@ -5,10 +5,6 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	t.Cleanup(func() {
-		removeShuttleDirectories(t)
-	})
-
 	testCases := []testCase{
 		{
 			name:      "local plan",

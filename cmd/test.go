@@ -24,6 +24,13 @@ type testCase struct {
 func executeTestCases(t *testing.T, testCases []testCase) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// remove any .shuttle files up front and after each test to make sure the
+			// runs are deterministic
+			t.Cleanup(func() {
+				removeShuttleDirectories(t)
+			})
+			removeShuttleDirectories(t)
+
 			stdBuf := new(bytes.Buffer)
 			errBuf := new(bytes.Buffer)
 

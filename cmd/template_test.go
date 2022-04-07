@@ -5,10 +5,6 @@ import (
 )
 
 func TestTemplate(t *testing.T) {
-	t.Cleanup(func() {
-		removeShuttleDirectories(t)
-	})
-
 	testCases := []testCase{
 		{
 			name:  "local path",
