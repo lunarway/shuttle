@@ -13,6 +13,10 @@ import (
 	"github.com/lunarway/shuttle/pkg/errors"
 )
 
+func ShellExecutor(action config.ShuttleAction) (Executor, bool) {
+	return executeShell, action.Shell != ""
+}
+
 // Build builds the docker image from a shuttle plan
 func executeShell(ctx context.Context, context ActionExecutionContext) error {
 	cmdOptions := cmd.Options{
@@ -88,10 +92,4 @@ func setupCommandEnvironmentVariables(execCmd *cmd.Cmd, context ActionExecutionC
 	// TODO: Add project path as a shuttle specific ENV
 	execCmd.Env = append(execCmd.Env, fmt.Sprintf("PATH=%s", shuttlePath+string(os.PathListSeparator)+os.Getenv("PATH")))
 	execCmd.Env = append(execCmd.Env, fmt.Sprintf("SHUTTLE_PLANS_ALREADY_VALIDATED=%s", context.ScriptContext.Project.LocalPlanPath))
-}
-
-func init() {
-	addExecutor(func(action config.ShuttleAction) bool {
-		return action.Shell != ""
-	}, executeShell)
 }

@@ -10,6 +10,19 @@ import (
 	"github.com/lunarway/shuttle/pkg/errors"
 )
 
+type Registry struct {
+	executors []Matcher
+}
+
+type Matcher func(config.ShuttleAction) (Executor, bool)
+type Executor func(context.Context, ActionExecutionContext) error
+
+func NewExecutorRegistry(executors ...Matcher) *Registry {
+	return &Registry{
+		executors: executors,
+	}
+}
+
 // ScriptExecutionContext gives context to the execution of a plan script
 type ScriptExecutionContext struct {
 	ScriptName string
@@ -26,7 +39,7 @@ type ActionExecutionContext struct {
 }
 
 // Execute is the command executor for the plan files
-func Execute(ctx context.Context, p config.ShuttleProjectContext, command string, args []string, validateArgs bool) error {
+func (r *Registry) Execute(ctx context.Context, p config.ShuttleProjectContext, command string, args []string, validateArgs bool) error {
 	script, ok := p.Scripts[command]
 	if !ok {
 		return errors.NewExitCode(2, "Script '%s' not found", command)
@@ -50,7 +63,7 @@ func Execute(ctx context.Context, p config.ShuttleProjectContext, command string
 			Action:        action,
 			ActionIndex:   actionIndex,
 		}
-		err := executeAction(ctx, actionContext)
+		err := r.executeAction(ctx, actionContext)
 		if err != nil {
 			return err
 		}
@@ -163,30 +176,13 @@ func expectedArgumentsHelp(command string, args []config.ShuttleScriptArgs) stri
 	return s.String()
 }
 
-func executeAction(ctx context.Context, context ActionExecutionContext) error {
-	for _, executor := range executors {
-		if executor.match(context.Action) {
-			return executor.execute(ctx, context)
+func (r *Registry) executeAction(ctx context.Context, context ActionExecutionContext) error {
+	for _, executor := range r.executors {
+		handler, ok := executor(context.Action)
+		if ok {
+			return handler(ctx, context)
 		}
 	}
 
 	panic(fmt.Sprintf("Could not find an executor for %v.actions[%v]!", context.ScriptContext.ScriptName, context.ActionIndex))
-}
-
-type actionMatchFunc = func(config.ShuttleAction) bool
-type actionExecutionFunc = func(context.Context, ActionExecutionContext) error
-
-type actionExecutor struct {
-	match   actionMatchFunc
-	execute actionExecutionFunc
-}
-
-var executors = []actionExecutor{}
-
-// AddExecutor taps a new executor into the script execution pipeline
-func addExecutor(match actionMatchFunc, execute actionExecutionFunc) {
-	executors = append(executors, actionExecutor{
-		match:   match,
-		execute: execute,
-	})
 }

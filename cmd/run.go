@@ -16,6 +16,8 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		validateArgs bool
 	)
 
+	executorRegistry := executors.NewExecutorRegistry(executors.ShellExecutor)
+
 	runCmd := &cobra.Command{
 		Use:          "run [command]",
 		Short:        "Run a plan script",
@@ -32,7 +34,7 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 			ctx, cancel := withSignal(stdcontext.Background(), uii)
 			defer cancel()
 
-			err = executors.Execute(ctx, context, commandName, args[1:], validateArgs)
+			err = executorRegistry.Execute(ctx, context, commandName, args[1:], validateArgs)
 			if err != nil {
 				return err
 			}
