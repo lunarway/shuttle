@@ -3,15 +3,13 @@ package git
 import (
 	"fmt"
 	"os"
-	"os/user"
 	"path"
 	"regexp"
 	"strings"
 
+	go_cmd "github.com/go-cmd/cmd"
 	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/ui"
-
-	go_cmd "github.com/go-cmd/cmd"
 )
 
 type Plan struct {
@@ -187,15 +185,6 @@ func RunGitPlanCommand(command string, plan string, uii *ui.UI) {
 	}
 }
 
-func checkIfError(err error) {
-	if err == nil {
-		return
-	}
-
-	fmt.Printf("\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf("error: %s", err))
-	os.Exit(1)
-}
-
 func fileAvailable(name string) bool {
 	if _, err := os.Stat(name); err != nil {
 		if os.IsNotExist(err) {
@@ -203,12 +192,6 @@ func fileAvailable(name string) bool {
 		}
 	}
 	return true
-}
-
-func expandHome(path string) string {
-	usr, err := user.Current()
-	checkIfError(err)
-	return strings.Replace(path, "~/", usr.HomeDir+"/", 1)
 }
 
 func gitCmd(command string, dir string, uii *ui.UI) error {
