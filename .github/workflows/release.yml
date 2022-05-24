@@ -10,8 +10,6 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    # only allow tags on the master branch
-    if: github.event.release.target_commitish == 'master'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
