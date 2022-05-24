@@ -164,7 +164,9 @@ func TestExecute(t *testing.T) {
 			verboseUI := ui.Create(&bytes.Buffer{}, &bytes.Buffer{})
 			verboseUI.SetUserLevel(ui.LevelVerbose)
 
-			err := Execute(context.Background(), config.ShuttleProjectContext{
+			registry := NewRegistry(ShellExecutor)
+
+			err := registry.Execute(context.Background(), config.ShuttleProjectContext{
 				ProjectPath: ".",
 				UI:          verboseUI,
 				Scripts: map[string]config.ShuttlePlanScript{
@@ -216,7 +218,9 @@ func TestExecute_contextCancellation(t *testing.T) {
 		cancel()
 	}()
 
-	err := Execute(ctx, projectContext, "serve", nil, true)
+	registry := NewRegistry(ShellExecutor)
+
+	err := registry.Execute(ctx, projectContext, "serve", nil, true)
 	assert.EqualError(t, err, context.Canceled.Error())
 
 	// sadly we need to give the docker some time before "docker ps" shows the

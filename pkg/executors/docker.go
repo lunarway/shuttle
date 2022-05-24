@@ -7,8 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-
-	"github.com/lunarway/shuttle/pkg/config"
 )
 
 // Build builds the docker image from a shuttle plan
@@ -39,12 +37,6 @@ func executeDocker(ctx context.Context, context ActionExecutionContext) error {
 		log.Fatalf("failed to capture stdout or stderr\n")
 	}
 	return nil
-}
-
-func init() {
-	addExecutor(func(action config.ShuttleAction) bool {
-		return action.Dockerfile != ""
-	}, executeDocker)
 }
 
 func copyAndCapture(w io.Writer, r io.Reader) ([]byte, error) {
