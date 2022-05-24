@@ -16,7 +16,7 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		validateArgs bool
 	)
 
-	executorRegistry := executors.NewExecutorRegistry(executors.ShellExecutor)
+	executorRegistry := executors.NewRegistry(executors.ShellExecutor)
 
 	runCmd := &cobra.Command{
 		Use:          "run [command]",

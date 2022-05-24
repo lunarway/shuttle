@@ -17,7 +17,7 @@ type Registry struct {
 type Matcher func(config.ShuttleAction) (Executor, bool)
 type Executor func(context.Context, ActionExecutionContext) error
 
-func NewExecutorRegistry(executors ...Matcher) *Registry {
+func NewRegistry(executors ...Matcher) *Registry {
 	return &Registry{
 		executors: executors,
 	}

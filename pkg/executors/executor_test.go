@@ -164,7 +164,7 @@ func TestExecute(t *testing.T) {
 			verboseUI := ui.Create(&bytes.Buffer{}, &bytes.Buffer{})
 			verboseUI.SetUserLevel(ui.LevelVerbose)
 
-			registry := NewExecutorRegistry(ShellExecutor)
+			registry := NewRegistry(ShellExecutor)
 
 			err := registry.Execute(context.Background(), config.ShuttleProjectContext{
 				ProjectPath: ".",
@@ -218,7 +218,7 @@ func TestExecute_contextCancellation(t *testing.T) {
 		cancel()
 	}()
 
-	registry := NewExecutorRegistry(ShellExecutor)
+	registry := NewRegistry(ShellExecutor)
 
 	err := registry.Execute(ctx, projectContext, "serve", nil, true)
 	assert.EqualError(t, err, context.Canceled.Error())
