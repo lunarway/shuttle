@@ -44,7 +44,7 @@ func TestShuttleConfig_getConf(t *testing.T) {
 				Plan:    ".",
 				PlanRaw: ".",
 				Variables: map[string]interface{}{
-					"squad": "nasa",
+					"squad": "name",
 				},
 				Scripts: map[string]ShuttlePlanScript{
 					"shout": {
@@ -67,7 +67,7 @@ func TestShuttleConfig_getConf(t *testing.T) {
 				Plan:    ".",
 				PlanRaw: ".",
 				Variables: map[string]interface{}{
-					"squad": "nasa",
+					"squad": "name",
 				},
 				Scripts: map[string]ShuttlePlanScript{
 					"shout": {
