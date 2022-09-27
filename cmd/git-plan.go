@@ -3,12 +3,13 @@ package cmd
 import (
 	"strings"
 
+	"github.com/lunarway/shuttle/cmd/utility"
 	"github.com/lunarway/shuttle/pkg/git"
 	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
 )
 
-func newGitPlan(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newGitPlan(uii *ui.UI, contextProvider utility.ContextProvider) *cobra.Command {
 	gitPlanCmd := &cobra.Command{
 		Use:   "git-plan [...git_args]",
 		Short: "Run a git command for the plan",

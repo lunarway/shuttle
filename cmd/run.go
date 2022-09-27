@@ -5,12 +5,13 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/lunarway/shuttle/cmd/utility"
 	"github.com/lunarway/shuttle/pkg/executors"
 	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
 )
 
-func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newRun(uii *ui.UI, contextProvider utility.ContextProvider) *cobra.Command {
 	var (
 		flagTemplate string
 		validateArgs bool
@@ -25,7 +26,7 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		Args:         cobra.MinimumNArgs(1),
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var commandName = args[0]
+			commandName := args[0]
 			context, err := contextProvider()
 			if err != nil {
 				return err

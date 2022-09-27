@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/lunarway/shuttle/cmd/utility"
 	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
 )
@@ -11,7 +12,7 @@ var (
 	planFlagTemplate string
 )
 
-func newPlan(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newPlan(uii *ui.UI, contextProvider utility.ContextProvider) *cobra.Command {
 	planCmd := &cobra.Command{
 		Use:   "plan",
 		Short: "Output plan information to stdout",

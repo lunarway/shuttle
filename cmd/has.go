@@ -3,13 +3,14 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/lunarway/shuttle/cmd/utility"
 	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/templates"
 	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
 )
 
-func newHas(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newHas(uii *ui.UI, contextProvider utility.ContextProvider) *cobra.Command {
 	var (
 		lookupInScripts bool
 		outputAsStdout  bool

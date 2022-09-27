@@ -147,7 +147,6 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii *ui.UI, skipG
 }
 
 func RunGitPlanCommand(command string, plan string, uii *ui.UI) {
-
 	cmdOptions := go_cmd.Options{
 		Buffered:  false,
 		Streaming: true,

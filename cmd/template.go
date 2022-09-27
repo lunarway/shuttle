@@ -8,6 +8,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/lunarway/shuttle/cmd/utility"
 	tmplFuncs "github.com/lunarway/shuttle/pkg/templates"
 	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/pkg/errors"
@@ -21,7 +22,7 @@ type context struct {
 	ProjectPath string
 }
 
-func newTemplate(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newTemplate(uii *ui.UI, contextProvider utility.ContextProvider) *cobra.Command {
 	var templateOutput, leftDelimArg, rightDelimArg, delimsArg string
 	var ignoreProjectOverrides bool
 

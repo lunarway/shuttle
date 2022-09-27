@@ -7,6 +7,8 @@ import (
 	"os"
 	"path"
 
+	"github.com/lunarway/shuttle/cmd/plugins"
+	"github.com/lunarway/shuttle/cmd/utility"
 	"github.com/lunarway/shuttle/pkg/ui"
 
 	"github.com/lunarway/shuttle/pkg/config"
@@ -67,7 +69,7 @@ __shuttle_custom_func() {
 }
 `
 
-func newRoot(uii *ui.UI) (*cobra.Command, contextProvider) {
+func newRoot(uii *ui.UI) (*cobra.Command, utility.ContextProvider) {
 	var (
 		verboseFlag        bool
 		projectPath        string
@@ -141,12 +143,11 @@ func initializedRoot(out, err io.Writer) (*cobra.Command, *ui.UI) {
 		newRun(uii, ctxProvider),
 		newTemplate(uii, ctxProvider),
 		newVersion(uii),
+		plugins.NewPluginsRootCmd(uii, ctxProvider),
 	)
 
 	return rootCmd, uii
 }
-
-type contextProvider func() (config.ShuttleProjectContext, error)
 
 func getProjectContext(rootCmd *cobra.Command, uii *ui.UI, projectPath string, clean bool, plan string, skipGitPlanPulling bool) (config.ShuttleProjectContext, error) {
 	dir, err := os.Getwd()

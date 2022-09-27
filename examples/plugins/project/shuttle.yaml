@@ -1,0 +1,6 @@
+plan: false
+plugins:
+  "../plugin-one/":
+    vars:
+      some-var: something
+  "../plugin-two/": {}

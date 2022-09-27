@@ -21,6 +21,7 @@ type ShuttleConfig struct {
 	PlanRaw   interface{}                  `yaml:"plan"`
 	Variables DynamicYaml                  `yaml:"vars"`
 	Scripts   map[string]ShuttlePlanScript `yaml:"scripts"`
+	Plugins   map[string]interface{}       `yaml:"plugins"`
 }
 
 // ShuttleProjectContext describes the context of the project using shuttle

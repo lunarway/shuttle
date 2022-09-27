@@ -1,13 +1,14 @@
 package cmd
 
 import (
+	"github.com/lunarway/shuttle/cmd/utility"
 	"github.com/lunarway/shuttle/pkg/browser"
 	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
 )
 
-func newDocumentation(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newDocumentation(uii *ui.UI, contextProvider utility.ContextProvider) *cobra.Command {
 	documentationCommand := &cobra.Command{
 		Use:     "documentation",
 		Aliases: []string{"docs"},

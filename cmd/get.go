@@ -6,6 +6,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"github.com/lunarway/shuttle/cmd/utility"
 	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/templates"
 	"github.com/lunarway/shuttle/pkg/ui"
@@ -13,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newGet(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newGet(uii *ui.UI, contextProvider utility.ContextProvider) *cobra.Command {
 	var getFlagTemplate string
 	getCmd := &cobra.Command{
 		Use:   "get [variable]",
@@ -22,7 +23,7 @@ func newGet(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			uii.SetContext(ui.LevelError)
 
-      context, err := contextProvider()
+			context, err := contextProvider()
 			if err != nil {
 				return err
 			}

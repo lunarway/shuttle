@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/lunarway/shuttle/cmd/utility"
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
@@ -19,7 +20,7 @@ type templData struct {
 	Max     int
 }
 
-func newLs(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
+func newLs(uii *ui.UI, contextProvider utility.ContextProvider) *cobra.Command {
 	var lsFlagTemplate string
 
 	lsCmd := &cobra.Command{
