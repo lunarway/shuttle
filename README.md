@@ -157,6 +157,14 @@ chmod +x shuttle-linux-amd64
 sudo mv shuttle-linux-amd64 /usr/local/bin/shuttle
 ```
 
+### GitHub Actions
+Shuttle can be installed on your GitHub Runner by adding this line to your workflow:
+```
+- use: lunarway/shuttle
+```
+
+After this point you can use shuttle in the scripts in your workflow job.
+
 ## Functions
 
 ### `shuttle get <variable>`

@@ -1,0 +1,18 @@
+name: 'Install Shuttle'
+description: 'Installs Lunar Way Shuttle'
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        if [ "$(uname)" == "Darwin" ]; then
+            curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | grep -o '[^/]*$')/shuttle-darwin-amd64
+            chmod +x shuttle-darwin-amd64
+            mkdir ~/bin
+            mv shuttle-darwin-amd64 ~/bin/shuttle
+            shuttle --help
+        elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+            curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | grep -o '[^/]*$')/shuttle-linux-amd64
+            chmod +x shuttle-linux-amd64
+            mv shuttle-linux-amd64 /usr/local/bin/shuttle
+        fi
+      shell: bash
