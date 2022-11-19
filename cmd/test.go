@@ -21,7 +21,7 @@ type testCase struct {
 	err       error
 }
 
-func executeTestCases(t *testing.T, testCases []testCase) {
+func executeTestCasesWithCustomAssertion(t *testing.T, testCases []testCase, assertion func(t *testing.T, tc testCase, stdout, stderr string)) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// remove any .shuttle files up front and after each test to make sure the
@@ -45,10 +45,16 @@ func executeTestCases(t *testing.T, testCases []testCase) {
 			}
 			t.Logf("STDOUT: %s", stdBuf.String())
 			t.Logf("STDERR: %s", errBuf.String())
-			assert.Equal(t, tc.stdoutput, stdBuf.String(), "std output not as expected")
-			assert.Equal(t, tc.erroutput, errBuf.String(), "err output not as expected")
+			assertion(t, tc, stdBuf.String(), errBuf.String())
 		})
 	}
+}
+
+func executeTestCases(t *testing.T, testCases []testCase) {
+	executeTestCasesWithCustomAssertion(t, testCases, func(t *testing.T, tc testCase, stdout, stderr string) {
+		assert.Equal(t, tc.stdoutput, stdout, "std output not as expected")
+		assert.Equal(t, tc.erroutput, stderr, "err output not as expected")
+	})
 }
 
 func removeShuttleDirectories(t *testing.T) {

@@ -35,13 +35,19 @@ func newConfig(uii *ui.UI, contextProvder contextProvider) *cobra.Command {
 
 			parsedPlan := git.ParsePlan(context.Config.Plan)
 			if parsedPlan.IsGitPlan {
-				fmt.Fprintf(cmd.OutOrStdout(), "Plan: \n%v %v", context.Config.Plan, parsedPlan.Head)
+				fmt.Fprintf(cmd.OutOrStdout(), "Plan:\n%v %v", context.Config.Plan, parsedPlan.Head)
 			} else {
-				fmt.Fprintf(cmd.OutOrStdout(), "Plan: \n%v", context.Config.Plan)
+				fmt.Printf("%+v\n", context.Config)
+				plan := context.Config.Plan
+				if plan == "" {
+					plan = "false"
+				}
+				fmt.Fprintf(cmd.OutOrStdout(), "Plan:\n%v", plan)
 			}
 			breakLine(cmd)
+			breakLine(cmd)
 
-			fmt.Fprintf(cmd.OutOrStdout(), "Environment: \n")
+			fmt.Fprintf(cmd.OutOrStdout(), "Environment:\n")
 			for _, envVar := range environmentVariables {
 				if shouldExclude[extractEnvirontmentVariableName(envVar)] {
 					continue
