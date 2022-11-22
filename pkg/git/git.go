@@ -224,8 +224,12 @@ func gitCmd(command string, dir string, uii *ui.UI) error {
 	status := <-execCmd.Start()
 	<-doneChan
 
-	if status.Exit > 0 {
-		return errors.NewExitCode(4, "Failed executing git command `%s` in `%s`. Got exit code: %v\n%s", command, dir, status.Exit, strings.Join(status.Stderr, "\n"))
+	if status.Exit != 0 {
+		errorMessage := fmt.Sprintf("Failed executing git command `%s` in `%s`. Got exit code: %v\n", command, dir, status.Exit)
+		if status.Error != nil {
+			errorMessage += fmt.Sprintf("Message: %v\n", status.Error.Error())
+		}
+		return errors.NewExitCode(4, errorMessage)
 	}
 	return nil
 }
