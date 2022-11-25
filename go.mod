@@ -14,6 +14,8 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
+require golang.org/x/exp v0.0.0-20221114191408-850992195362
+
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect

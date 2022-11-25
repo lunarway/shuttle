@@ -148,6 +148,13 @@ something masterly
 			erroutput: "",
 			err:       nil,
 		},
+		{
+			name:      "Local project",
+			input:     args("--project", "./testdata/project-local/service", "--plan", "./testdata/project-local/plan", "run", "hello-plan"),
+			stdoutput: "Using overloaded plan ./testdata/project-local/plan\nHello from plan\n",
+			erroutput: "",
+			err:       nil,
+		},
 		// FIXME: This case actually hits a bug as we do not support fetching specific commits
 		// {
 		// 	name:      "sha git plan",
@@ -158,4 +165,15 @@ something masterly
 		// },
 	}
 	executeTestCases(t, testCases)
+
+	testContainsCases := []testCase{
+		{
+			name:      "Local project fail",
+			input:     args("--project", "./testdata/project-local/service", "--plan", "./testdata/wrong-project-local/plan", "run", "hello-plan"),
+			stdoutput: "",
+			erroutput: "shuttle/cmd/testdata/wrong-project-local/plan: no such file or directory",
+			err:       errors.New("shuttle/cmd/testdata/wrong-project-local/plan: no such file or directory"),
+		},
+	}
+	executeTestContainsCases(t, testContainsCases)
 }

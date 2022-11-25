@@ -1,0 +1,6 @@
+plan: false
+scripts:
+  hello-shuttle:
+    description: Write output
+    actions:
+      - shell: echo "Hello from shuttle"

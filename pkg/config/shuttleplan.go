@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/lunarway/shuttle/pkg/copy"
 	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/git"
 	"github.com/lunarway/shuttle/pkg/ui"
@@ -102,13 +103,32 @@ func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string
 		panic(fmt.Sprintf("Plan '%v' is not valid: non-git http/https is not supported yet", plan))
 	case isFilePath(plan, true):
 		uii.Verboseln("Using local plan at '%s'", plan)
+		plan, err := handleFilePath(plan, projectPath)
+		if err != nil {
+			return "", err
+		}
 		return plan, nil
 	case isFilePath(plan, false):
 		uii.Verboseln("Using local plan at '%s'", plan)
-		return path.Join(projectPath, plan), nil
+		plan := path.Join(projectPath, plan)
+		plan, err := handleFilePath(plan, projectPath)
+		if err != nil {
+			return "", err
+		}
+		return plan, nil
 	default:
 		return "", errors.NewExitCode(2, "Unknown plan path '%s'", plan)
 	}
+}
+
+func handleFilePath(plan string, projectPath string) (string, error) {
+	toPath := path.Join(projectPath, "/.shuttle/plan")
+	ignorelist := []string{".git", ".shuttle"}
+	err := copy.Dir(plan, toPath, ignorelist)
+	if err != nil {
+		return "", err
+	}
+	return toPath, nil
 }
 
 func isFilePath(path string, matchOnlyAbs bool) bool {
