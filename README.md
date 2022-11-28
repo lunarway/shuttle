@@ -50,7 +50,7 @@ scripts:
       - name: tag
         required: true
     actions:
-      - shell: docker -f $plan/Dockerfile build -t (shuttle get docker.image):$tag
+      - shell: docker -f $plan/Dockerfile build -t $(shuttle get docker.image):$tag
   test:
     description: Run test for the project
     actions:
