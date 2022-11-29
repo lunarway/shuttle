@@ -1,0 +1,7 @@
+vars:
+  language: go
+scripts:
+  hello-plan:
+    description: Write output
+    actions:
+      - shell: echo "Hello from plan"

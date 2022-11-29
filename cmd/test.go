@@ -57,6 +57,31 @@ func executeTestCases(t *testing.T, testCases []testCase) {
 	})
 }
 
+func executeTestContainsCases(t *testing.T, testCases []testCase) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// remove any .shuttle files up front and after each test to make sure the
+			// runs are deterministic
+			t.Cleanup(func() {
+				removeShuttleDirectories(t)
+			})
+			removeShuttleDirectories(t)
+
+			stdBuf := new(bytes.Buffer)
+			errBuf := new(bytes.Buffer)
+			rootCmd, _ := initializedRoot(stdBuf, errBuf)
+			rootCmd.SetArgs(tc.input)
+
+			err := rootCmd.Execute()
+			if tc.err == nil {
+				assert.NoError(t, err)
+			} else {
+				assert.ErrorContains(t, err, tc.err.Error())
+			}
+		})
+	}
+}
+
 func removeShuttleDirectories(t *testing.T) {
 	t.Helper()
 
