@@ -11,10 +11,9 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
+	golang.org/x/exp v0.0.0-20221114191408-850992195362
 	gopkg.in/yaml.v2 v2.4.0
 )
-
-require golang.org/x/exp v0.0.0-20221114191408-850992195362
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
