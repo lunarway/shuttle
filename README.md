@@ -50,7 +50,7 @@ scripts:
       - name: tag
         required: true
     actions:
-      - shell: docker -f $plan/Dockerfile build -t (shuttle get docker.image):$tag
+      - shell: docker -f $plan/Dockerfile build -t $(shuttle get docker.image):$tag
   test:
     description: Run test for the project
     actions:
@@ -87,6 +87,13 @@ $ cd workspace/moon-base
 $ shuttle run build tag=v1
 ```
 
+You can also put your `plan.yaml` in a different git repository, and then reference it from your `shuttle.yaml`:
+
+```
+# shuttle.yaml
+plan: git://git@github.com:lunarway/station-plan.git
+```
+
 ## Features
 
 - Fetch shuttle plans from git repositories
@@ -112,23 +119,27 @@ In below example shuttle will open `https://github.com/lunarway/shuttle-example-
 
 ```yaml
 # shuttle.yaml
-plan: git@github.com:lunarway/shuttle-example-go-plan.git
+plan: git://git@github.com:lunarway/shuttle-example-go-plan.git
 ```
 
 ### Git Plan
 
-When using a git plan a url should look like:
+Specify the protocol to use for pulling the remote repository using either `https://` for HTTPS, or `git://` for SSH:
 
 - `https://github.com/lunarway/shuttle-example-go-plan.git`
-- `git@github.com:lunarway/shuttle-example-go-plan.git`
+- `git://git@github.com:lunarway/shuttle-example-go-plan.git`
+
+Choose a specific branch to use:
+
 - `https://github.com/lunarway/shuttle-example-go-plan.git#change-build`
-- `git@github.com:lunarway/shuttle-example-go-plan.git#change-build`
+- `git://git@github.com:lunarway/shuttle-example-go-plan.git#change-build`
 
 The `#change-build` points the plan to a specific branch, which by default would be `master`.
+
 It can also be used to point to a tag or a git SHA, like this:
 
 - `https://github.com/lunarway/shuttle-example-go-plan.git#v1.2.3`
-- `git@github.com:lunarway/shuttle-example-go-plan.git#46ce3cc`
+- `git://git@github.com:lunarway/shuttle-example-go-plan.git#46ce3cc`
 
 ### Overloading the plan
 
@@ -158,7 +169,9 @@ sudo mv shuttle-linux-amd64 /usr/local/bin/shuttle
 ```
 
 ### GitHub Actions
+
 Shuttle can be installed on your GitHub Runner by adding this line to your workflow:
+
 ```
 - use: lunarway/shuttle
 ```
