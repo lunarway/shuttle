@@ -141,6 +141,16 @@ It can also be used to point to a tag or a git SHA, like this:
 - `https://github.com/lunarway/shuttle-example-go-plan.git#v1.2.3`
 - `git://git@github.com:lunarway/shuttle-example-go-plan.git#46ce3cc`
 
+#### Caching
+
+By default shuttle will pull the upstream plan on every pull. To prevent this you can use 
+
+```bash
+export SHUTTLE_CACHE_DURATION_MIN=60 # Cache a plan for 60 minutes
+```
+
+This feature caches pr. repo, as such the cache isn't shared between working repositories. 
+
 ### Overloading the plan
 
 It is possible to overload the plan specified in `shuttle.yaml` file by using the `--plan` argument

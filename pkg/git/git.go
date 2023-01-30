@@ -5,7 +5,9 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	go_cmd "github.com/go-cmd/cmd"
 	"github.com/lunarway/shuttle/pkg/errors"
@@ -21,7 +23,11 @@ type Plan struct {
 	Head       string
 }
 
-var gitRegex = regexp.MustCompile(`^((git://((?P<user>[^@]+)@)?(?P<repository1>(?P<host>[^:]+):(?P<path>[^#]*)))|((?P<protocol>https)://(?P<repository2>.*\.git)))(#(?P<head>.*))?$`)
+var gitRegex = regexp.MustCompile(
+	`^((git://((?P<user>[^@]+)@)?(?P<repository1>(?P<host>[^:]+):(?P<path>[^#]*)))|((?P<protocol>https)://(?P<repository2>.*\.git)))(#(?P<head>.*))?$`,
+)
+
+const cacheDurationMinKey = "SHUTTLE_CACHE_DURATION_MIN"
 
 func ParsePlan(plan string) Plan {
 	if !gitRegex.MatchString(plan) {
@@ -68,7 +74,13 @@ func IsPlan(plan string) bool {
 }
 
 // GetGitPlan will pull git repository and return its path
-func GetGitPlan(plan string, localShuttleDirectoryPath string, uii *ui.UI, skipGitPlanPulling bool, planArgument string) (string, error) {
+func GetGitPlan(
+	plan string,
+	localShuttleDirectoryPath string,
+	uii *ui.UI,
+	skipGitPlanPulling bool,
+	planArgument string,
+) (string, error) {
 	parsedGitPlan := ParsePlan(plan)
 
 	if strings.HasPrefix(planArgument, "#") {
@@ -78,7 +90,10 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii *ui.UI, skipG
 
 	planPath := path.Join(localShuttleDirectoryPath, "plan")
 
-	plansAlreadyValidated := strings.Split(os.Getenv("SHUTTLE_PLANS_ALREADY_VALIDATED"), string(os.PathListSeparator))
+	plansAlreadyValidated := strings.Split(
+		os.Getenv("SHUTTLE_PLANS_ALREADY_VALIDATED"),
+		string(os.PathListSeparator),
+	)
 	for _, planAlreadyValidated := range plansAlreadyValidated {
 		if planAlreadyValidated == planPath {
 			uii.Verboseln("Shuttle already validated plan. Skipping further plan validation")
@@ -90,7 +105,10 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii *ui.UI, skipG
 		status := getStatus(planPath)
 
 		if status.mergeState {
-			return "", errors.NewExitCode(9, "Plan's cloned output is in merge state. Please resolve merge conflicts and the try again")
+			return "", errors.NewExitCode(
+				9,
+				"Plan's cloned output is in merge state. Please resolve merge conflicts and the try again",
+			)
 		} else if status.changes {
 			uii.EmphasizeInfoln("Found %v files locally changed in plan", len(status.files))
 			uii.EmphasizeInfoln("Skipping plan pull because of changes")
@@ -99,7 +117,15 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii *ui.UI, skipG
 				uii.Verboseln("Skipping git plan pulling")
 				return planPath, nil
 			}
-			err := gitCmd("fetch origin", planPath, uii)
+			valid, err := cacheIsValid(planPath)
+			if err != nil {
+				return "", err
+			}
+			if valid {
+				uii.Verboseln("Cache is still valid continuing")
+				return planPath, nil
+			}
+			err = gitCmd("fetch origin", planPath, uii)
 			if err != nil {
 				return "", err
 			}
@@ -115,6 +141,8 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii *ui.UI, skipG
 					return "", err
 				}
 				status = getStatus(planPath)
+				currentTime := time.Now()
+				os.Chtimes(planPath, currentTime, currentTime)
 			} else {
 				uii.EmphasizeInfoln("Skipping plan pull because its running on detached head")
 			}
@@ -146,8 +174,30 @@ func GetGitPlan(plan string, localShuttleDirectoryPath string, uii *ui.UI, skipG
 	return planPath, nil
 }
 
-func RunGitPlanCommand(command string, plan string, uii *ui.UI) {
+// cacheIsValid optionally allows the plan to be cached, depending on when it was modified last. It is opt in only
+func cacheIsValid(planPath string) (bool, error) {
+	duration := os.Getenv(cacheDurationMinKey)
+	if duration == "" {
+		return false, nil
+	}
 
+	durationMin, err := strconv.Atoi(duration)
+	if err != nil {
+		return false, fmt.Errorf("%s is not valid: %s", cacheDurationMinKey, duration)
+	}
+
+	fi, err := os.Stat(planPath)
+	if err != nil {
+		return false, fmt.Errorf("path doesn't exist: %w", err)
+	}
+
+	folderTime := fi.ModTime()
+	cacheTime := time.Now().Add(-time.Minute * time.Duration(durationMin))
+
+	return cacheTime.Before(folderTime), nil
+}
+
+func RunGitPlanCommand(command string, plan string, uii *ui.UI) {
 	cmdOptions := go_cmd.Options{
 		Buffered:  false,
 		Streaming: true,
@@ -225,7 +275,12 @@ func gitCmd(command string, dir string, uii *ui.UI) error {
 	<-doneChan
 
 	if status.Exit != 0 {
-		errorMessage := fmt.Sprintf("Failed executing git command `%s` in `%s`. Got exit code: %v\n", command, dir, status.Exit)
+		errorMessage := fmt.Sprintf(
+			"Failed executing git command `%s` in `%s`. Got exit code: %v\n",
+			command,
+			dir,
+			status.Exit,
+		)
 		if status.Error != nil {
 			errorMessage += fmt.Sprintf("Message: %v\n", status.Error.Error())
 		}
