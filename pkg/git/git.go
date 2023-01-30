@@ -27,6 +27,8 @@ var gitRegex = regexp.MustCompile(
 	`^((git://((?P<user>[^@]+)@)?(?P<repository1>(?P<host>[^:]+):(?P<path>[^#]*)))|((?P<protocol>https)://(?P<repository2>.*\.git)))(#(?P<head>.*))?$`,
 )
 
+const cacheDurationMinKey = "SHUTTLE_CACHE_DURATION_MIN"
+
 func ParsePlan(plan string) Plan {
 	if !gitRegex.MatchString(plan) {
 		return Plan{
@@ -170,15 +172,16 @@ func GetGitPlan(
 	return planPath, nil
 }
 
+// cacheIsValid optionally allows the plan to be cached, depending on when it was modified last. It is opt in only
 func cacheIsValid(planPath string) (bool, error) {
-	duration := os.Getenv("SHUTTLE_CACHE_DURATION_MIN")
+	duration := os.Getenv(cacheDurationMinKey)
 	if duration == "" {
 		return false, nil
 	}
 
 	durationMin, err := strconv.Atoi(duration)
 	if err != nil {
-		return false, fmt.Errorf("SHUTTLE_CACHE_DURATION_MIN is not valid: %s", duration)
+		return false, fmt.Errorf("%s is not valid: %s", cacheDurationMinKey, duration)
 	}
 
 	fi, err := os.Stat(planPath)
