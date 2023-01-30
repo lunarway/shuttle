@@ -115,11 +115,15 @@ func GetGitPlan(
 				uii.Verboseln("Skipping git plan pulling")
 				return planPath, nil
 			}
-			if valid, ok := cacheIsValid(planPath); ok && valid {
+			valid, err := cacheIsValid(planPath)
+			if err != nil {
+				return "", err
+			}
+			if valid {
 				uii.Verboseln("Cache is still valid continuing")
 				return planPath, nil
 			}
-			err := gitCmd("fetch origin", planPath, uii)
+			err = gitCmd("fetch origin", planPath, uii)
 			if err != nil {
 				return "", err
 			}
@@ -166,29 +170,25 @@ func GetGitPlan(
 	return planPath, nil
 }
 
-func cacheIsValid(planPath string) (valid bool, ok bool) {
+func cacheIsValid(planPath string) (bool, error) {
 	duration := os.Getenv("SHUTTLE_CACHE_DURATION_MIN")
 	if duration == "" {
-		return false, false
+		return false, nil
 	}
 
 	durationMin, err := strconv.Atoi(duration)
 	if err != nil {
-		return false, false
+		return false, fmt.Errorf("SHUTTLE_CACHE_DURATION_MIN is not valid: %s", duration)
 	}
 
 	fi, err := os.Stat(planPath)
 	if err != nil {
-		return false, false
+		return false, fmt.Errorf("path doesn't exist: %w", err)
 	}
 
 	folderTime := fi.ModTime()
 	cacheTime := folderTime.Local().Add(time.Minute * time.Duration(durationMin))
-	if folderTime.Before(cacheTime) {
-		return true, true
-	}
-
-	return false, true
+	return folderTime.Before(cacheTime), nil
 }
 
 func RunGitPlanCommand(command string, plan string, uii *ui.UI) {
