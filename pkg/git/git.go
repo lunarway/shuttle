@@ -141,6 +141,8 @@ func GetGitPlan(
 					return "", err
 				}
 				status = getStatus(planPath)
+				currentTime := time.Now()
+				os.Chtimes(planPath, currentTime, currentTime)
 			} else {
 				uii.EmphasizeInfoln("Skipping plan pull because its running on detached head")
 			}
@@ -190,8 +192,9 @@ func cacheIsValid(planPath string) (bool, error) {
 	}
 
 	folderTime := fi.ModTime()
-	cacheTime := folderTime.Local().Add(time.Minute * time.Duration(durationMin))
-	return folderTime.Before(cacheTime), nil
+	cacheTime := time.Now().Add(-time.Minute * time.Duration(durationMin))
+
+	return cacheTime.Before(folderTime), nil
 }
 
 func RunGitPlanCommand(command string, plan string, uii *ui.UI) {
