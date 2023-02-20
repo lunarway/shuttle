@@ -11,7 +11,7 @@ runs:
                 mkdir -p ~/bin
                 mv shuttle-darwin-arm64 ~/bin/shuttle
                 echo "~/bin/" >> $GITHUB_PATH
-            elif
+            else
                 curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | grep -o '[^/]*$')/shuttle-darwin-amd64
                 chmod +x shuttle-darwin-amd64
                 mkdir -p ~/bin
