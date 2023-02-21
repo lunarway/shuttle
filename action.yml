@@ -18,7 +18,7 @@ runs:
             fi
 
             echo "~/bin/" >> $GITHUB_PATH
-            export PATH=$GITHUB_PATH
+            export PATH=$PATH:~/bin
             echo $PATH
             shuttle version
         elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
