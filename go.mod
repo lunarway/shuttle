@@ -10,8 +10,8 @@ require (
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.6.1
-	github.com/stretchr/testify v1.8.1
-	golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb
+	github.com/stretchr/testify v1.8.2
+	golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2
 	gopkg.in/yaml.v2 v2.4.0
 )
 
