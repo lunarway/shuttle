@@ -1,0 +1,25 @@
+package main
+
+import (
+  "github.com/kjuulh/shuttletask/pkg/cmder"
+)
+
+func main() {
+  rootcmd := cmder.NewRoot()
+
+  {{ range . -}}
+  {{- $name := .Name -}}
+  {{ lower $name  }}cmd := cmder.NewCmd("{{ lower $name  }}", {{ $name }})
+  {{ range .Input -}}
+  {{ lower $name }}cmd = cmder.WithArgs({{ lower $name  }}cmd, "{{ lower .Name  }}")
+  {{ end -}}
+  {{ end -}}
+
+  rootcmd.AddCmds(
+    {{- range . -}}
+    {{ lower .Name  }}cmd,
+    {{ end }}
+  )
+
+  rootcmd.Execute()
+}
