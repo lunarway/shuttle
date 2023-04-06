@@ -58,6 +58,7 @@ func executeBinaryAction(ctx context.Context, binary *compile.Binary, args ...st
 	}
 
 	execmd.Env = os.Environ()
+	log.Printf("env: %v", execmd.Environ())
 	execmd.Env = append(execmd.Env, fmt.Sprintf("TASK_CONTEXT_DIR=%s", workdir))
 
 	output, err := execmd.CombinedOutput()
