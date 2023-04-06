@@ -8,7 +8,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/kjuulh/shuttletask/pkg/compile"
+	"github.com/lunarway/shuttle/pkg/executors/golang/compile"
 )
 
 // Executes an action based on which plan is used

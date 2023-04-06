@@ -5,12 +5,13 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/kjuulh/shuttletask/pkg/discover"
+	"github.com/lunarway/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDiscover(t *testing.T) {
-	discovered, err := discover.Discover(context.Background(), "testdata/simple/shuttle.yaml")
+	discovered, err := discover.Discover(context.Background(), "testdata/simple/shuttle.yaml", &config.ShuttleProjectContext{})
 	assert.NoError(t, err)
 
 	assert.Equal(t, discover.Discovered{
@@ -34,7 +35,11 @@ func TestDiscoverComplex(t *testing.T) {
 		t.Fatalf("shuttle ls: %s", string(output))
 	}
 
-	discovered, err := discover.Discover(context.Background(), "testdata/child/shuttle.yaml")
+	discovered, err := discover.Discover(context.Background(), "testdata/child/shuttle.yaml", &config.ShuttleProjectContext{
+		Config: config.ShuttleConfig{
+			Plan: ".shuttle/plan",
+		},
+	})
 	assert.NoError(t, err)
 
 	assert.Equal(t, discover.Discovered{

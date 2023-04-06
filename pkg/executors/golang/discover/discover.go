@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/kjuulh/shuttletask/pkg/shuttlefile"
+	"github.com/lunarway/shuttle/pkg/config"
 )
 
 var (
@@ -40,7 +40,7 @@ type Discovered struct {
 // 3. Collect file names
 //
 // 4. Return list of files to move to tmp dir
-func Discover(ctx context.Context, shuttlepath string) (*Discovered, error) {
+func Discover(ctx context.Context, shuttlepath string, c *config.ShuttleProjectContext) (*Discovered, error) {
 	if !strings.HasSuffix(shuttlepath, shuttlefilename) {
 		return nil, InvalidShuttlePathFile
 	}
@@ -54,16 +54,11 @@ func Discover(ctx context.Context, shuttlepath string) (*Discovered, error) {
 		return nil, err
 	}
 
-	config, err := shuttlefile.ParseFile(ctx, shuttlepath)
-	if err != nil {
-		return nil, err
-	}
-
 	discovered := Discovered{
 		Local: localPlan,
 	}
 
-	if config.Plan != "" {
+	if c.Config.Plan != "" {
 		planShuttleFile := path.Join(localdir, ".shuttle/plan")
 		parentPlan, err := discoverPlan(planShuttleFile)
 		if err != nil {

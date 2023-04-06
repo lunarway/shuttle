@@ -11,7 +11,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/kjuulh/shuttletask/pkg/discover"
+	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
 	"golang.org/x/mod/sumdb/dirhash"
 )
 

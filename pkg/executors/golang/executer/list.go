@@ -3,10 +3,12 @@ package executer
 import (
 	"context"
 	"fmt"
+
+	"github.com/lunarway/shuttle/pkg/config"
 )
 
-func List(ctx context.Context, path string) error {
-	binaries, err := prepare(ctx, path)
+func List(ctx context.Context, path string, c *config.ShuttleProjectContext) error {
+	binaries, err := prepare(ctx, path, c)
 	if err != nil {
 		return err
 	}

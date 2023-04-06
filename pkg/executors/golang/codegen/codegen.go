@@ -8,8 +8,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/kjuulh/shuttletask/pkg/discover"
-	"github.com/kjuulh/shuttletask/pkg/parser"
+	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
+	"github.com/lunarway/shuttle/pkg/executors/golang/parser"
 )
 
 var (

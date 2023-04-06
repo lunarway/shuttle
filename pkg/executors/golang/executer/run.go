@@ -1,9 +1,13 @@
 package executer
 
-import "context"
+import (
+	"context"
 
-func Run(ctx context.Context, path string, args ...string) error {
-	binaries, err := prepare(ctx, path)
+	"github.com/lunarway/shuttle/pkg/config"
+)
+
+func Run(ctx context.Context, c *config.ShuttleProjectContext, path string, args ...string) error {
+	binaries, err := prepare(ctx, path, c)
 	if err != nil {
 		return err
 	}

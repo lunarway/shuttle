@@ -5,11 +5,11 @@ import (
 	"log"
 	"path"
 
-	"github.com/kjuulh/shuttletask/pkg/codegen"
-	"github.com/kjuulh/shuttletask/pkg/compile/matcher"
-	"github.com/kjuulh/shuttletask/pkg/discover"
-	"github.com/kjuulh/shuttletask/pkg/parser"
-	"github.com/kjuulh/shuttletask/pkg/shuttlefolder"
+	"github.com/lunarway/shuttle/pkg/executors/golang/codegen"
+	"github.com/lunarway/shuttle/pkg/executors/golang/compile/matcher"
+	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
+	"github.com/lunarway/shuttle/pkg/executors/golang/parser"
+	"github.com/lunarway/shuttle/pkg/executors/golang/shuttlefolder"
 	"golang.org/x/sync/errgroup"
 )
 

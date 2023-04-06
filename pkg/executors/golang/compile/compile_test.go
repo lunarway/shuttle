@@ -4,14 +4,15 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kjuulh/shuttletask/pkg/compile"
-	"github.com/kjuulh/shuttletask/pkg/discover"
+	"github.com/lunarway/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/executors/golang/compile"
+	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCompile(t *testing.T) {
 	ctx := context.Background()
-	discovered, err := discover.Discover(ctx, "testdata/simple/shuttle.yaml")
+	discovered, err := discover.Discover(ctx, "testdata/simple/shuttle.yaml", &config.ShuttleProjectContext{})
 	assert.NoError(t, err)
 
 	path, err := compile.Compile(ctx, discovered)

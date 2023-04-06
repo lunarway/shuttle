@@ -1,9 +1,0 @@
-plan: someplan
-vars:
-  someVar: var
-  someNestedVar:
-    nestedVar: true
-scripts:
-  someAction:
-    actions:
-      - shell: action

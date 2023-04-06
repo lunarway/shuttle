@@ -7,7 +7,8 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/kjuulh/shuttletask/pkg/executer"
+	"github.com/lunarway/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/executors/golang/executer"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,13 +16,15 @@ func TestRunVersion(t *testing.T) {
 	updateShuttle(t, "testdata/child")
 	ctx := context.Background()
 
-	err := executer.Run(ctx, "testdata/child/shuttle.yaml", "version")
+	c := &config.ShuttleProjectContext{Config: config.ShuttleConfig{Plan: "something"}}
+
+	err := executer.Run(ctx, c, "testdata/child/shuttle.yaml", "version")
 	assert.NoError(t, err)
 
-	err = executer.Run(ctx, "testdata/child/shuttle.yaml", "build")
+	err = executer.Run(ctx, c, "testdata/child/shuttle.yaml", "build")
 	assert.NoError(t, err)
 
-	err = executer.Run(ctx, "testdata/child/shuttle.yaml", "build", "--some-unexisting-arg", "something")
+	err = executer.Run(ctx, c, "testdata/child/shuttle.yaml", "build", "--some-unexisting-arg", "something")
 	assert.Error(t, err)
 }
 

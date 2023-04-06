@@ -10,7 +10,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/kjuulh/shuttletask/pkg/discover"
+	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
 )
 
 type Function struct {
