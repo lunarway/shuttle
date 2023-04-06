@@ -2,27 +2,29 @@ package executer
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/lunarway/shuttle/pkg/config"
 )
 
-func List(ctx context.Context, path string, c *config.ShuttleProjectContext) error {
+type TaskArg struct {
+}
+
+func List(ctx context.Context, path string, c *config.ShuttleProjectContext) (map[string]TaskArg, error) {
 	binaries, err := prepare(ctx, path, c)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	localInquire, err := inquire(ctx, &binaries.Local)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	planInquire, err := inquire(ctx, &binaries.Plan)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	combinedOptions := make(map[string]struct{}, 0)
+	combinedOptions := make(map[string]TaskArg, 0)
 	for _, cmd := range localInquire {
 		combinedOptions[cmd] = struct{}{}
 	}
@@ -30,10 +32,5 @@ func List(ctx context.Context, path string, c *config.ShuttleProjectContext) err
 		combinedOptions[cmd] = struct{}{}
 	}
 
-	println("Args: ")
-	for k := range combinedOptions {
-		fmt.Printf("\t%s\n", k)
-	}
-
-	return nil
+	return combinedOptions, nil
 }

@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	stdcontext "context"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"path"
 
+	"github.com/lunarway/shuttle/pkg/executors/golang/executer"
 	"github.com/lunarway/shuttle/pkg/ui"
 
 	"github.com/lunarway/shuttle/pkg/config"
@@ -177,5 +179,25 @@ func getProjectContext(rootCmd *cobra.Command, uii *ui.UI, projectPath string, c
 	if err != nil {
 		return config.ShuttleProjectContext{}, err
 	}
+
+	ctx := stdcontext.TODO()
+	taskActions, err := executer.List(ctx, "shuttle.yaml", &c)
+	if err != nil {
+		return config.ShuttleProjectContext{}, nil
+	}
+
+	for name, _ := range taskActions {
+		c.Scripts[name] = config.ShuttlePlanScript{
+			Description: name,
+			Actions: []config.ShuttleAction{
+				{
+					Task: name,
+				},
+			},
+
+			Args: []config.ShuttleScriptArgs{},
+		}
+	}
+
 	return c, nil
 }

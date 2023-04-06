@@ -66,6 +66,7 @@ func (c *ShuttleProjectContext) Setup(projectPath string, uii *ui.UI, clean bool
 	if err != nil {
 		return nil, err
 	}
+
 	c.Scripts = make(map[string]ShuttlePlanScript)
 	for scriptName, script := range c.Plan.Scripts {
 		c.Scripts[scriptName] = script
