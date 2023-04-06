@@ -18,7 +18,14 @@ func TaskExecutor(action config.ShuttleAction) (Executor, bool) {
 func executeTask(ctx context.Context, context ActionExecutionContext) error {
 	context.ScriptContext.Project.UI.Verboseln("Starting task command: %s", context.Action.Task)
 
-	err := executer.Run(ctx, &context.ScriptContext.Project, "shuttle.yaml", context.Action.Task)
+	args := make([]string, 0)
+	args = append(args, context.Action.Task)
+	for name, value := range context.ScriptContext.Args {
+		args = append(args, fmt.Sprintf("--%s", name))
+		args = append(args, value)
+	}
+
+	err := executer.Run(ctx, &context.ScriptContext.Project, "shuttle.yaml", args...)
 	if err != nil {
 		return err
 	}
