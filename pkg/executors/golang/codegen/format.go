@@ -13,7 +13,7 @@ func Format(ctx context.Context, shuttlelocaldir string) error {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("%s\n", string(output))
+		log.Printf("%s\nerror: %v", string(output), err)
 		return err
 	}
 
