@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 
@@ -51,6 +50,8 @@ func executeAction(ctx context.Context, binaries *compile.Binaries, args ...stri
 
 func executeBinaryAction(ctx context.Context, binary *compile.Binary, args ...string) error {
 	execmd := exec.Command(binary.Path, args...)
+	execmd.Stdout = os.Stdout
+	execmd.Stderr = os.Stderr
 
 	workdir, err := os.Getwd()
 	if err != nil {
@@ -58,11 +59,13 @@ func executeBinaryAction(ctx context.Context, binary *compile.Binary, args ...st
 	}
 
 	execmd.Env = os.Environ()
-	log.Printf("env: %v", execmd.Environ())
 	execmd.Env = append(execmd.Env, fmt.Sprintf("TASK_CONTEXT_DIR=%s", workdir))
 
-	output, err := execmd.CombinedOutput()
-	log.Printf("%s\n", string(output))
+	err = execmd.Run()
+
+	os.Stdout.Sync()
+	os.Stderr.Sync()
+
 	if err != nil {
 		return err
 	}
