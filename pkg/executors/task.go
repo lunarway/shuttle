@@ -3,6 +3,7 @@ package executors
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -12,6 +13,8 @@ import (
 )
 
 func TaskExecutor(action config.ShuttleAction) (Executor, bool) {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	return executeTask, action.Task != ""
 }
 
