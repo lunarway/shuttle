@@ -47,6 +47,7 @@ func (rc *RootCmd) Execute() {
 			return err
 		}
 
+		// Prints the commands and args as json to stdout
 		_, err = fmt.Printf("%s", string(rawJson))
 		if err != nil {
 			return err

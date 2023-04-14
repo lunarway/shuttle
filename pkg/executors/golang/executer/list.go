@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"github.com/lunarway/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/ui"
 )
 
 type TaskArg struct {
 }
 
-func List(ctx context.Context, path string, c *config.ShuttleProjectContext) (map[string]TaskArg, error) {
-	binaries, err := prepare(ctx, path, c)
+func List(ctx context.Context, ui *ui.UI, path string, c *config.ShuttleProjectContext) (map[string]TaskArg, error) {
+	binaries, err := prepare(ctx, ui, path, c)
 	if err != nil {
 		return nil, err
 	}

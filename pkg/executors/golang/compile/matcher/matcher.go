@@ -12,11 +12,13 @@ import (
 	"path"
 
 	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
+	"github.com/lunarway/shuttle/pkg/ui"
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
 func BinaryMatches(
 	ctx context.Context,
+	ui *ui.UI,
 	hash string,
 	actions *discover.ActionsDiscovered,
 ) (string, bool, error) {
@@ -42,7 +44,7 @@ func BinaryMatches(
 	if binary.Name() == fmt.Sprintf("actions-%s", hex.EncodeToString([]byte(hash)[:16])) {
 		return path.Join(shuttlebindir, binary.Name()), true, nil
 	} else {
-		log.Printf("DEBUG: binary does not match, rebuilding...")
+		ui.Verboseln("binary does not match, rebuilding...")
 		return "", false, nil
 	}
 }

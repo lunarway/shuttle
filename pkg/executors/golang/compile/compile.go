@@ -2,7 +2,6 @@ package compile
 
 import (
 	"context"
-	"log"
 	"path"
 
 	"github.com/lunarway/shuttle/pkg/executors/golang/codegen"
@@ -10,6 +9,7 @@ import (
 	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
 	"github.com/lunarway/shuttle/pkg/executors/golang/parser"
 	"github.com/lunarway/shuttle/pkg/executors/golang/shuttlefolder"
+	"github.com/lunarway/shuttle/pkg/ui"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -37,12 +37,12 @@ type Binaries struct {
 // 2.2. Generate main file
 //
 // 3. Move binary to .shuttle/actions/binary-<hash>
-func Compile(ctx context.Context, discovered *discover.Discovered) (*Binaries, error) {
+func Compile(ctx context.Context, ui *ui.UI, discovered *discover.Discovered) (*Binaries, error) {
 	egrp, ctx := errgroup.WithContext(ctx)
 	binaries := &Binaries{}
 	if discovered.Local != nil {
 		egrp.Go(func() error {
-			path, err := compile(ctx, discovered.Local)
+			path, err := compile(ctx, ui, discovered.Local)
 			if err != nil {
 				return err
 			}
@@ -53,7 +53,7 @@ func Compile(ctx context.Context, discovered *discover.Discovered) (*Binaries, e
 	}
 	if discovered.Plan != nil {
 		egrp.Go(func() error {
-			path, err := compile(ctx, discovered.Plan)
+			path, err := compile(ctx, ui, discovered.Plan)
 			if err != nil {
 				return err
 			}
@@ -70,19 +70,19 @@ func Compile(ctx context.Context, discovered *discover.Discovered) (*Binaries, e
 	return binaries, nil
 }
 
-func compile(ctx context.Context, actions *discover.ActionsDiscovered) (string, error) {
+func compile(ctx context.Context, ui *ui.UI, actions *discover.ActionsDiscovered) (string, error) {
 	hash, err := matcher.GetHash(ctx, actions)
 	if err != nil {
 		return "", err
 	}
 
-	binaryPath, ok, err := matcher.BinaryMatches(ctx, hash, actions)
+	binaryPath, ok, err := matcher.BinaryMatches(ctx, ui, hash, actions)
 	if err != nil {
 		return "", err
 	}
 
 	if ok && !alwaysBuild {
-		log.Printf("DEBUG: file already matches continueing\n")
+		ui.Verboseln("file already matches continueing")
 		// The binary is the same so we short circuit
 		return binaryPath, nil
 	}
@@ -112,7 +112,7 @@ func compile(ctx context.Context, actions *discover.ActionsDiscovered) (string, 
 	if err = codegen.ModTidy(ctx, shuttlelocaldir); err != nil {
 		return "", err
 	}
-	binarypath, err := codegen.CompileBinary(ctx, shuttlelocaldir)
+	binarypath, err := codegen.CompileBinary(ctx, ui, shuttlelocaldir)
 	if err != nil {
 		return "", err
 	}

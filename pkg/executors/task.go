@@ -9,13 +9,15 @@ import (
 	"github.com/go-cmd/cmd"
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/lunarway/shuttle/pkg/executors/golang/executer"
+	"github.com/lunarway/shuttle/pkg/ui"
 )
 
 func TaskExecutor(action config.ShuttleAction) (Executor, bool) {
 	return executeTask, action.Task != ""
 }
 
-func executeTask(ctx context.Context, context ActionExecutionContext) error {
+func executeTask(ctx context.Context, ui *ui.UI, context ActionExecutionContext) error {
+
 	context.ScriptContext.Project.UI.Verboseln("Starting task command: %s", context.Action.Task)
 
 	args := make([]string, 0)
@@ -25,7 +27,7 @@ func executeTask(ctx context.Context, context ActionExecutionContext) error {
 		args = append(args, value)
 	}
 
-	err := executer.Run(ctx, &context.ScriptContext.Project, "shuttle.yaml", args...)
+	err := executer.Run(ctx, ui, &context.ScriptContext.Project, "shuttle.yaml", args...)
 	if err != nil {
 		return err
 	}

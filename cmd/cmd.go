@@ -181,7 +181,7 @@ func getProjectContext(rootCmd *cobra.Command, uii *ui.UI, projectPath string, c
 	}
 
 	ctx := stdcontext.Background()
-	taskActions, err := executer.List(ctx, fmt.Sprintf("%s/shuttle.yaml", projectContext.ProjectPath), &c)
+	taskActions, err := executer.List(ctx, uii, fmt.Sprintf("%s/shuttle.yaml", projectContext.ProjectPath), &c)
 	if err != nil {
 		return config.ShuttleProjectContext{}, err
 	}

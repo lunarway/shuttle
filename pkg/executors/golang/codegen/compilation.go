@@ -2,18 +2,19 @@ package codegen
 
 import (
 	"context"
-	"log"
 	"os/exec"
 	"path"
+
+	"github.com/lunarway/shuttle/pkg/ui"
 )
 
-func CompileBinary(ctx context.Context, shuttlelocaldir string) (string, error) {
+func CompileBinary(ctx context.Context, ui *ui.UI, shuttlelocaldir string) (string, error) {
 	cmd := exec.Command("go", "build")
 	cmd.Dir = path.Join(shuttlelocaldir, "tmp")
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("%s\n", string(output))
+		ui.Verboseln("compile-binary output: %s", string(output))
 		return "", err
 	}
 
