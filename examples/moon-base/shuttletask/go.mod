@@ -1,5 +1,5 @@
 module actions
 
-go 1.20
+go 1.18
 
 replace github.com/lunarway/shuttle => ../../../../../
