@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 
@@ -25,7 +24,7 @@ func BinaryMatches(
 	shuttlebindir := path.Join(actions.ParentDir, ".shuttle/actions/binaries")
 
 	if _, err := os.Stat(shuttlebindir); errors.Is(err, os.ErrNotExist) {
-		log.Println("DEBUG: package doesn't exist continueing")
+		ui.Verboseln("package doesn't exist continueing")
 		return "", false, nil
 	}
 
