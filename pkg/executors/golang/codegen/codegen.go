@@ -20,7 +20,7 @@ var (
 func GenerateMainFile(
 	ctx context.Context,
 	shuttlelocaldir string,
-	shuttletask *discover.ShuttleTaskDiscovered,
+	actions *discover.ActionsDiscovered,
 	functions []*parser.Function,
 ) error {
 	tmpmainfile := path.Join(shuttlelocaldir, "tmp/main.go")

@@ -15,12 +15,12 @@ func TestDiscover(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, discover.Discovered{
-		Local: &discover.ShuttleTaskDiscovered{
+		Local: &discover.ActionsDiscovered{
 			Files: []string{
 				"build.go",
 				"download.go",
 			},
-			DirPath:   "testdata/simple/shuttletask",
+			DirPath:   "testdata/simple/actions",
 			ParentDir: "testdata/simple",
 		},
 	}, *discovered)
@@ -43,20 +43,20 @@ func TestDiscoverComplex(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, discover.Discovered{
-		Local: &discover.ShuttleTaskDiscovered{
+		Local: &discover.ActionsDiscovered{
 			Files: []string{
 				"build.go",
 				"download.go",
 			},
-			DirPath:   "testdata/child/shuttletask",
+			DirPath:   "testdata/child/actions",
 			ParentDir: "testdata/child",
 		},
-		Plan: &discover.ShuttleTaskDiscovered{
+		Plan: &discover.ActionsDiscovered{
 			Files: []string{
 				"build.go",
 				"download.go",
 			},
-			DirPath:   "testdata/child/.shuttle/plan/shuttletask",
+			DirPath:   "testdata/child/.shuttle/plan/actions",
 			ParentDir: "testdata/child/.shuttle/plan",
 		},
 	}, *discovered)

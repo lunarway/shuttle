@@ -18,5 +18,5 @@ func TestCompile(t *testing.T) {
 	path, err := compile.Compile(ctx, discovered)
 	assert.NoError(t, err)
 
-	assert.Contains(t, path.Local.Path, "testdata/simple/.shuttle/shuttletask/binaries/shuttletask-")
+	assert.Contains(t, path.Local.Path, "testdata/simple/.shuttle/actions/binaries/actions-")
 }

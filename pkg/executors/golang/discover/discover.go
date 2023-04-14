@@ -15,25 +15,25 @@ var (
 )
 
 const (
-	shuttletaskdir  = "shuttletask"
+	actionsdir      = "actions"
 	shuttlefilename = "shuttle.yaml"
 )
 
-type ShuttleTaskDiscovered struct {
+type ActionsDiscovered struct {
 	Files     []string
 	DirPath   string
 	ParentDir string
 }
 
 type Discovered struct {
-	Local *ShuttleTaskDiscovered
-	Plan  *ShuttleTaskDiscovered
+	Local *ActionsDiscovered
+	Plan  *ActionsDiscovered
 }
 
 // path: is a path to the shuttle.yaml file
-// It will always look for the shuttletask directory relative to the shuttle.yaml file
+// It will always look for the actions directory relative to the shuttle.yaml file
 //
-// 1. Traverse shuttletaskdir
+// 1. Traverse actionsdir
 //
 // 2. Traverse plan if exists (only 1 layer for now)
 //
@@ -71,14 +71,14 @@ func Discover(ctx context.Context, shuttlepath string, c *config.ShuttleProjectC
 	return &discovered, nil
 }
 
-func discoverPlan(localdir string) (*ShuttleTaskDiscovered, error) {
+func discoverPlan(localdir string) (*ActionsDiscovered, error) {
 	localshuttledirentries := make([]string, 0)
 
-	shuttletaskpath := path.Join(localdir, shuttletaskdir)
-	if fs, err := os.Stat(shuttletaskpath); err == nil {
+	actionspath := path.Join(localdir, actionsdir)
+	if fs, err := os.Stat(actionspath); err == nil {
 		// list all local files
 		if fs.IsDir() {
-			entries, err := os.ReadDir(shuttletaskpath)
+			entries, err := os.ReadDir(actionspath)
 			if err != nil {
 				return nil, err
 			}
@@ -103,8 +103,8 @@ func discoverPlan(localdir string) (*ShuttleTaskDiscovered, error) {
 			}
 		}
 
-		return &ShuttleTaskDiscovered{
-			DirPath:   shuttletaskpath,
+		return &ActionsDiscovered{
+			DirPath:   actionspath,
 			Files:     localshuttledirentries,
 			ParentDir: localdir,
 		}, nil

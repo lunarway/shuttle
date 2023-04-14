@@ -175,18 +175,18 @@ func getProjectContext(rootCmd *cobra.Command, uii *ui.UI, projectPath string, c
 	}
 
 	var c config.ShuttleProjectContext
-	_, err = c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling, plan, projectFlagSet)
+	projectContext, err := c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling, plan, projectFlagSet)
 	if err != nil {
 		return config.ShuttleProjectContext{}, err
 	}
 
-	ctx := stdcontext.TODO()
-	taskActions, err := executer.List(ctx, "shuttle.yaml", &c)
+	ctx := stdcontext.Background()
+	taskActions, err := executer.List(ctx, fmt.Sprintf("%s/shuttle.yaml", projectContext.ProjectPath), &c)
 	if err != nil {
-		return config.ShuttleProjectContext{}, nil
+		return config.ShuttleProjectContext{}, err
 	}
 
-	for name, _ := range taskActions {
+	for name := range taskActions {
 		c.Scripts[name] = config.ShuttlePlanScript{
 			Description: name,
 			Actions: []config.ShuttleAction{

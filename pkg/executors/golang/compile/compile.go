@@ -26,7 +26,7 @@ type Binaries struct {
 	Plan  Binary
 }
 
-// discovered: Discovered shuttletask projects
+// discovered: Discovered actions projects
 //
 // 1. Check hash for each dir
 //
@@ -36,7 +36,7 @@ type Binaries struct {
 //
 // 2.2. Generate main file
 //
-// 3. Move binary to .shuttle/shuttletask/binary-<hash>
+// 3. Move binary to .shuttle/actions/binary-<hash>
 func Compile(ctx context.Context, discovered *discover.Discovered) (*Binaries, error) {
 	egrp, ctx := errgroup.WithContext(ctx)
 	binaries := &Binaries{}
@@ -70,13 +70,13 @@ func Compile(ctx context.Context, discovered *discover.Discovered) (*Binaries, e
 	return binaries, nil
 }
 
-func compile(ctx context.Context, shuttletask *discover.ShuttleTaskDiscovered) (string, error) {
-	hash, err := matcher.GetHash(ctx, shuttletask)
+func compile(ctx context.Context, actions *discover.ActionsDiscovered) (string, error) {
+	hash, err := matcher.GetHash(ctx, actions)
 	if err != nil {
 		return "", err
 	}
 
-	binaryPath, ok, err := matcher.BinaryMatches(ctx, hash, shuttletask)
+	binaryPath, ok, err := matcher.BinaryMatches(ctx, hash, actions)
 	if err != nil {
 		return "", err
 	}
@@ -87,21 +87,21 @@ func compile(ctx context.Context, shuttletask *discover.ShuttleTaskDiscovered) (
 		return binaryPath, nil
 	}
 
-	shuttlelocaldir := path.Join(shuttletask.ParentDir, ".shuttle/shuttletask")
+	shuttlelocaldir := path.Join(actions.ParentDir, ".shuttle/actions")
 
 	if err = shuttlefolder.GenerateTmpDir(ctx, shuttlelocaldir); err != nil {
 		return "", err
 	}
-	if err = shuttlefolder.CopyFiles(ctx, shuttlelocaldir, shuttletask); err != nil {
+	if err = shuttlefolder.CopyFiles(ctx, shuttlelocaldir, actions); err != nil {
 		return "", err
 	}
 
-	contents, err := parser.GenerateAst(ctx, shuttlelocaldir, shuttletask)
+	contents, err := parser.GenerateAst(ctx, shuttlelocaldir, actions)
 	if err != nil {
 		return "", err
 	}
 
-	if err = codegen.GenerateMainFile(ctx, shuttlelocaldir, shuttletask, contents); err != nil {
+	if err = codegen.GenerateMainFile(ctx, shuttlelocaldir, actions, contents); err != nil {
 		return "", err
 	}
 

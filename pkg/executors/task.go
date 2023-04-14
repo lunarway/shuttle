@@ -12,7 +12,6 @@ import (
 )
 
 func TaskExecutor(action config.ShuttleAction) (Executor, bool) {
-
 	return executeTask, action.Task != ""
 }
 

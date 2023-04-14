@@ -27,7 +27,7 @@ func (rc *RootCmd) AddCmds(cmd ...*Cmd) *RootCmd {
 }
 
 func (rc *RootCmd) Execute() {
-	rootcmd := &cobra.Command{Use: "shuttletask"}
+	rootcmd := &cobra.Command{Use: "actions"}
 
 	rootcmd.AddCommand(
 		&cobra.Command{Use: "ls", RunE: func(cmd *cobra.Command, args []string) error {

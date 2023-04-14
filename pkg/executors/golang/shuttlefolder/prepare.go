@@ -12,11 +12,11 @@ import (
 func CopyFiles(
 	ctx context.Context,
 	shuttlelocaldir string,
-	shuttletask *discover.ShuttleTaskDiscovered,
+	actions *discover.ActionsDiscovered,
 ) error {
 	tmpdir := path.Join(shuttlelocaldir, "tmp")
 
-	return cp.Copy(shuttletask.DirPath, tmpdir)
+	return cp.Copy(actions.DirPath, tmpdir)
 }
 
 func Move(src, dest string) error {

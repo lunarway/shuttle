@@ -17,5 +17,5 @@ func CompileBinary(ctx context.Context, shuttlelocaldir string) (string, error) 
 		return "", err
 	}
 
-	return path.Join(shuttlelocaldir, "tmp", "shuttletask"), nil
+	return path.Join(shuttlelocaldir, "tmp", "actions"), nil
 }

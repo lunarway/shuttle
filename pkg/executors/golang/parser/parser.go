@@ -27,10 +27,10 @@ type Output struct {
 	Error bool
 }
 
-func GenerateAst(ctx context.Context, shuttlelocaldir string, shuttletask *discover.ShuttleTaskDiscovered) ([]*Function, error) {
+func GenerateAst(ctx context.Context, shuttlelocaldir string, actions *discover.ActionsDiscovered) ([]*Function, error) {
 	funcs := make([]*Function, 0)
 
-	for _, taskfile := range shuttletask.Files {
+	for _, taskfile := range actions.Files {
 		tknSet := token.NewFileSet()
 		astfile, err := parser.ParseFile(tknSet, path.Join(shuttlelocaldir, "tmp", taskfile), nil, parser.ParseComments)
 		if err != nil {

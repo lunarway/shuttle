@@ -8,7 +8,7 @@ import (
 
 const (
 	TaskBinaryDir    string = "binaries"
-	TaskBinaryPrefix        = "shuttletask"
+	TaskBinaryPrefix        = "actions"
 )
 
 func CalculateBinaryPath(shuttledir, hash string) string {

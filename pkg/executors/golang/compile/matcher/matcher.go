@@ -18,9 +18,9 @@ import (
 func BinaryMatches(
 	ctx context.Context,
 	hash string,
-	shuttletask *discover.ShuttleTaskDiscovered,
+	actions *discover.ActionsDiscovered,
 ) (string, bool, error) {
-	shuttlebindir := path.Join(shuttletask.ParentDir, ".shuttle/shuttletask/binaries")
+	shuttlebindir := path.Join(actions.ParentDir, ".shuttle/actions/binaries")
 
 	if _, err := os.Stat(shuttlebindir); errors.Is(err, os.ErrNotExist) {
 		log.Println("DEBUG: package doesn't exist continueing")
@@ -39,7 +39,7 @@ func BinaryMatches(
 	// We only expect a single binary in the folder, so we just take the first entry if it exists
 	binary := entries[0]
 
-	if binary.Name() == fmt.Sprintf("shuttletask-%s", hex.EncodeToString([]byte(hash)[:16])) {
+	if binary.Name() == fmt.Sprintf("actions-%s", hex.EncodeToString([]byte(hash)[:16])) {
 		return path.Join(shuttlebindir, binary.Name()), true, nil
 	} else {
 		log.Printf("DEBUG: binary does not match, rebuilding...")
@@ -47,11 +47,11 @@ func BinaryMatches(
 	}
 }
 
-func GetHash(ctx context.Context, shuttletask *discover.ShuttleTaskDiscovered) (string, error) {
-	entries := make([]string, len(shuttletask.Files))
+func GetHash(ctx context.Context, actions *discover.ActionsDiscovered) (string, error) {
+	entries := make([]string, len(actions.Files))
 
-	for i, task := range shuttletask.Files {
-		entries[i] = path.Join(shuttletask.DirPath, task)
+	for i, task := range actions.Files {
+		entries[i] = path.Join(actions.DirPath, task)
 	}
 
 	open := func(name string) (io.ReadCloser, error) {

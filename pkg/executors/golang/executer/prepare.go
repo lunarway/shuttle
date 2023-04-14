@@ -15,7 +15,7 @@ func prepare(ctx context.Context, path string, c *config.ShuttleProjectContext) 
 
 	disc, err := discover.Discover(ctx, path, c)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fiscover shuttletask: %v", err)
+		return nil, fmt.Errorf("failed to fiscover actions: %v", err)
 	}
 
 	binaries, err := compile.Compile(ctx, disc)
