@@ -27,7 +27,7 @@ func TestDiscover(t *testing.T) {
 }
 
 func TestDiscoverComplex(t *testing.T) {
-	shuttleCmd := exec.Command("shuttle", "ls")
+	shuttleCmd := exec.Command("shuttle", "ls", "--verbose")
 	shuttleCmd.Dir = "testdata/child/"
 
 	output, err := shuttleCmd.CombinedOutput()
