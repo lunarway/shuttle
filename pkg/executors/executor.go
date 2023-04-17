@@ -8,6 +8,7 @@ import (
 
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/lunarway/shuttle/pkg/errors"
+	"github.com/lunarway/shuttle/pkg/ui"
 )
 
 type Registry struct {
@@ -15,7 +16,7 @@ type Registry struct {
 }
 
 type Matcher func(config.ShuttleAction) (Executor, bool)
-type Executor func(context.Context, ActionExecutionContext) error
+type Executor func(context.Context, *ui.UI, ActionExecutionContext) error
 
 func NewRegistry(executors ...Matcher) *Registry {
 	return &Registry{
@@ -63,7 +64,7 @@ func (r *Registry) Execute(ctx context.Context, p config.ShuttleProjectContext, 
 			Action:        action,
 			ActionIndex:   actionIndex,
 		}
-		err := r.executeAction(ctx, actionContext)
+		err := r.executeAction(ctx, p.UI, actionContext)
 		if err != nil {
 			return err
 		}
@@ -176,11 +177,11 @@ func expectedArgumentsHelp(command string, args []config.ShuttleScriptArgs) stri
 	return s.String()
 }
 
-func (r *Registry) executeAction(ctx context.Context, context ActionExecutionContext) error {
+func (r *Registry) executeAction(ctx context.Context, ui *ui.UI, context ActionExecutionContext) error {
 	for _, executor := range r.executors {
 		handler, ok := executor(context.Action)
 		if ok {
-			return handler(ctx, context)
+			return handler(ctx, ui, context)
 		}
 	}
 

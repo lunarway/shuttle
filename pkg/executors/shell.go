@@ -11,6 +11,7 @@ import (
 	"github.com/go-cmd/cmd"
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/lunarway/shuttle/pkg/errors"
+	"github.com/lunarway/shuttle/pkg/ui"
 )
 
 func ShellExecutor(action config.ShuttleAction) (Executor, bool) {
@@ -18,7 +19,7 @@ func ShellExecutor(action config.ShuttleAction) (Executor, bool) {
 }
 
 // Build builds the docker image from a shuttle plan
-func executeShell(ctx context.Context, context ActionExecutionContext) error {
+func executeShell(ctx context.Context, ui *ui.UI, context ActionExecutionContext) error {
 	cmdOptions := cmd.Options{
 		Buffered:  false,
 		Streaming: true,
