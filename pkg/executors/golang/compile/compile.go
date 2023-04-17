@@ -105,11 +105,11 @@ func compile(ctx context.Context, ui *ui.UI, actions *discover.ActionsDiscovered
 		return "", err
 	}
 
-	if err = codegen.Format(ctx, shuttlelocaldir); err != nil {
+	if err = codegen.Format(ctx, ui, shuttlelocaldir); err != nil {
 		return "", err
 	}
 
-	if err = codegen.ModTidy(ctx, shuttlelocaldir); err != nil {
+	if err = codegen.ModTidy(ctx, ui, shuttlelocaldir); err != nil {
 		return "", err
 	}
 	binarypath, err := codegen.CompileBinary(ctx, ui, shuttlelocaldir)
