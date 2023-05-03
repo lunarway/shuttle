@@ -16,10 +16,10 @@ require (
 )
 
 require (
-	github.com/otiai10/copy v1.9.0
-	golang.org/x/mod v0.6.0
-	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
-	gopkg.in/yaml.v2 v2.3.0
+	github.com/otiai10/copy v1.11.0
+	golang.org/x/mod v0.10.0
+	golang.org/x/sync v0.1.0
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
