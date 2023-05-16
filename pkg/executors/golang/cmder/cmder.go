@@ -90,10 +90,8 @@ func (rc *RootCmd) Execute() {
 				for _, val := range returnValues {
 					if val.Type().Implements(reflect.TypeOf((*error)(nil)).Elem()) {
 						err, ok := val.Interface().(error)
-						if ok {
+						if ok && err != nil {
 							return err
-						} else {
-							log.Fatalln("returnValue is not an error")
 						}
 					}
 				}
