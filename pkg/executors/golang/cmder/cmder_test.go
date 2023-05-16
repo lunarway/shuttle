@@ -10,7 +10,7 @@ import (
 	"github.com/lunarway/shuttle/pkg/executors/golang/cmder"
 )
 
-func TestCmderWithExit(t *testing.T) {
+func TestCmderWithError(t *testing.T) {
 	testFunc := cmder.NewCmd("test", func(ctx context.Context) error {
 		return errors.New("some-error")
 	})
@@ -24,7 +24,7 @@ func TestCmderWithExit(t *testing.T) {
 	assert.ErrorContains(t, err, "some-error")
 }
 
-func TestCmderWithNoExit(t *testing.T) {
+func TestCmderWithNoError(t *testing.T) {
 	testFunc := cmder.NewCmd("test", func(ctx context.Context) error {
 		return nil
 	})
