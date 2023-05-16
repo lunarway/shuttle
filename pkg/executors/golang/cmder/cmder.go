@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"reflect"
 
 	"github.com/spf13/cobra"
@@ -27,6 +28,12 @@ func (rc *RootCmd) AddCmds(cmd ...*Cmd) *RootCmd {
 }
 
 func (rc *RootCmd) Execute() {
+	if err := rc.TryExecute(os.Args[1:]); err != nil {
+		log.Fatalf("%v\n", err)
+	}
+}
+
+func (rc *RootCmd) TryExecute(args []string) error {
 	rootcmd := &cobra.Command{Use: "actions"}
 
 	rootcmd.AddCommand(
@@ -35,26 +42,32 @@ func (rc *RootCmd) Execute() {
 		}},
 	)
 
-	rootcmd.AddCommand(&cobra.Command{Hidden: true, Use: "lsjson", RunE: func(cmd *cobra.Command, args []string) error {
-		cmdNames := make([]string, len(rc.Cmds))
-		for i, cmd := range rc.Cmds {
-			cmd := cmd
-			cmdNames[i] = cmd.Name
-		}
+	rootcmd.AddCommand(
+		&cobra.Command{
+			Hidden: true,
+			Use:    "lsjson",
+			RunE: func(cmd *cobra.Command, args []string) error {
+				cmdNames := make([]string, len(rc.Cmds))
+				for i, cmd := range rc.Cmds {
+					cmd := cmd
+					cmdNames[i] = cmd.Name
+				}
 
-		rawJson, err := json.Marshal(cmdNames)
-		if err != nil {
-			return err
-		}
+				rawJson, err := json.Marshal(cmdNames)
+				if err != nil {
+					return err
+				}
 
-		// Prints the commands and args as json to stdout
-		_, err = fmt.Printf("%s", string(rawJson))
-		if err != nil {
-			return err
-		}
+				// Prints the commands and args as json to stdout
+				_, err = fmt.Printf("%s", string(rawJson))
+				if err != nil {
+					return err
+				}
 
-		return nil
-	}})
+				return nil
+			},
+		},
+	)
 
 	for _, cmd := range rc.Cmds {
 		cmd := cmd
@@ -73,9 +86,23 @@ func (rc *RootCmd) Execute() {
 					inputs = append(inputs, reflect.ValueOf(arg))
 				}
 
-				reflect.
+				returnValues := reflect.
 					ValueOf(cmd.Func).
 					Call(inputs)
+
+				if len(returnValues) == 0 {
+					return nil
+				}
+
+				for _, val := range returnValues {
+					if val.Type().Implements(reflect.TypeOf((*error)(nil)).Elem()) {
+						err, ok := val.Interface().(error)
+						if ok && err != nil {
+							return err
+						}
+					}
+				}
+
 				return nil
 			},
 		}
@@ -87,9 +114,11 @@ func (rc *RootCmd) Execute() {
 		rootcmd.AddCommand(cobracmd)
 	}
 
+	rootcmd.SetArgs(args)
 	if err := rootcmd.Execute(); err != nil {
-		log.Fatalf("%v", err)
+		return err
 	}
+	return nil
 }
 
 type Arg struct {
