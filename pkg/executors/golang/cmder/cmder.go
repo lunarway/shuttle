@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"reflect"
 
 	"github.com/spf13/cobra"
@@ -27,6 +28,12 @@ func (rc *RootCmd) AddCmds(cmd ...*Cmd) *RootCmd {
 }
 
 func (rc *RootCmd) Execute() {
+	if err := rc.TryExecute(os.Args[1:]); err != nil {
+		log.Fatalf("%v\n", err)
+	}
+}
+
+func (rc *RootCmd) TryExecute(args []string) error {
 	rootcmd := &cobra.Command{Use: "actions"}
 
 	rootcmd.AddCommand(
@@ -107,9 +114,11 @@ func (rc *RootCmd) Execute() {
 		rootcmd.AddCommand(cobracmd)
 	}
 
+	rootcmd.SetArgs(args)
 	if err := rootcmd.Execute(); err != nil {
-		log.Fatalf("%v", err)
+		return err
 	}
+	return nil
 }
 
 type Arg struct {
