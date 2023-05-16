@@ -10,9 +10,7 @@ import (
 	"github.com/lunarway/shuttle/pkg/config"
 )
 
-var (
-	InvalidShuttlePathFile = errors.New("shuttle path did not point ot a shuttle.yaml file")
-)
+var InvalidShuttlePathFile = errors.New("shuttle path did not point ot a shuttle.yaml file")
 
 const (
 	actionsdir      = "actions"
@@ -40,7 +38,11 @@ type Discovered struct {
 // 3. Collect file names
 //
 // 4. Return list of files to move to tmp dir
-func Discover(ctx context.Context, shuttlepath string, c *config.ShuttleProjectContext) (*Discovered, error) {
+func Discover(
+	ctx context.Context,
+	shuttlepath string,
+	c *config.ShuttleProjectContext,
+) (*Discovered, error) {
 	if !strings.HasSuffix(shuttlepath, shuttlefilename) {
 		return nil, InvalidShuttlePathFile
 	}
@@ -95,7 +97,7 @@ func discoverPlan(localdir string) (*ActionsDiscovered, error) {
 				}
 
 				// skip test files
-				if strings.HasSuffix(entry.Name(), "test.go") {
+				if strings.HasSuffix(entry.Name(), "_test.go") {
 					continue
 				}
 
@@ -111,5 +113,4 @@ func discoverPlan(localdir string) (*ActionsDiscovered, error) {
 
 	}
 	return nil, nil
-
 }
