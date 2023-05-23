@@ -24,6 +24,14 @@ LABEL svc=shuttle
 			erroutput: "",
 			err:       nil,
 		},
+		{
+			name:  "image tag should not be parsed as float",
+			input: args("-p", "testdata/project", "template", "../Dockerfile.tmpl"),
+			stdoutput: `FROM golang:1.20
+`,
+			erroutput: "",
+			err:       nil,
+		},
 	}
 	executeTestCases(t, testCases)
 }
