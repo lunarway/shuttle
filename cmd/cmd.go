@@ -8,11 +8,12 @@ import (
 	"os"
 	"path"
 
-	"github.com/lunarway/shuttle/pkg/executors/golang/executer"
-	"github.com/lunarway/shuttle/pkg/ui"
+	"github.com/spf13/cobra"
 
 	"github.com/lunarway/shuttle/pkg/config"
-	"github.com/spf13/cobra"
+	"github.com/lunarway/shuttle/pkg/executors/golang/executer"
+	"github.com/lunarway/shuttle/pkg/telemetry"
+	"github.com/lunarway/shuttle/pkg/ui"
 )
 
 var (
@@ -70,6 +71,8 @@ __shuttle_custom_func() {
 `
 
 func newRoot(uii *ui.UI) (*cobra.Command, contextProvider) {
+	telemetry.Setup()
+
 	var (
 		verboseFlag        bool
 		projectPath        string
@@ -101,7 +104,8 @@ Read more about shuttle at https://github.com/lunarway/shuttle`, version),
 
 	rootCmd.PersistentFlags().StringVarP(&projectPath, "project", "p", ".", "Project path")
 	rootCmd.PersistentFlags().BoolVarP(&clean, "clean", "c", false, "Start from clean setup")
-	rootCmd.PersistentFlags().BoolVar(&skipGitPlanPulling, "skip-pull", false, "Skip git plan pulling step")
+	rootCmd.PersistentFlags().
+		BoolVar(&skipGitPlanPulling, "skip-pull", false, "Skip git plan pulling step")
 	rootCmd.PersistentFlags().StringVar(&plan, "plan", "", `Overload the plan used.
 Specifying a local path with either an absolute path (/some/plan) or a relative path (../some/plan) to another location
 for the selected plan.
@@ -120,6 +124,14 @@ func Execute(out, err io.Writer) {
 	rootCmd, uii := initializedRoot(out, err)
 
 	if err := rootCmd.Execute(); err != nil {
+
+		telemetry.Client.TraceError(
+			stdcontext.Background(),
+			"execute",
+			err,
+			map[string]string{},
+		)
+
 		checkError(uii, err)
 	}
 }
@@ -151,7 +163,14 @@ func initializedRoot(out, err io.Writer) (*cobra.Command, *ui.UI) {
 
 type contextProvider func() (config.ShuttleProjectContext, error)
 
-func getProjectContext(rootCmd *cobra.Command, uii *ui.UI, projectPath string, clean bool, plan string, skipGitPlanPulling bool) (config.ShuttleProjectContext, error) {
+func getProjectContext(
+	rootCmd *cobra.Command,
+	uii *ui.UI,
+	projectPath string,
+	clean bool,
+	plan string,
+	skipGitPlanPulling bool,
+) (config.ShuttleProjectContext, error) {
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
@@ -175,13 +194,25 @@ func getProjectContext(rootCmd *cobra.Command, uii *ui.UI, projectPath string, c
 	}
 
 	var c config.ShuttleProjectContext
-	projectContext, err := c.Setup(fullProjectPath, uii, clean, skipGitPlanPulling, plan, projectFlagSet)
+	projectContext, err := c.Setup(
+		fullProjectPath,
+		uii,
+		clean,
+		skipGitPlanPulling,
+		plan,
+		projectFlagSet,
+	)
 	if err != nil {
 		return config.ShuttleProjectContext{}, err
 	}
 
 	ctx := stdcontext.Background()
-	taskActions, err := executer.List(ctx, uii, fmt.Sprintf("%s/shuttle.yaml", projectContext.ProjectPath), &c)
+	taskActions, err := executer.List(
+		ctx,
+		uii,
+		fmt.Sprintf("%s/shuttle.yaml", projectContext.ProjectPath),
+		&c,
+	)
 	if err != nil {
 		return config.ShuttleProjectContext{}, err
 	}

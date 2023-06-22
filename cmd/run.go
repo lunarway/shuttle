@@ -2,12 +2,15 @@ package cmd
 
 import (
 	stdcontext "context"
+	"fmt"
 	"os"
 	"os/signal"
 
-	"github.com/lunarway/shuttle/pkg/executors"
-	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/spf13/cobra"
+
+	"github.com/lunarway/shuttle/pkg/executors"
+	"github.com/lunarway/shuttle/pkg/telemetry"
+	"github.com/lunarway/shuttle/pkg/ui"
 )
 
 func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
@@ -25,7 +28,26 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		Args:         cobra.MinimumNArgs(1),
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var commandName = args[0]
+			commandName := args[0]
+			ctx := stdcontext.Background()
+			ctx = telemetry.WithRunID(ctx)
+			telemetry.Client.Trace(
+				ctx,
+				fmt.Sprintf("%s.%s", "run", commandName),
+				map[string]string{
+					"phase": "start",
+				},
+			)
+			defer func(ctx stdcontext.Context) {
+				telemetry.Client.Trace(
+					ctx,
+					fmt.Sprintf("%s.%s", "run", commandName),
+					map[string]string{
+						"phase": "finished",
+					},
+				)
+			}(ctx)
+
 			context, err := contextProvider()
 			if err != nil {
 				return err
@@ -55,8 +77,10 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		err = executors.Help(context.Scripts, scripts[0], cmd.OutOrStdout(), flagTemplate)
 		checkError(uii, err)
 	})
-	runCmd.Flags().StringVar(&flagTemplate, "template", "", "Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].")
-	runCmd.Flags().BoolVar(&validateArgs, "validate", true, "Validate arguments against script definition in plan and exit with 1 on unknown or missing arguments")
+	runCmd.Flags().
+		StringVar(&flagTemplate, "template", "", "Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].")
+	runCmd.Flags().
+		BoolVar(&validateArgs, "validate", true, "Validate arguments against script definition in plan and exit with 1 on unknown or missing arguments")
 	return runCmd
 }
 
