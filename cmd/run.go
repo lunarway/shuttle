@@ -30,7 +30,7 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			commandName := args[0]
 			ctx := stdcontext.Background()
-			ctx = telemetry.WithRunID(ctx)
+			ctx = telemetry.WithContextID(ctx)
 			telemetry.Client.Trace(
 				ctx,
 				fmt.Sprintf("%s.%s", "run", commandName),
@@ -50,6 +50,14 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 
 			context, err := contextProvider()
 			if err != nil {
+				telemetry.Client.TraceError(
+					ctx,
+					fmt.Sprintf("%s.%s", "run", commandName),
+					err,
+					map[string]string{
+						"phase": "error",
+					},
+				)
 				return err
 			}
 
@@ -58,6 +66,14 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 
 			err = executorRegistry.Execute(ctx, context, commandName, args[1:], validateArgs)
 			if err != nil {
+				telemetry.Client.TraceError(
+					ctx,
+					fmt.Sprintf("%s.%s", "run", commandName),
+					err,
+					map[string]string{
+						"phase": "error",
+					},
+				)
 				return err
 			}
 

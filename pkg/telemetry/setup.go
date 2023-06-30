@@ -2,6 +2,7 @@ package telemetry
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -24,6 +25,7 @@ func Setup() {
 			labelPrefix: appKey,
 			url:         endpoint,
 			properties:  map[string]string{},
+			Client:      http.DefaultClient,
 		}
 
 		return
