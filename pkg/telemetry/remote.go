@@ -21,8 +21,13 @@ type UploadTelemetryClient struct {
 func (t *UploadTelemetryClient) Trace(
 	ctx context.Context,
 	label string,
-	properties map[string]string,
+	options ...TelemetryOption,
 ) {
+	var properties map[string]string
+	for _, o := range options {
+		o(properties)
+	}
+
 	properties["shuttle.label"] = label
 
 	err := t.uploadTrace(ctx, properties)
@@ -35,9 +40,15 @@ func (t *UploadTelemetryClient) TraceError(
 	ctx context.Context,
 	label string,
 	err error,
-	properties map[string]string,
+	options ...TelemetryOption,
 ) {
+	var properties map[string]string
+	for _, o := range options {
+		o(properties)
+	}
+
 	properties["shuttle.label"] = label
+	properties["phase"] = "error"
 	properties["error"] = err.Error()
 	err = t.uploadTrace(ctx, properties)
 	if err != nil {

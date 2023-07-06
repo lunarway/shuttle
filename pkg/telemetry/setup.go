@@ -10,9 +10,11 @@ import (
 const appKey = "shuttle"
 
 type TelemetryClient interface {
-	Trace(ctx context.Context, label string, properties map[string]string)
-	TraceError(ctx context.Context, label string, err error, properties map[string]string)
+	Trace(ctx context.Context, label string, options ...TelemetryOption)
+	TraceError(ctx context.Context, label string, err error, options ...TelemetryOption)
 }
+
+type TelemetryOption func(properties map[string]string)
 
 var (
 	NoopClient TelemetryClient = &NoopTelemetryClient{}

@@ -14,8 +14,13 @@ type LoggingTelemetryClient struct {
 func (t *LoggingTelemetryClient) Trace(
 	ctx context.Context,
 	label string,
-	properties map[string]string,
+	options ...TelemetryOption,
 ) {
+	var properties map[string]string
+	for _, o := range options {
+		o(properties)
+	}
+
 	content, err := json.Marshal(mergeMaps(ctx, properties))
 	if err != nil {
 		log.Printf("failed to serialize properties")
@@ -29,8 +34,13 @@ func (t *LoggingTelemetryClient) TraceError(
 	ctx context.Context,
 	label string,
 	err error,
-	properties map[string]string,
+	options ...TelemetryOption,
 ) {
+	var properties map[string]string
+	for _, o := range options {
+		o(properties)
+	}
+
 	content, marshalErr := json.Marshal(mergeMaps(ctx, properties))
 	if marshalErr != nil {
 		log.Printf("failed to serialize properties")

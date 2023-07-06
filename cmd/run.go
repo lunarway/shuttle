@@ -2,9 +2,9 @@ package cmd
 
 import (
 	stdcontext "context"
-	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -31,20 +31,17 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 			commandName := args[0]
 			ctx := stdcontext.Background()
 			ctx = telemetry.WithContextID(ctx)
+			ctx = WithRunTelemetry(ctx, commandName, args[:1])
 			telemetry.Client.Trace(
 				ctx,
-				fmt.Sprintf("%s.%s", "run", commandName),
-				map[string]string{
-					"phase": "start",
-				},
+				"run",
+				telemetry.WithPhase("start"),
 			)
 			defer func(ctx stdcontext.Context) {
 				telemetry.Client.Trace(
 					ctx,
-					fmt.Sprintf("%s.%s", "run", commandName),
-					map[string]string{
-						"phase": "finished",
-					},
+					"run",
+					telemetry.WithPhase("end"),
 				)
 			}(ctx)
 
@@ -52,11 +49,8 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 			if err != nil {
 				telemetry.Client.TraceError(
 					ctx,
-					fmt.Sprintf("%s.%s", "run", commandName),
+					"run",
 					err,
-					map[string]string{
-						"phase": "error",
-					},
 				)
 				return err
 			}
@@ -68,11 +62,8 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 			if err != nil {
 				telemetry.Client.TraceError(
 					ctx,
-					fmt.Sprintf("%s.%s", "run", commandName),
+					"run",
 					err,
-					map[string]string{
-						"phase": "error",
-					},
 				)
 				return err
 			}
@@ -98,6 +89,16 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	runCmd.Flags().
 		BoolVar(&validateArgs, "validate", true, "Validate arguments against script definition in plan and exit with 1 on unknown or missing arguments")
 	return runCmd
+}
+
+func WithRunTelemetry(
+	ctx stdcontext.Context,
+	commandName string,
+	args []string,
+) stdcontext.Context {
+	ctx = stdcontext.WithValue(ctx, "shuttle.command", commandName)
+	ctx = stdcontext.WithValue(ctx, "shuttle.args", strings.Join(args, " "))
+	return ctx
 }
 
 // withSignal returns a copy of parent with a new Done channel. The returned
