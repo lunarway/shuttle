@@ -22,11 +22,15 @@ var (
 )
 
 func Setup() {
+	var properties map[string]string
+	sysinfo := WithGoInfo()
+	sysinfo(properties)
+
 	if endpoint := os.Getenv("SHUTTLE_TRACING_ENDPOINT"); endpoint != "" {
 		Client = &UploadTelemetryClient{
 			labelPrefix: appKey,
 			url:         endpoint,
-			properties:  map[string]string{},
+			properties:  properties,
 			Client:      http.DefaultClient,
 		}
 
@@ -38,7 +42,7 @@ func Setup() {
 	) == "true" {
 		Client = &LoggingTelemetryClient{
 			labelPrefix: appKey,
-			properties:  map[string]string{},
+			properties:  properties,
 		}
 
 		return

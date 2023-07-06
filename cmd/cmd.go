@@ -124,12 +124,10 @@ func Execute(out, err io.Writer) {
 	rootCmd, uii := initializedRoot(out, err)
 
 	if err := rootCmd.Execute(); err != nil {
-
 		telemetry.Client.TraceError(
 			stdcontext.Background(),
 			"execute",
 			err,
-			map[string]string{},
 		)
 
 		checkError(uii, err)
