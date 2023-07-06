@@ -16,10 +16,11 @@ func (t *LoggingTelemetryClient) Trace(
 	label string,
 	options ...TelemetryOption,
 ) {
-	var properties map[string]string
+	properties := make(map[string]string)
 	for _, o := range options {
 		o(properties)
 	}
+	copyHostMap(t.properties, properties)
 
 	content, err := json.Marshal(mergeMaps(ctx, properties))
 	if err != nil {
@@ -36,10 +37,11 @@ func (t *LoggingTelemetryClient) TraceError(
 	err error,
 	options ...TelemetryOption,
 ) {
-	var properties map[string]string
+	properties := make(map[string]string)
 	for _, o := range options {
 		o(properties)
 	}
+	copyHostMap(t.properties, properties)
 
 	content, marshalErr := json.Marshal(mergeMaps(ctx, properties))
 	if marshalErr != nil {

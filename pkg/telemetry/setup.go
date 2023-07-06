@@ -22,7 +22,7 @@ var (
 )
 
 func Setup() {
-	var properties map[string]string
+	properties := make(map[string]string)
 	sysinfo := WithGoInfo()
 	sysinfo(properties)
 

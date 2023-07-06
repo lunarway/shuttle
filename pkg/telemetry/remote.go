@@ -23,7 +23,7 @@ func (t *UploadTelemetryClient) Trace(
 	label string,
 	options ...TelemetryOption,
 ) {
-	var properties map[string]string
+	properties := make(map[string]string)
 	for _, o := range options {
 		o(properties)
 	}
@@ -42,7 +42,7 @@ func (t *UploadTelemetryClient) TraceError(
 	err error,
 	options ...TelemetryOption,
 ) {
-	var properties map[string]string
+	properties := make(map[string]string)
 	for _, o := range options {
 		o(properties)
 	}
@@ -69,6 +69,8 @@ func (t *UploadTelemetryClient) uploadTrace(
 	ctx context.Context,
 	properties map[string]string,
 ) error {
+	copyHostMap(t.properties, properties)
+
 	event := &uploadTraceEvent{
 		App:        appKey,
 		Type:       "",
