@@ -10,15 +10,15 @@ require (
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.7.0
-	github.com/stretchr/testify v1.8.2
-	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
+	github.com/stretchr/testify v1.8.4
+	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
-	github.com/otiai10/copy v1.11.0
-	golang.org/x/mod v0.10.0
-	golang.org/x/sync v0.1.0
+	github.com/otiai10/copy v1.12.0
+	golang.org/x/mod v0.12.0
+	golang.org/x/sync v0.3.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
