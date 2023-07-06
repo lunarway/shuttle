@@ -2,8 +2,10 @@ package telemetry
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/matishsiao/goInfo"
 )
 
 const telemetryContextID = "shuttle.contextID"
@@ -19,6 +21,35 @@ func WithPhase(phase string) TelemetryOption {
 func WithText(key, value string) TelemetryOption {
 	return func(properties map[string]string) {
 		properties[key] = value
+	}
+}
+
+func WithGoInfo() TelemetryOption {
+	return func(properties map[string]string) {
+		gi, err := goInfo.GetInfo()
+		if err == nil {
+			if gi.OS != "" {
+				properties["system.os"] = gi.OS
+			}
+			if gi.Kernel != "" {
+				properties["system.kernel"] = gi.Kernel
+			}
+			if gi.Core != "" {
+				properties["system.core"] = gi.Core
+			}
+			if gi.Platform != "" {
+				properties["system.platform"] = gi.Platform
+			}
+			if gi.Hostname != "" {
+				properties["system.hostname"] = gi.Hostname
+			}
+			if gi.CPUs != 0 {
+				properties["system.cpus"] = fmt.Sprintf("%d", gi.CPUs)
+			}
+			if gi.GoOS != "" {
+				properties["system.goos"] = gi.GoOS
+			}
+		}
 	}
 }
 

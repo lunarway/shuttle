@@ -54,6 +54,12 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 				)
 				return err
 			}
+			telemetry.Client.Trace(
+				ctx,
+				"run",
+				telemetry.WithPhase("after-plan-pull"),
+				telemetry.WithText("plan", context.Config.Plan),
+			)
 
 			ctx, cancel := withSignal(stdcontext.Background(), uii)
 			defer cancel()
