@@ -3,15 +3,24 @@ package telemetry
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/google/uuid"
 	"github.com/matishsiao/goInfo"
 )
 
-const telemetryContextID = "shuttle.contextID"
+const (
+	TelemetryContextID   string = "shuttle.contextID"
+	TelemetryCommand     string = "shuttle.command"
+	TelemetryCommandArgs string = "shuttle.command.args"
+)
 
 func WithContextID(ctx context.Context) context.Context {
-	return context.WithValue(ctx, telemetryContextID, uuid.New().String())
+	if context_id := os.Getenv("SHUTTLE_CONTEXT_ID"); context_id != "" {
+		return context.WithValue(ctx, TelemetryContextID, context_id)
+	}
+
+	return context.WithValue(ctx, TelemetryContextID, uuid.New().String())
 }
 
 func WithPhase(phase string) TelemetryOption {
@@ -57,8 +66,16 @@ func WithGoInfo() TelemetryOption {
 }
 
 func mergeMaps(ctx context.Context, properties map[string]string) map[string]string {
-	if runID, ok := ctx.Value(telemetryContextID).(string); ok && runID != "" {
-		properties[telemetryContextID] = runID
+	if runID, ok := ctx.Value(TelemetryContextID).(string); ok && runID != "" {
+		properties[TelemetryContextID] = runID
+	}
+
+	if val, ok := ctx.Value(TelemetryCommand).(string); ok && val != "" {
+		properties[TelemetryCommand] = val
+	}
+
+	if val, ok := ctx.Value(TelemetryCommandArgs).(string); ok && val != "" {
+		properties[TelemetryCommandArgs] = val
 	}
 
 	return properties

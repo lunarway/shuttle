@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
@@ -32,7 +31,7 @@ func (t *UploadTelemetryClient) Trace(
 
 	err := t.uploadTrace(ctx, properties)
 	if err != nil {
-		log.Printf("failed to publish trace: %s", err)
+		fmt.Printf("failed to publish trace: %s", err)
 	}
 }
 
@@ -52,7 +51,7 @@ func (t *UploadTelemetryClient) TraceError(
 	properties["error"] = err.Error()
 	err = t.uploadTrace(ctx, properties)
 	if err != nil {
-		log.Printf("failed to publish trace: %s", err)
+		fmt.Printf("failed to publish trace: %s", err)
 	}
 }
 

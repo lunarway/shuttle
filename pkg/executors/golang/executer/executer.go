@@ -8,6 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/lunarway/shuttle/pkg/executors/golang/compile"
+	"github.com/lunarway/shuttle/pkg/telemetry"
 )
 
 // Executes an action based on which plan is used
@@ -60,6 +61,11 @@ func executeBinaryAction(ctx context.Context, binary *compile.Binary, args ...st
 
 	execmd.Env = os.Environ()
 	execmd.Env = append(execmd.Env, fmt.Sprintf("TASK_CONTEXT_DIR=%s", workdir))
+	execmd.Env = append(
+		execmd.Env,
+		"SHUTTLE_CONTEXT_ID",
+		ctx.Value(telemetry.TelemetryContextID).(string),
+	)
 
 	err = execmd.Run()
 

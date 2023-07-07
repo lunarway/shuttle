@@ -2,7 +2,6 @@ package telemetry
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -18,17 +17,16 @@ type TelemetryClient interface {
 type TelemetryOption func(properties map[string]string)
 
 var (
-	NoopClient TelemetryClient = &NoopTelemetryClient{}
-	Client     TelemetryClient = NoopClient
+	NoopClient NoopTelemetryClient = NoopTelemetryClient{}
+	Client     TelemetryClient     = &NoopClient
 )
 
 func Setup() {
-	properties := make(map[string]string)
+	properties := make(map[string]string, 0)
 	sysinfo := WithGoInfo()
 	sysinfo(properties)
 
 	if endpoint := os.Getenv("SHUTTLE_TRACING_ENDPOINT"); endpoint != "" {
-		fmt.Println("choosing remote telemetry")
 		Client = &UploadTelemetryClient{
 			labelPrefix: appKey,
 			url:         endpoint,
@@ -42,7 +40,6 @@ func Setup() {
 	if logging_telemetry := os.Getenv("SHUTTLE_LOG_TRACING"); strings.ToLower(
 		logging_telemetry,
 	) == "true" {
-		fmt.Println("choosing logging telemetry")
 		Client = &LoggingTelemetryClient{
 			labelPrefix: appKey,
 			properties:  properties,
@@ -50,6 +47,4 @@ func Setup() {
 
 		return
 	}
-
-	fmt.Println("choosing noop telemetry")
 }

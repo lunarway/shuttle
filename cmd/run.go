@@ -31,7 +31,7 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 			commandName := args[0]
 			ctx := stdcontext.Background()
 			ctx = telemetry.WithContextID(ctx)
-			ctx = WithRunTelemetry(ctx, commandName, args[:1])
+			ctx = WithRunTelemetry(ctx, commandName, args)
 			telemetry.Client.Trace(
 				ctx,
 				"run",
@@ -61,7 +61,7 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 				telemetry.WithText("plan", context.Config.Plan),
 			)
 
-			ctx, cancel := withSignal(stdcontext.Background(), uii)
+			ctx, cancel := withSignal(ctx, uii)
 			defer cancel()
 
 			err = executorRegistry.Execute(ctx, context, commandName, args[1:], validateArgs)
@@ -102,8 +102,10 @@ func WithRunTelemetry(
 	commandName string,
 	args []string,
 ) stdcontext.Context {
-	ctx = stdcontext.WithValue(ctx, "shuttle.command", commandName)
-	ctx = stdcontext.WithValue(ctx, "shuttle.args", strings.Join(args, " "))
+	ctx = stdcontext.WithValue(ctx, telemetry.TelemetryCommand, commandName)
+	if len(args) != 0 {
+		ctx = stdcontext.WithValue(ctx, telemetry.TelemetryCommandArgs, strings.Join(args[1:], " "))
+	}
 	return ctx
 }
 
