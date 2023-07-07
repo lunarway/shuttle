@@ -9,7 +9,6 @@ scripts:
     description: build code
     actions:
       - shell: go build
-      - shell: sleep 2
   test:
     description: Run shuttle test suite
     actions:
