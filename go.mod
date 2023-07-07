@@ -30,6 +30,7 @@ require (
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/kjuulh/directories v0.0.0-20230114130134-06f9ef2442a5 // indirect
 	github.com/matishsiao/goInfo v0.0.0-20210923090445-da2e3fa8d45f // indirect
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

@@ -3,12 +3,12 @@ package executors
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/go-cmd/cmd"
+
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/telemetry"
@@ -42,8 +42,8 @@ func executeShell(ctx context.Context, ui *ui.UI, context ActionExecutionContext
 
 	setupCommandEnvironmentVariables(execCmd, context)
 
+	// TODO: Refactor
 	if context, ok := ctx.Value(telemetry.TelemetryContextID).(string); ok {
-		log.Println("setting context")
 		execCmd.Env = append(
 			execCmd.Env,
 			fmt.Sprintf("SHUTTLE_CONTEXT_ID=%s", context),

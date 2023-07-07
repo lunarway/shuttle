@@ -27,6 +27,10 @@ func WithPhase(phase string) TelemetryOption {
 	return WithText("phase", phase)
 }
 
+func WithLabel(label string) TelemetryOption {
+	return WithText("label", label)
+}
+
 func WithText(key, value string) TelemetryOption {
 	return func(properties map[string]string) {
 		properties[key] = value
@@ -65,6 +69,7 @@ func WithGoInfo() TelemetryOption {
 	}
 }
 
+// TODO: rename
 func mergeMaps(ctx context.Context, properties map[string]string) map[string]string {
 	if runID, ok := ctx.Value(TelemetryContextID).(string); ok && runID != "" {
 		properties[TelemetryContextID] = runID
@@ -81,8 +86,15 @@ func mergeMaps(ctx context.Context, properties map[string]string) map[string]str
 	return properties
 }
 
-func copyHostMap(original map[string]string, target map[string]string) {
+func copyHostMap(original map[string]string, flowProperties map[string]string) map[string]string {
+	properties := make(map[string]string, len(flowProperties)+len(original))
 	for k, v := range original {
-		target[k] = v
+		properties[k] = v
 	}
+
+	for k, v := range flowProperties {
+		properties[k] = v
+	}
+
+	return properties
 }

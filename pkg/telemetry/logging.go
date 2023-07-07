@@ -13,43 +13,17 @@ type LoggingTelemetryClient struct {
 
 func (t *LoggingTelemetryClient) Trace(
 	ctx context.Context,
-	label string,
-	options ...TelemetryOption,
+	properties map[string]string,
 ) {
-	properties := make(map[string]string)
-	for _, o := range options {
-		o(properties)
-	}
-	copyHostMap(t.properties, properties)
+	properties = copyHostMap(t.properties, properties)
 
-	content, err := json.Marshal(mergeMaps(ctx, properties))
+	content, err := json.Marshal(properties)
 	if err != nil {
 		log.Printf("failed to serialize properties")
 		return
 	}
 
-	log.Printf("%s.%s: %s\n", t.labelPrefix, label, string(content))
-}
-
-func (t *LoggingTelemetryClient) TraceError(
-	ctx context.Context,
-	label string,
-	err error,
-	options ...TelemetryOption,
-) {
-	properties := make(map[string]string)
-	for _, o := range options {
-		o(properties)
-	}
-	copyHostMap(t.properties, properties)
-
-	content, marshalErr := json.Marshal(mergeMaps(ctx, properties))
-	if marshalErr != nil {
-		log.Printf("failed to serialize properties")
-		return
-	}
-
-	log.Printf("%s.%s: (error=%s) %s\n", t.labelPrefix, label, err, string(content))
+	log.Printf("%s: %s\n", t.labelPrefix, string(content))
 }
 
 var _ TelemetryClient = &LoggingTelemetryClient{}
