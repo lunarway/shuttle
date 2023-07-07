@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"sync"
 	"time"
 )
 
@@ -17,6 +18,7 @@ type JsonLinesTelemetryClient struct {
 	properties  map[string]string
 	*http.Client
 	logLocation string
+	writeMutex  sync.Mutex
 }
 
 func (t *JsonLinesTelemetryClient) Trace(
@@ -33,11 +35,13 @@ func (t *JsonLinesTelemetryClient) Trace(
 
 	content, err := json.Marshal(event)
 	if err != nil {
-		log.Printf("failed to write to file: %s", err)
+		log.Printf("failed to marshal trace event: %s", err)
+		return
 	}
 
 	if err = t.writeLogLine(ctx, content); err != nil {
 		log.Printf("failed to write to file: %s", err)
+		return
 	}
 }
 
@@ -76,6 +80,10 @@ const fileNameShuttleJsonLines = "shuttle-telemetry"
 const extensionShuttleJsonLines = ".jsonl"
 
 func (t *JsonLinesTelemetryClient) writeLogLine(ctx context.Context, content []byte) error {
+	// Lock the mutex so multiple writers don't write at the same time
+	t.writeMutex.Lock()
+	defer t.writeMutex.Unlock()
+
 	file, err := os.OpenFile(
 		path.Join(
 			t.logLocation,

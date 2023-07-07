@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	stdcontext "context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 	"strings"
@@ -13,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/lunarway/shuttle/pkg/telemetry"
 	tmplFuncs "github.com/lunarway/shuttle/pkg/templates"
 	"github.com/lunarway/shuttle/pkg/ui"
 )
@@ -36,20 +33,8 @@ func newTemplate(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			templateName := args[0]
 			ctx := cmd.Context()
-			ctx = telemetry.WithContextID(ctx)
-			log.Printf("context_id: %s", os.Getenv("SHUTTLE_CONTEXT_ID"))
-			telemetry.Client.Trace(
-				ctx,
-				"template",
-				telemetry.WithPhase("start"),
-			)
-			defer func(ctx stdcontext.Context) {
-				telemetry.Client.Trace(
-					ctx,
-					"template",
-					telemetry.WithPhase("end"),
-				)
-			}(ctx)
+			_, _, traceEnd := trace(ctx, "template", args)
+			defer traceEnd()
 
 			projectContext, err := contextProvider()
 			if err != nil {

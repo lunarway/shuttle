@@ -24,14 +24,14 @@ func WithContextID(ctx context.Context) context.Context {
 }
 
 func WithPhase(phase string) TelemetryOption {
-	return WithText("phase", phase)
+	return WithEntry("phase", phase)
 }
 
 func WithLabel(label string) TelemetryOption {
-	return WithText("label", label)
+	return WithEntry("label", label)
 }
 
-func WithText(key, value string) TelemetryOption {
+func WithEntry(key, value string) TelemetryOption {
 	return func(properties map[string]string) {
 		properties[key] = value
 	}

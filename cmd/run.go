@@ -4,7 +4,6 @@ import (
 	stdcontext "context"
 	"os"
 	"os/signal"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -29,36 +28,18 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			commandName := args[0]
-			ctx := stdcontext.Background()
-			ctx = telemetry.WithContextID(ctx)
-			ctx = WithRunTelemetry(ctx, commandName, args)
-			telemetry.Client.Trace(
-				ctx,
-				"run",
-				telemetry.WithPhase("start"),
-			)
-			defer func(ctx stdcontext.Context) {
-				telemetry.Client.Trace(
-					ctx,
-					"run",
-					telemetry.WithPhase("end"),
-				)
-			}(ctx)
+			ctx := cmd.Context()
+			traceInfo, traceError, traceEnd := trace(ctx, commandName, args)
+			defer traceEnd()
 
 			context, err := contextProvider()
 			if err != nil {
-				telemetry.Client.TraceError(
-					ctx,
-					"run",
-					err,
-				)
+				traceError(err)
 				return err
 			}
-			telemetry.Client.Trace(
-				ctx,
-				"run",
+			traceInfo(
 				telemetry.WithPhase("after-plan-pull"),
-				telemetry.WithText("plan", context.Config.Plan),
+				telemetry.WithEntry("plan", context.Config.Plan),
 			)
 
 			ctx, cancel := withSignal(ctx, uii)
@@ -66,11 +47,7 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 
 			err = executorRegistry.Execute(ctx, context, commandName, args[1:], validateArgs)
 			if err != nil {
-				telemetry.Client.TraceError(
-					ctx,
-					"run",
-					err,
-				)
+				traceError(err)
 				return err
 			}
 
@@ -95,19 +72,6 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	runCmd.Flags().
 		BoolVar(&validateArgs, "validate", true, "Validate arguments against script definition in plan and exit with 1 on unknown or missing arguments")
 	return runCmd
-}
-
-func WithRunTelemetry(
-	ctx stdcontext.Context,
-	commandName string,
-	args []string,
-) stdcontext.Context {
-	ctx = stdcontext.WithValue(ctx, telemetry.TelemetryCommand, commandName)
-	if len(args) != 0 {
-		// TODO: Make sure we sanitize secrets, somehow
-		ctx = stdcontext.WithValue(ctx, telemetry.TelemetryCommandArgs, strings.Join(args[1:], " "))
-	}
-	return ctx
 }
 
 // withSignal returns a copy of parent with a new Done channel. The returned
