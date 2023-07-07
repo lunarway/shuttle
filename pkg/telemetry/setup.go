@@ -26,7 +26,7 @@ func Setup() {
 	sysinfo := WithGoInfo()
 	sysinfo(properties)
 
-	if endpoint := os.Getenv("SHUTTLE_TRACING_ENDPOINT"); endpoint != "" {
+	if endpoint := os.Getenv("SHUTTLE_REMOTE_TRACING"); endpoint != "" {
 		Client = &UploadTelemetryClient{
 			labelPrefix: appKey,
 			url:         endpoint,
