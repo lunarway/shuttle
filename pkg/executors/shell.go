@@ -42,13 +42,10 @@ func executeShell(ctx context.Context, ui *ui.UI, context ActionExecutionContext
 
 	setupCommandEnvironmentVariables(execCmd, context)
 
-	// TODO: Refactor
-	if context, ok := ctx.Value(telemetry.TelemetryContextID).(string); ok {
-		execCmd.Env = append(
-			execCmd.Env,
-			fmt.Sprintf("SHUTTLE_CONTEXT_ID=%s", context),
-		)
-	}
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf("SHUTTLE_CONTEXT_ID=%s", telemetry.ContextIDFrom(ctx)),
+	)
 
 	outputReadCompleted := make(chan struct{})
 

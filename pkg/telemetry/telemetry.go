@@ -4,13 +4,13 @@ import "context"
 
 func Trace(ctx context.Context, label string, options ...TelemetryOption) {
 	properties := setProperties(append(options, WithLabel(label))...)
-	properties = mergeMaps(ctx, properties)
+	properties = includeContext(ctx, properties)
 	client.Trace(ctx, properties)
 }
 
 func TraceError(ctx context.Context, label string, err error, options ...TelemetryOption) {
 	properties := setProperties(append(options, WithLabel(label))...)
-	properties = mergeMaps(ctx, properties)
+	properties = includeContext(ctx, properties)
 
 	// TODO: consider enum for error (const list)
 	properties["phase"] = "error"

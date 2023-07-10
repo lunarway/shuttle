@@ -3,25 +3,15 @@ package telemetry
 import (
 	"context"
 	"fmt"
-	"os"
 
-	"github.com/google/uuid"
 	"github.com/matishsiao/goInfo"
 )
 
 const (
-	TelemetryContextID   string = "shuttle.contextID"
+	telemetryContextID   string = "shuttle.contextID"
 	TelemetryCommand     string = "shuttle.command"
 	TelemetryCommandArgs string = "shuttle.command.args"
 )
-
-func WithContextID(ctx context.Context) context.Context {
-	if context_id := os.Getenv("SHUTTLE_CONTEXT_ID"); context_id != "" {
-		return context.WithValue(ctx, TelemetryContextID, context_id)
-	}
-
-	return context.WithValue(ctx, TelemetryContextID, uuid.New().String())
-}
 
 func WithPhase(phase string) TelemetryOption {
 	return WithEntry("phase", phase)
@@ -69,21 +59,18 @@ func WithGoInfo() TelemetryOption {
 	}
 }
 
-// TODO: rename
-func mergeMaps(ctx context.Context, properties map[string]string) map[string]string {
-	if runID, ok := ctx.Value(TelemetryContextID).(string); ok && runID != "" {
-		properties[TelemetryContextID] = runID
-	}
-
-	if val, ok := ctx.Value(TelemetryCommand).(string); ok && val != "" {
-		properties[TelemetryCommand] = val
-	}
-
-	if val, ok := ctx.Value(TelemetryCommandArgs).(string); ok && val != "" {
-		properties[TelemetryCommandArgs] = val
-	}
+func includeContext(ctx context.Context, properties map[string]string) map[string]string {
+	getFromContext(ctx, telemetryContextID, properties)
+	getFromContext(ctx, TelemetryCommand, properties)
+	getFromContext(ctx, TelemetryCommandArgs, properties)
 
 	return properties
+}
+
+func getFromContext(ctx context.Context, key string, properties map[string]string) {
+	if val, ok := ctx.Value(TelemetryCommandArgs).(string); ok && val != "" {
+		properties[key] = val
+	}
 }
 
 func copyHostMap(original map[string]string, flowProperties map[string]string) map[string]string {

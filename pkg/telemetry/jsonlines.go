@@ -30,7 +30,7 @@ func (t *JsonLinesTelemetryClient) Trace(
 	event := &uploadTraceEvent{
 		App:        appKey,
 		Timestamp:  time.Now().UTC(),
-		Properties: mergeMaps(ctx, properties),
+		Properties: includeContext(ctx, properties),
 	}
 
 	content, err := json.Marshal(event)

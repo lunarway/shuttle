@@ -63,8 +63,10 @@ func executeBinaryAction(ctx context.Context, binary *compile.Binary, args ...st
 	execmd.Env = append(execmd.Env, fmt.Sprintf("TASK_CONTEXT_DIR=%s", workdir))
 	execmd.Env = append(
 		execmd.Env,
-		"SHUTTLE_CONTEXT_ID",
-		ctx.Value(telemetry.TelemetryContextID).(string),
+		fmt.Sprintf("%s=%s",
+			"SHUTTLE_CONTEXT_ID",
+			telemetry.ContextIDFrom(ctx),
+		),
 	)
 
 	err = execmd.Run()

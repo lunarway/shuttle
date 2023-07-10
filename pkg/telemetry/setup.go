@@ -25,11 +25,11 @@ var (
 
 // Initializes the telemetry setup, if not called, NoopTelemetryClient will be used
 func Setup() {
-	properties := make(map[string]string, 0)
-	sysinfo := WithGoInfo()
-	sysinfo(properties)
-
 	if remoteTracing := os.Getenv("SHUTTLE_REMOTE_TRACING"); remoteTracing != "" {
+		properties := make(map[string]string, 0)
+		sysinfo := WithGoInfo()
+		sysinfo(properties)
+
 		logLocation := os.Getenv("SHUTTLE_REMOTE_LOG_LOCATION")
 		if logLocation == "default" || logLocation == "" {
 			usr, _ := user.Current()
@@ -59,6 +59,9 @@ func Setup() {
 	if logging_telemetry := os.Getenv("SHUTTLE_LOG_TRACING"); strings.ToLower(
 		logging_telemetry,
 	) == "true" {
+		properties := make(map[string]string, 0)
+		sysinfo := WithGoInfo()
+		sysinfo(properties)
 		client = &LoggingTelemetryClient{
 			labelPrefix: appKey,
 			properties:  properties,
