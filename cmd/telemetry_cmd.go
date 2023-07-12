@@ -6,7 +6,18 @@ import (
 	"github.com/lunarway/shuttle/pkg/ui"
 )
 
-func newUpload(uii *ui.UI) *cobra.Command {
+func newTelemetry(uii *ui.UI) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "telemetry",
+		Short: "Shuttle telemetry",
+	}
+
+	cmd.AddCommand(newTelemetryUploadCmd(uii))
+
+	return cmd
+}
+
+func newTelemetryUploadCmd(uii *ui.UI) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "upload",
 		Short: "Upload shuttle telemetry",

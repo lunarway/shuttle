@@ -154,6 +154,7 @@ func initializedRoot(out, err io.Writer) (*cobra.Command, *ui.UI) {
 		newTemplate(uii, ctxProvider),
 		newVersion(uii),
 		newConfig(uii, ctxProvider),
+		newTelemetry(uii),
 	)
 
 	return rootCmd, uii
