@@ -12,6 +12,8 @@ type (
 		rate     *time.Duration
 		uploadmu sync.Mutex
 
+		storageLocation string
+
 		upload            UploadFunc
 		getTelemetryFiles GetTelemetryFilesFunc
 	}
@@ -40,11 +42,18 @@ func WithGetTelemetryFiles(getTelemetryFilesFunc func(ctx context.Context) error
 	}
 }
 
+func WithRemoteLogLocation(location string) UploadOptions {
+	return func(tu *TelemetryUploader) {
+		tu.storageLocation = location
+	}
+}
+
 func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUploader {
 	uploader := &TelemetryUploader{
 		url:               url,
 		upload:            upload,
 		getTelemetryFiles: getTelemetryFiles,
+		storageLocation:   getRemoteLogLocation(),
 	}
 
 	for _, o := range options {
@@ -57,5 +66,10 @@ func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUpload
 func (tu *TelemetryUploader) Upload(ctx context.Context) {
 }
 
-func upload(ctx context.Context) error            {}
-func getTelemetryFiles(ctx context.Context) error {}
+func upload(ctx context.Context) error {
+	return nil
+}
+
+func getTelemetryFiles(ctx context.Context) error {
+	return nil
+}
