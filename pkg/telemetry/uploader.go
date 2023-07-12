@@ -19,7 +19,7 @@ type (
 	}
 
 	UploadFunc            = func(ctx context.Context) error
-	GetTelemetryFilesFunc = func(ctx context.Context) error
+	GetTelemetryFilesFunc = func(ctx context.Context, location string) ([]string, error)
 
 	UploadOptions = func(*TelemetryUploader)
 )
@@ -30,13 +30,13 @@ func WithRate(rate time.Duration) UploadOptions {
 	}
 }
 
-func WithUploadFunction(uploadFunc func(ctx context.Context) error) UploadOptions {
+func WithUploadFunction(uploadFunc UploadFunc) UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.upload = uploadFunc
 	}
 }
 
-func WithGetTelemetryFiles(getTelemetryFilesFunc func(ctx context.Context) error) UploadOptions {
+func WithGetTelemetryFiles(getTelemetryFilesFunc GetTelemetryFilesFunc) UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.getTelemetryFiles = getTelemetryFilesFunc
 	}
@@ -64,12 +64,13 @@ func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUpload
 }
 
 func (tu *TelemetryUploader) Upload(ctx context.Context) {
+	tu.getTelemetryFiles(ctx, tu.storageLocation)
 }
 
 func upload(ctx context.Context) error {
 	return nil
 }
 
-func getTelemetryFiles(ctx context.Context) error {
-	return nil
+func getTelemetryFiles(ctx context.Context, location string) ([]string, error) {
+	return nil, nil
 }
