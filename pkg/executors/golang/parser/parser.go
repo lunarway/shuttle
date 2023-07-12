@@ -27,12 +27,21 @@ type Output struct {
 	Error bool
 }
 
-func GenerateAst(ctx context.Context, shuttlelocaldir string, actions *discover.ActionsDiscovered) ([]*Function, error) {
+func GenerateAst(
+	ctx context.Context,
+	shuttlelocaldir string,
+	actions *discover.ActionsDiscovered,
+) ([]*Function, error) {
 	funcs := make([]*Function, 0)
 
 	for _, taskfile := range actions.Files {
 		tknSet := token.NewFileSet()
-		astfile, err := parser.ParseFile(tknSet, path.Join(shuttlelocaldir, "tmp", taskfile), nil, parser.ParseComments)
+		astfile, err := parser.ParseFile(
+			tknSet,
+			path.Join(shuttlelocaldir, "tmp", taskfile),
+			nil,
+			parser.ParseComments,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -47,7 +56,8 @@ func GenerateAst(ctx context.Context, shuttlelocaldir string, actions *discover.
 					paramList := param.Params.List
 					for _, param := range paramList {
 						for _, name := range param.Names {
-							if name != nil && !strings.Contains(fmt.Sprintf("%s", param.Type), "Context") {
+							if name != nil &&
+								!strings.Contains(fmt.Sprintf("%s", param.Type), "Context") {
 								f.Input = append(f.Input, Arg{
 									Name: name.Name,
 								})
@@ -60,7 +70,9 @@ func GenerateAst(ctx context.Context, shuttlelocaldir string, actions *discover.
 							return nil, errors.New("only error is supported as an output param")
 						}
 						if len(outputParam.List) == 0 {
-							return nil, errors.New("output params are required, only error is supported")
+							return nil, errors.New(
+								"output params are required, only error is supported",
+							)
 						}
 
 						for _, param := range outputParam.List {

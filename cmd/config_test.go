@@ -46,9 +46,13 @@ func TestConfig(t *testing.T) {
 		},
 	}
 
-	executeTestCasesWithCustomAssertion(t, testCases, func(t *testing.T, tc testCase, stdout, stderr string) {
-		t.Helper()
-		assert.Regexp(t, regexp.MustCompile(tc.stdoutput), stdout, "std output not as expected")
-		assert.Equal(t, tc.erroutput, stderr, "err output not as expected")
-	})
+	executeTestCasesWithCustomAssertion(
+		t,
+		testCases,
+		func(t *testing.T, tc testCase, stdout, stderr string) {
+			t.Helper()
+			assert.Regexp(t, regexp.MustCompile(tc.stdoutput), stdout, "std output not as expected")
+			assert.Equal(t, tc.erroutput, stderr, "err output not as expected")
+		},
+	)
 }

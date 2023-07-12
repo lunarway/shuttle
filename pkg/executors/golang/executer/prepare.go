@@ -11,7 +11,12 @@ import (
 	"github.com/lunarway/shuttle/pkg/ui"
 )
 
-func prepare(ctx context.Context, ui *ui.UI, path string, c *config.ShuttleProjectContext) (*compile.Binaries, error) {
+func prepare(
+	ctx context.Context,
+	ui *ui.UI,
+	path string,
+	c *config.ShuttleProjectContext,
+) (*compile.Binaries, error) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	disc, err := discover.Discover(ctx, path, c)

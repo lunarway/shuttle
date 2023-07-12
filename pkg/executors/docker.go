@@ -11,7 +11,10 @@ import (
 
 // Build builds the docker image from a shuttle plan
 func executeDocker(ctx context.Context, context ActionExecutionContext) error {
-	dockerFilePath := path.Join(context.ScriptContext.Project.LocalPlanPath, context.Action.Dockerfile)
+	dockerFilePath := path.Join(
+		context.ScriptContext.Project.LocalPlanPath,
+		context.Action.Dockerfile,
+	)
 	projectPath := context.ScriptContext.Project.ProjectPath
 	execCmd := exec.Command("docker", "build", "-f", dockerFilePath, projectPath)
 
@@ -29,7 +32,6 @@ func executeDocker(ctx context.Context, context ActionExecutionContext) error {
 	}()
 
 	err := execCmd.Wait()
-
 	if err != nil {
 		log.Fatalf("cmd.Run() failed with %s\n", err)
 	}

@@ -2,22 +2,22 @@ package sdk
 
 import (
 	"fmt"
-	"github.com/lunarway/shuttle/pkg/config"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path"
+
+	"github.com/lunarway/shuttle/pkg/config"
+	"gopkg.in/yaml.v2"
 )
 
 type ShuttleContext struct {
-	Variables                 config.DynamicYaml `yaml:"vars"` //temporarily include a dynamic representation of the variables here so the go-based plans can use this for templating so we're backwards compatible with the existing templates (for the time being)
-	ProjectPath               string `yaml:"-"`
-	LocalPlanPath             string `yaml:"-"`
-	LocalShuttleDirectoryPath string `yaml:"-"`
-	TempDirectoryPath         string `yaml:"-"`
+	Variables                 config.DynamicYaml `yaml:"vars"` // temporarily include a dynamic representation of the variables here so the go-based plans can use this for templating so we're backwards compatible with the existing templates (for the time being)
+	ProjectPath               string             `yaml:"-"`
+	LocalPlanPath             string             `yaml:"-"`
+	LocalShuttleDirectoryPath string             `yaml:"-"`
+	TempDirectoryPath         string             `yaml:"-"`
 }
 
 func LoadShuttleContext(projectPath, localPlanPath string) (ShuttleContext, error) {
-
 	yamlFile, err := LoadShuttleYaml(projectPath)
 	if err != nil {
 		return ShuttleContext{}, err
@@ -25,7 +25,10 @@ func LoadShuttleContext(projectPath, localPlanPath string) (ShuttleContext, erro
 	var result ShuttleContext
 	err = yaml.Unmarshal(yamlFile, &result)
 	if err != nil {
-		return ShuttleContext{}, fmt.Errorf("Failed to parse shuttle configuration. \n\nMake sure your 'shuttle.yaml' is valid. %w", err)
+		return ShuttleContext{}, fmt.Errorf(
+			"Failed to parse shuttle configuration. \n\nMake sure your 'shuttle.yaml' is valid. %w",
+			err,
+		)
 	}
 
 	result.ProjectPath = projectPath
@@ -39,7 +42,10 @@ func LoadShuttleContext(projectPath, localPlanPath string) (ShuttleContext, erro
 func LoadShuttleYaml(projectPath string) ([]byte, error) {
 	file, err := ioutil.ReadFile(path.Join(projectPath, "shuttle.yaml"))
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load shuttle configuration. \n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available. %w", err)
+		return nil, fmt.Errorf(
+			"Failed to load shuttle configuration. \n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available. %w",
+			err,
+		)
 	}
 	return file, nil
 }

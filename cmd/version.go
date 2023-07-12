@@ -23,7 +23,8 @@ func newVersion(uii *ui.UI) *cobra.Command {
 		},
 	}
 
-	versionCmd.Flags().BoolVar(&showCommit, "commit", false, "Get git commit sha for current version")
+	versionCmd.Flags().
+		BoolVar(&showCommit, "commit", false, "Get git commit sha for current version")
 
 	return versionCmd
 }

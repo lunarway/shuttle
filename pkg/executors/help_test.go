@@ -59,9 +59,12 @@ func Test(t *testing.T) {
 `,
 		},
 		{
-			name:    "script with argument",
-			scripts: scriptMap("test", scripts("A script to test stuff", arg("long", false, "Run long running tests"))),
-			script:  "test",
+			name: "script with argument",
+			scripts: scriptMap(
+				"test",
+				scripts("A script to test stuff", arg("long", false, "Run long running tests")),
+			),
+			script: "test",
 			output: `A script to test stuff
 
 Available arguments:
@@ -69,9 +72,12 @@ Available arguments:
 `,
 		},
 		{
-			name:    "script with required argument",
-			scripts: scriptMap("test", scripts("A script to test stuff", arg("long", true, "Run long running tests"))),
-			script:  "test",
+			name: "script with required argument",
+			scripts: scriptMap(
+				"test",
+				scripts("A script to test stuff", arg("long", true, "Run long running tests")),
+			),
+			script: "test",
 			output: `A script to test stuff
 
 Available arguments:
@@ -79,9 +85,16 @@ Available arguments:
 `,
 		},
 		{
-			name:    "script with multiple arguments",
-			scripts: scriptMap("test", scripts("A script to test stuff", arg("long", true, "Run long running tests"), arg("short", false, "Run short tests"))),
-			script:  "test",
+			name: "script with multiple arguments",
+			scripts: scriptMap(
+				"test",
+				scripts(
+					"A script to test stuff",
+					arg("long", true, "Run long running tests"),
+					arg("short", false, "Run short tests"),
+				),
+			),
+			script: "test",
 			output: `A script to test stuff
 
 Available arguments:
@@ -143,15 +156,21 @@ func TestHelp_customTemplate(t *testing.T) {
 			output:   `[]`,
 		},
 		{
-			name:     "ranging args",
-			scripts:  scriptMap("test", scripts("A script to test stuff", arg("long", false, "Run long running tests"))),
+			name: "ranging args",
+			scripts: scriptMap(
+				"test",
+				scripts("A script to test stuff", arg("long", false, "Run long running tests")),
+			),
 			script:   "test",
 			template: `{{- range $i, $arg := .Args -}}{{$arg.Name}}{{end}}`,
 			output:   `long`,
 		},
 		{
-			name:     "invalid template",
-			scripts:  scriptMap("test", scripts("A script to test stuff", arg("long", true, "Run long running tests"))),
+			name: "invalid template",
+			scripts: scriptMap(
+				"test",
+				scripts("A script to test stuff", arg("long", true, "Run long running tests")),
+			),
 			script:   "test",
 			template: `{{.Args`,
 			err:      errors.New("invalid template: template: runHelp:1: unclosed action"),

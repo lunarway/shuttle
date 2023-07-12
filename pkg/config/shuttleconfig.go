@@ -36,7 +36,14 @@ type ShuttleProjectContext struct {
 }
 
 // Setup the ShuttleProjectContext for a specific path
-func (c *ShuttleProjectContext) Setup(projectPath string, uii *ui.UI, clean bool, skipGitPlanPulling bool, planArgument string, strictConfigLookup bool) (*ShuttleProjectContext, error) {
+func (c *ShuttleProjectContext) Setup(
+	projectPath string,
+	uii *ui.UI,
+	clean bool,
+	skipGitPlanPulling bool,
+	planArgument string,
+	strictConfigLookup bool,
+) (*ShuttleProjectContext, error) {
 	projectPath, err := c.Config.getConf(projectPath, strictConfigLookup)
 	if err != nil {
 		return nil, err
@@ -58,7 +65,14 @@ func (c *ShuttleProjectContext) Setup(projectPath string, uii *ui.UI, clean bool
 	}
 
 	c.TempDirectoryPath = path.Join(c.LocalShuttleDirectoryPath, "temp")
-	c.LocalPlanPath, err = FetchPlan(c.Config.Plan, projectPath, c.LocalShuttleDirectoryPath, uii, skipGitPlanPulling, planArgument)
+	c.LocalPlanPath, err = FetchPlan(
+		c.Config.Plan,
+		projectPath,
+		c.LocalShuttleDirectoryPath,
+		uii,
+		skipGitPlanPulling,
+		planArgument,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +99,11 @@ func (c *ShuttleConfig) getConf(projectPath string, strictConfigLookup bool) (st
 
 	file, err := locateShuttleConfigurationFile(projectPath, strictConfigLookup)
 	if err != nil {
-		return "", shuttleerrors.NewExitCode(2, "Failed to load shuttle configuration: %s\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.", err)
+		return "", shuttleerrors.NewExitCode(
+			2,
+			"Failed to load shuttle configuration: %s\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.",
+			err,
+		)
 	}
 	defer file.Close()
 
@@ -93,7 +111,11 @@ func (c *ShuttleConfig) getConf(projectPath string, strictConfigLookup bool) (st
 	decoder.SetStrict(true)
 	err = decoder.Decode(c)
 	if err != nil {
-		return "", shuttleerrors.NewExitCode(2, "Failed to parse shuttle configuration: %s\n\nMake sure your 'shuttle.yaml' is valid.", err)
+		return "", shuttleerrors.NewExitCode(
+			2,
+			"Failed to parse shuttle configuration: %s\n\nMake sure your 'shuttle.yaml' is valid.",
+			err,
+		)
 	}
 
 	switch c.PlanRaw {

@@ -21,7 +21,7 @@ func newHas(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		Args:          cobra.ExactArgs(1),
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		//Long:  ``,
+		// Long:  ``,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			uii.SetContext(ui.LevelSilent)
 
@@ -57,8 +57,10 @@ func newHas(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		},
 	}
 
-	hasCmd.Flags().BoolVar(&lookupInScripts, "script", false, "Lookup existence in scripts instead of vars")
-	hasCmd.Flags().BoolVarP(&outputAsStdout, "stdout", "o", false, "Print result to stdout instead of exit code as `true` or `false`")
+	hasCmd.Flags().
+		BoolVar(&lookupInScripts, "script", false, "Lookup existence in scripts instead of vars")
+	hasCmd.Flags().
+		BoolVarP(&outputAsStdout, "stdout", "o", false, "Print result to stdout instead of exit code as `true` or `false`")
 
 	return hasCmd
 }

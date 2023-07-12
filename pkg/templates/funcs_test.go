@@ -8,13 +8,15 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var input = make(map[string]interface{})
-var data = `
+var (
+	input = make(map[string]interface{})
+	data  = `
 a: Easy!
 b:
   c: 2
   h: 'ewff'
 `
+)
 
 func init() {
 	err := yaml.Unmarshal([]byte(data), input)

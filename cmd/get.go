@@ -22,7 +22,7 @@ func newGet(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			uii.SetContext(ui.LevelError)
 
-      context, err := contextProvider()
+			context, err := contextProvider()
 			if err != nil {
 				return err
 			}
@@ -56,7 +56,8 @@ func newGet(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		},
 	}
 
-	getCmd.Flags().StringVar(&getFlagTemplate, "template", "", "Template string to use. See --help for details.")
+	getCmd.Flags().
+		StringVar(&getFlagTemplate, "template", "", "Template string to use. See --help for details.")
 
 	return getCmd
 }

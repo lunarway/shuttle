@@ -11,7 +11,11 @@ import (
 )
 
 func TestDiscover(t *testing.T) {
-	discovered, err := discover.Discover(context.Background(), "testdata/simple/shuttle.yaml", &config.ShuttleProjectContext{})
+	discovered, err := discover.Discover(
+		context.Background(),
+		"testdata/simple/shuttle.yaml",
+		&config.ShuttleProjectContext{},
+	)
 	assert.NoError(t, err)
 
 	assert.Equal(t, discover.Discovered{
@@ -35,11 +39,15 @@ func TestDiscoverComplex(t *testing.T) {
 		t.Fatalf("shuttle ls: %s", string(output))
 	}
 
-	discovered, err := discover.Discover(context.Background(), "testdata/child/shuttle.yaml", &config.ShuttleProjectContext{
-		Config: config.ShuttleConfig{
-			Plan: ".shuttle/plan",
+	discovered, err := discover.Discover(
+		context.Background(),
+		"testdata/child/shuttle.yaml",
+		&config.ShuttleProjectContext{
+			Config: config.ShuttleConfig{
+				Plan: ".shuttle/plan",
+			},
 		},
-	})
+	)
 	assert.NoError(t, err)
 
 	assert.Equal(t, discover.Discovered{

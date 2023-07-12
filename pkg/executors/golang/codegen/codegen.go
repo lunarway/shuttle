@@ -12,10 +12,8 @@ import (
 	"github.com/lunarway/shuttle/pkg/executors/golang/parser"
 )
 
-var (
-	//go:embed templates/mainFile.tmpl
-	mainFileTmpl embed.FS
-)
+//go:embed templates/mainFile.tmpl
+var mainFileTmpl embed.FS
 
 func GenerateMainFile(
 	ctx context.Context,

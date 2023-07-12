@@ -21,7 +21,11 @@ type testCase struct {
 	err       error
 }
 
-func executeTestCasesWithCustomAssertion(t *testing.T, testCases []testCase, assertion func(t *testing.T, tc testCase, stdout, stderr string)) {
+func executeTestCasesWithCustomAssertion(
+	t *testing.T,
+	testCases []testCase,
+	assertion func(t *testing.T, tc testCase, stdout, stderr string),
+) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// remove any .shuttle files up front and after each test to make sure the
@@ -51,10 +55,14 @@ func executeTestCasesWithCustomAssertion(t *testing.T, testCases []testCase, ass
 }
 
 func executeTestCases(t *testing.T, testCases []testCase) {
-	executeTestCasesWithCustomAssertion(t, testCases, func(t *testing.T, tc testCase, stdout, stderr string) {
-		assert.Equal(t, tc.stdoutput, stdout, "std output not as expected")
-		assert.Equal(t, tc.erroutput, stderr, "err output not as expected")
-	})
+	executeTestCasesWithCustomAssertion(
+		t,
+		testCases,
+		func(t *testing.T, tc testCase, stdout, stderr string) {
+			assert.Equal(t, tc.stdoutput, stdout, "std output not as expected")
+			assert.Equal(t, tc.erroutput, stderr, "err output not as expected")
+		},
+	)
 }
 
 func executeTestContainsCases(t *testing.T, testCases []testCase) {

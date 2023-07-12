@@ -21,12 +21,16 @@ func TestShuttlePlanConfiguration_Load(t *testing.T) {
 		{
 			name:  "unknown field",
 			input: "testdata/unknown_field",
-			err:   errors.New("exit code 1 - Failed to load plan configuration from 'testdata/unknown_field/plan.yaml': yaml: unmarshal errors:\n  line 1: field unknown not found in type config.ShuttlePlanConfiguration\n\nThis is likely an issue with the referenced plan. Please, contact the plan maintainers."),
+			err: errors.New(
+				"exit code 1 - Failed to load plan configuration from 'testdata/unknown_field/plan.yaml': yaml: unmarshal errors:\n  line 1: field unknown not found in type config.ShuttlePlanConfiguration\n\nThis is likely an issue with the referenced plan. Please, contact the plan maintainers.",
+			),
 		},
 		{
 			name:  "unknown file",
 			input: "testdata/unknown_file",
-			err:   errors.New("exit code 2 - Failed to open plan configuration: open testdata/unknown_file/plan.yaml: no such file or directory\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available."),
+			err: errors.New(
+				"exit code 2 - Failed to open plan configuration: open testdata/unknown_file/plan.yaml: no such file or directory\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.",
+			),
 		},
 		{
 			name:  "valid",
