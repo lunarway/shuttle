@@ -8,10 +8,11 @@ import (
 	"strings"
 	"text/template"
 
-	tmplFuncs "github.com/lunarway/shuttle/pkg/templates"
-	"github.com/lunarway/shuttle/pkg/ui"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
+	tmplFuncs "github.com/lunarway/shuttle/pkg/templates"
+	"github.com/lunarway/shuttle/pkg/ui"
 )
 
 type context struct {
@@ -30,7 +31,11 @@ func newTemplate(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		Short: "Execute a template",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var templateName = args[0]
+			templateName := args[0]
+			ctx := cmd.Context()
+			_, _, traceEnd := trace(ctx, "template", args)
+			defer traceEnd()
+
 			projectContext, err := contextProvider()
 			if err != nil {
 				return err
@@ -69,7 +74,10 @@ func newTemplate(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 				return err
 			}
 
-			tmpl, err := template.New(templateName).Delims(leftDelim, rightDelim).Funcs(tmplFuncs.GetFuncMap()).ParseFiles(templatePath)
+			tmpl, err := template.New(templateName).
+				Delims(leftDelim, rightDelim).
+				Funcs(tmplFuncs.GetFuncMap()).
+				ParseFiles(templatePath)
 			if err != nil {
 				uii.Errorln("Parse template file failed\nFile: %s", templatePath)
 				return err
@@ -97,18 +105,27 @@ func newTemplate(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 
 			err = tmpl.ExecuteTemplate(output, path.Base(templatePath), context)
 			if err != nil {
-				uii.Errorln("Failed to execute template\nPlan: %s\nProject: %s", context.PlanPath, context.ProjectPath)
+				uii.Errorln(
+					"Failed to execute template\nPlan: %s\nProject: %s",
+					context.PlanPath,
+					context.ProjectPath,
+				)
 				return err
 			}
 			return nil
 		},
 	}
 
-	templateCmd.Flags().StringVarP(&templateOutput, "output", "o", "", "Select filename to output file to in temporary directory")
-	templateCmd.Flags().StringVarP(&delimsArg, "delims", "", "", "Select delims for templating. Split by ','. If ',' is in the delims, then use --left-delim and --right-delim instead")
-	templateCmd.Flags().StringVarP(&leftDelimArg, "left-delim", "", "", "Select delims for templating. Defaults to '{{'")
-	templateCmd.Flags().StringVarP(&rightDelimArg, "right-delim", "", "", "Select delims for templating. Defaults to '}}'")
-	templateCmd.Flags().BoolVarP(&ignoreProjectOverrides, "ignore-project-overrides", "", false, "Set flag to ignore template files located in the project folder")
+	templateCmd.Flags().
+		StringVarP(&templateOutput, "output", "o", "", "Select filename to output file to in temporary directory")
+	templateCmd.Flags().
+		StringVarP(&delimsArg, "delims", "", "", "Select delims for templating. Split by ','. If ',' is in the delims, then use --left-delim and --right-delim instead")
+	templateCmd.Flags().
+		StringVarP(&leftDelimArg, "left-delim", "", "", "Select delims for templating. Defaults to '{{'")
+	templateCmd.Flags().
+		StringVarP(&rightDelimArg, "right-delim", "", "", "Select delims for templating. Defaults to '}}'")
+	templateCmd.Flags().
+		BoolVarP(&ignoreProjectOverrides, "ignore-project-overrides", "", false, "Set flag to ignore template files located in the project folder")
 
 	return templateCmd
 }
@@ -136,12 +153,17 @@ func parseDelims(leftDelimArg, rightDelimArg, delimsArg string) (string, string,
 		return "", "", fmt.Errorf("--left-delim and --right-delim should always be used together")
 	}
 	if delimsArg != "" && (leftDelimArg != "" || rightDelimArg != "") {
-		return "", "", fmt.Errorf("either use --left-delim and --right-delim together or use --delims")
+		return "", "", fmt.Errorf(
+			"either use --left-delim and --right-delim together or use --delims",
+		)
 	}
 	if delimsArg != "" {
 		parts := strings.Split(delimsArg, ",")
 		if len(parts) != 2 {
-			return "", "", fmt.Errorf("--delims should have exactly 2 values split by ',' but value was '%s'", delimsArg)
+			return "", "", fmt.Errorf(
+				"--delims should have exactly 2 values split by ',' but value was '%s'",
+				delimsArg,
+			)
 		}
 		return parts[0], parts[1], nil
 	}

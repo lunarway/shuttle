@@ -2,15 +2,16 @@ package executors
 
 import (
 	"context"
-
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/go-cmd/cmd"
+
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/lunarway/shuttle/pkg/errors"
+	"github.com/lunarway/shuttle/pkg/telemetry"
 	"github.com/lunarway/shuttle/pkg/ui"
 )
 
@@ -27,11 +28,24 @@ func executeShell(ctx context.Context, ui *ui.UI, context ActionExecutionContext
 		LineBufferSize: 512e3,
 	}
 
-	cmdArgs := []string{"-c", fmt.Sprintf("cd '%s'; %s", context.ScriptContext.Project.ProjectPath, context.Action.Shell)}
+	cmdArgs := []string{
+		"-c",
+		fmt.Sprintf("cd '%s'; %s", context.ScriptContext.Project.ProjectPath, context.Action.Shell),
+	}
 	execCmd := cmd.NewCmdOptions(cmdOptions, "sh", cmdArgs...)
-	context.ScriptContext.Project.UI.Verboseln("Starting shell command: %s %s", execCmd.Name, strings.Join(cmdArgs, " "))
+
+	context.ScriptContext.Project.UI.Verboseln(
+		"Starting shell command: %s %s",
+		execCmd.Name,
+		strings.Join(cmdArgs, " "),
+	)
 
 	setupCommandEnvironmentVariables(execCmd, context)
+
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf("SHUTTLE_CONTEXT_ID=%s", telemetry.ContextIDFrom(ctx)),
+	)
 
 	outputReadCompleted := make(chan struct{})
 
@@ -62,7 +76,11 @@ func executeShell(ctx context.Context, ui *ui.UI, context ActionExecutionContext
 		case <-ctx.Done():
 			err := execCmd.Stop()
 			if err != nil {
-				context.ScriptContext.Project.UI.Errorln("Failed to stop script '%s': %v", context.Action.Shell, err)
+				context.ScriptContext.Project.UI.Errorln(
+					"Failed to stop script '%s': %v",
+					context.Action.Shell,
+					err,
+				)
 			}
 		case <-outputReadCompleted:
 		}
@@ -72,7 +90,13 @@ func executeShell(ctx context.Context, ui *ui.UI, context ActionExecutionContext
 	case status := <-execCmd.Start():
 		<-outputReadCompleted
 		if status.Exit > 0 {
-			return errors.NewExitCode(4, "Failed executing script `%s`: shell script `%s`\nExit code: %v", context.ScriptContext.ScriptName, context.Action.Shell, status.Exit)
+			return errors.NewExitCode(
+				4,
+				"Failed executing script `%s`: shell script `%s`\nExit code: %v",
+				context.ScriptContext.ScriptName,
+				context.Action.Shell,
+				status.Exit,
+			)
 		}
 		return nil
 	case <-ctx.Done():
@@ -87,10 +111,28 @@ func setupCommandEnvironmentVariables(execCmd *cmd.Cmd, context ActionExecutionC
 	for name, value := range context.ScriptContext.Args {
 		execCmd.Env = append(execCmd.Env, fmt.Sprintf("%s=%s", name, value))
 	}
-	execCmd.Env = append(execCmd.Env, fmt.Sprintf("plan=%s", context.ScriptContext.Project.LocalPlanPath))
-	execCmd.Env = append(execCmd.Env, fmt.Sprintf("tmp=%s", context.ScriptContext.Project.TempDirectoryPath))
-	execCmd.Env = append(execCmd.Env, fmt.Sprintf("project=%s", context.ScriptContext.Project.ProjectPath))
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf("plan=%s", context.ScriptContext.Project.LocalPlanPath),
+	)
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf("tmp=%s", context.ScriptContext.Project.TempDirectoryPath),
+	)
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf("project=%s", context.ScriptContext.Project.ProjectPath),
+	)
 	// TODO: Add project path as a shuttle specific ENV
-	execCmd.Env = append(execCmd.Env, fmt.Sprintf("PATH=%s", shuttlePath+string(os.PathListSeparator)+os.Getenv("PATH")))
-	execCmd.Env = append(execCmd.Env, fmt.Sprintf("SHUTTLE_PLANS_ALREADY_VALIDATED=%s", context.ScriptContext.Project.LocalPlanPath))
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf("PATH=%s", shuttlePath+string(os.PathListSeparator)+os.Getenv("PATH")),
+	)
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf(
+			"SHUTTLE_PLANS_ALREADY_VALIDATED=%s",
+			context.ScriptContext.Project.LocalPlanPath,
+		),
+	)
 }
