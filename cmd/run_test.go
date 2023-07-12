@@ -40,7 +40,9 @@ func TestRun(t *testing.T) {
 			input:     args("-p", "testdata/project", "run", "exit_1"),
 			stdoutput: "",
 			erroutput: "Error: exit code 4 - Failed executing script `exit_1`: shell script `exit 1`\nExit code: 1\n",
-			err:       errors.New("exit code 4 - Failed executing script `exit_1`: shell script `exit 1`\nExit code: 1"),
+			err: errors.New(
+				"exit code 4 - Failed executing script `exit_1`: shell script `exit 1`\nExit code: 1",
+			),
 		},
 		{
 			name:      "project with absolute path",
@@ -57,9 +59,11 @@ func TestRun(t *testing.T) {
 
 Make sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.
 `,
-			err: errors.New(`exit code 2 - Failed to load shuttle configuration: shuttle.yaml file not found
+			err: errors.New(
+				`exit code 2 - Failed to load shuttle configuration: shuttle.yaml file not found
 
-Make sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.`),
+Make sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.`,
+			),
 		},
 		{
 			name:      "script fails when required argument is missing",
@@ -92,8 +96,15 @@ Script 'required_arg' accepts the following arguments:
 			err:       nil,
 		},
 		{
-			name:      "script fails when validation is disabled and argument is not in valid format",
-			input:     args("-p", "testdata/project", "run", "--validate=false", "required_arg", "foo"),
+			name: "script fails when validation is disabled and argument is not in valid format",
+			input: args(
+				"-p",
+				"testdata/project",
+				"run",
+				"--validate=false",
+				"required_arg",
+				"foo",
+			),
 			stdoutput: "",
 			erroutput: `Error: exit code 2 - Arguments not valid:
  'foo' not <argument>=<value>
@@ -149,8 +160,15 @@ something masterly
 			err:       nil,
 		},
 		{
-			name:      "Local project",
-			input:     args("--project", "./testdata/project-local/service", "--plan", "./testdata/project-local/plan", "run", "hello-plan"),
+			name: "Local project",
+			input: args(
+				"--project",
+				"./testdata/project-local/service",
+				"--plan",
+				"./testdata/project-local/plan",
+				"run",
+				"hello-plan",
+			),
 			stdoutput: "Using overloaded plan ./testdata/project-local/plan\nHello from plan\n",
 			erroutput: "",
 			err:       nil,
@@ -168,11 +186,20 @@ something masterly
 
 	testContainsCases := []testCase{
 		{
-			name:      "Local project fail",
-			input:     args("--project", "./testdata/project-local/service", "--plan", "./testdata/wrong-project-local/plan", "run", "hello-plan"),
+			name: "Local project fail",
+			input: args(
+				"--project",
+				"./testdata/project-local/service",
+				"--plan",
+				"./testdata/wrong-project-local/plan",
+				"run",
+				"hello-plan",
+			),
 			stdoutput: "",
 			erroutput: "shuttle/cmd/testdata/wrong-project-local/plan: no such file or directory",
-			err:       errors.New("shuttle/cmd/testdata/wrong-project-local/plan: no such file or directory"),
+			err: errors.New(
+				"shuttle/cmd/testdata/wrong-project-local/plan: no such file or directory",
+			),
 		},
 	}
 	executeTestContainsCases(t, testContainsCases)

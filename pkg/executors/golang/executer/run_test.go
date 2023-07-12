@@ -27,7 +27,15 @@ func TestRunVersion(t *testing.T) {
 	err = executer.Run(ctx, ui, c, "testdata/child/shuttle.yaml", "build")
 	assert.NoError(t, err)
 
-	err = executer.Run(ctx, ui, c, "testdata/child/shuttle.yaml", "build", "--some-unexisting-arg", "something")
+	err = executer.Run(
+		ctx,
+		ui,
+		c,
+		"testdata/child/shuttle.yaml",
+		"build",
+		"--some-unexisting-arg",
+		"something",
+	)
 	assert.Error(t, err)
 }
 

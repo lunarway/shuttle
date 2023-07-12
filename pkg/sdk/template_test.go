@@ -37,7 +37,9 @@ func TestRenderTemplate(t *testing.T) {
 				},
 			},
 			output: ``,
-			err:    errors.New("template: get_file_content.yaml:2:3: executing \"get_file_content.yaml\" at <getFileContent (string \"path\" .Vars)>: error calling getFileContent: open unknown.yaml: no such file or directory"),
+			err: errors.New(
+				"template: get_file_content.yaml:2:3: executing \"get_file_content.yaml\" at <getFileContent (string \"path\" .Vars)>: error calling getFileContent: open unknown.yaml: no such file or directory",
+			),
 		},
 		{
 			name:         "read content of file",

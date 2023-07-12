@@ -7,9 +7,7 @@ import (
 
 const planDefaultTempl = `{{.Plan}}`
 
-var (
-	planFlagTemplate string
-)
+var planFlagTemplate string
 
 func newPlan(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 	planCmd := &cobra.Command{
@@ -69,7 +67,8 @@ Available fields are:
 		},
 	}
 
-	planCmd.Flags().StringVar(&planFlagTemplate, "template", "", "Template string to use. See --help for details.")
+	planCmd.Flags().
+		StringVar(&planFlagTemplate, "template", "", "Template string to use. See --help for details.")
 
 	return planCmd
 }

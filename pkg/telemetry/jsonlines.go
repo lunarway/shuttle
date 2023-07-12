@@ -90,7 +90,7 @@ func (t *JsonLinesTelemetryClient) writeLogLine(ctx context.Context, content []b
 			fmt.Sprintf("%s%s", fileNameShuttleJsonLines, extensionShuttleJsonLines),
 		),
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE,
-		0644,
+		0o644,
 	)
 	if err != nil {
 		return err

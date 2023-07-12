@@ -24,7 +24,7 @@ func Move(src, dest string) error {
 }
 
 func GenerateTmpDir(ctx context.Context, shuttlelocaldir string) error {
-	if err := os.MkdirAll(shuttlelocaldir, 0755); err != nil {
+	if err := os.MkdirAll(shuttlelocaldir, 0o755); err != nil {
 		return err
 	}
 
@@ -32,7 +32,7 @@ func GenerateTmpDir(ctx context.Context, shuttlelocaldir string) error {
 	if err := os.RemoveAll(binarydir); err != nil {
 		return nil
 	}
-	if err := os.MkdirAll(binarydir, 0755); err != nil {
+	if err := os.MkdirAll(binarydir, 0o755); err != nil {
 		return err
 	}
 
@@ -40,7 +40,7 @@ func GenerateTmpDir(ctx context.Context, shuttlelocaldir string) error {
 	if err := os.RemoveAll(tmpdir); err != nil {
 		return nil
 	}
-	if err := os.MkdirAll(tmpdir, 0755); err != nil {
+	if err := os.MkdirAll(tmpdir, 0o755); err != nil {
 		return err
 	}
 

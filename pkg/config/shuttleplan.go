@@ -72,7 +72,11 @@ func (p *ShuttlePlanConfiguration) Load(planPath string) (*ShuttlePlanConfigurat
 
 	file, err := os.Open(configPath)
 	if err != nil {
-		return p, errors.NewExitCode(2, "Failed to open plan configuration: %s\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.", err)
+		return p, errors.NewExitCode(
+			2,
+			"Failed to open plan configuration: %s\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.",
+			err,
+		)
 	}
 	defer file.Close()
 
@@ -80,17 +84,36 @@ func (p *ShuttlePlanConfiguration) Load(planPath string) (*ShuttlePlanConfigurat
 	decoder.SetStrict(true)
 	err = decoder.Decode(p)
 	if err != nil {
-		return p, errors.NewExitCode(1, "Failed to load plan configuration from '%s': %s\n\nThis is likely an issue with the referenced plan. Please, contact the plan maintainers.", configPath, err)
+		return p, errors.NewExitCode(
+			1,
+			"Failed to load plan configuration from '%s': %s\n\nThis is likely an issue with the referenced plan. Please, contact the plan maintainers.",
+			configPath,
+			err,
+		)
 	}
 
 	return p, nil
 }
 
 // FetchPlan so it exists locally and return path to that plan
-func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string, uii *ui.UI, skipGitPlanPulling bool, planArgument string) (string, error) {
+func FetchPlan(
+	plan string,
+	projectPath string,
+	localShuttleDirectoryPath string,
+	uii *ui.UI,
+	skipGitPlanPulling bool,
+	planArgument string,
+) (string, error) {
 	if isPlanArgumentAPlan(planArgument) {
 		uii.Infoln("Using overloaded plan %v", planArgument)
-		return FetchPlan(getPlanFromPlanArgument(planArgument), projectPath, localShuttleDirectoryPath, uii, skipGitPlanPulling, "")
+		return FetchPlan(
+			getPlanFromPlanArgument(planArgument),
+			projectPath,
+			localShuttleDirectoryPath,
+			uii,
+			skipGitPlanPulling,
+			"",
+		)
 	}
 
 	switch {
@@ -99,7 +122,13 @@ func FetchPlan(plan string, projectPath string, localShuttleDirectoryPath string
 		return "", nil
 	case git.IsPlan(plan):
 		uii.Verboseln("Using git plan at '%s'", plan)
-		return git.GetGitPlan(plan, localShuttleDirectoryPath, uii, skipGitPlanPulling, planArgument)
+		return git.GetGitPlan(
+			plan,
+			localShuttleDirectoryPath,
+			uii,
+			skipGitPlanPulling,
+			planArgument,
+		)
 	case isHTTPSPlan(plan):
 		panic(fmt.Sprintf("Plan '%v' is not valid: non-git http/https is not supported yet", plan))
 	case isFilePath(plan, true):

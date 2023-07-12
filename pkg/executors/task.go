@@ -17,7 +17,6 @@ func TaskExecutor(action config.ShuttleAction) (Executor, bool) {
 }
 
 func executeTask(ctx context.Context, ui *ui.UI, context ActionExecutionContext) error {
-
 	context.ScriptContext.Project.UI.Verboseln("Starting task command: %s", context.Action.Task)
 
 	args := make([]string, 0)
@@ -42,10 +41,28 @@ func setupTaskCommandEnvironmentVariables(execCmd *cmd.Cmd, context ActionExecut
 	for name, value := range context.ScriptContext.Args {
 		execCmd.Env = append(execCmd.Env, fmt.Sprintf("%s=%s", name, value))
 	}
-	execCmd.Env = append(execCmd.Env, fmt.Sprintf("plan=%s", context.ScriptContext.Project.LocalPlanPath))
-	execCmd.Env = append(execCmd.Env, fmt.Sprintf("tmp=%s", context.ScriptContext.Project.TempDirectoryPath))
-	execCmd.Env = append(execCmd.Env, fmt.Sprintf("project=%s", context.ScriptContext.Project.ProjectPath))
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf("plan=%s", context.ScriptContext.Project.LocalPlanPath),
+	)
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf("tmp=%s", context.ScriptContext.Project.TempDirectoryPath),
+	)
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf("project=%s", context.ScriptContext.Project.ProjectPath),
+	)
 	// TODO: Add project path as a shuttle specific ENV
-	execCmd.Env = append(execCmd.Env, fmt.Sprintf("PATH=%s", shuttlePath+string(os.PathListSeparator)+os.Getenv("PATH")))
-	execCmd.Env = append(execCmd.Env, fmt.Sprintf("SHUTTLE_PLANS_ALREADY_VALIDATED=%s", context.ScriptContext.Project.LocalPlanPath))
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf("PATH=%s", shuttlePath+string(os.PathListSeparator)+os.Getenv("PATH")),
+	)
+	execCmd.Env = append(
+		execCmd.Env,
+		fmt.Sprintf(
+			"SHUTTLE_PLANS_ALREADY_VALIDATED=%s",
+			context.ScriptContext.Project.LocalPlanPath,
+		),
+	)
 }

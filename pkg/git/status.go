@@ -54,7 +54,7 @@ func getStatus(dir string) Status {
 
 	for _, line := range cmdStatus.Stdout {
 		var x, y, sub, path, origPath string // mH, mI, mW, hH, hI, score
-		var merge = false
+		merge := false
 		switch line[0] {
 		case '#':
 			parts := strings.SplitN(line, " ", 3)
@@ -71,7 +71,7 @@ func getStatus(dir string) Status {
 				status.remoteBranch = parts[2]
 			case "branch.ab":
 				// # branch.ab +1 -0
-				//status.remoteBranch = parts[2]
+				// status.remoteBranch = parts[2]
 			}
 			continue
 		case '1':

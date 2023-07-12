@@ -15,8 +15,10 @@ type Registry struct {
 	executors []Matcher
 }
 
-type Matcher func(config.ShuttleAction) (Executor, bool)
-type Executor func(context.Context, *ui.UI, ActionExecutionContext) error
+type (
+	Matcher  func(config.ShuttleAction) (Executor, bool)
+	Executor func(context.Context, *ui.UI, ActionExecutionContext) error
+)
 
 func NewRegistry(executors ...Matcher) *Registry {
 	return &Registry{
@@ -40,7 +42,13 @@ type ActionExecutionContext struct {
 }
 
 // Execute is the command executor for the plan files
-func (r *Registry) Execute(ctx context.Context, p config.ShuttleProjectContext, command string, args []string, validateArgs bool) error {
+func (r *Registry) Execute(
+	ctx context.Context,
+	p config.ShuttleProjectContext,
+	command string,
+	args []string,
+	validateArgs bool,
+) error {
 	script, ok := p.Scripts[command]
 	if !ok {
 		return errors.NewExitCode(2, "Script '%s' not found", command)
@@ -76,7 +84,13 @@ func (r *Registry) Execute(ctx context.Context, p config.ShuttleProjectContext, 
 // scriptArgs.
 //
 // All detectable constraints are checked before reporting to the UI.
-func validateArguments(p config.ShuttleProjectContext, command string, scriptArgs []config.ShuttleScriptArgs, args []string, validateArgs bool) (map[string]string, error) {
+func validateArguments(
+	p config.ShuttleProjectContext,
+	command string,
+	scriptArgs []config.ShuttleScriptArgs,
+	args []string,
+	validateArgs bool,
+) (map[string]string, error) {
 	var validationErrors []validationError
 
 	namedArgs, parsingErrors := validateArgFormat(args)
@@ -124,7 +138,10 @@ func validateArgFormat(args []string) (map[string]string, []validationError) {
 	return namedArgs, validationErrors
 }
 
-func validateRequiredArgs(scriptArgs []config.ShuttleScriptArgs, args map[string]string) []validationError {
+func validateRequiredArgs(
+	scriptArgs []config.ShuttleScriptArgs,
+	args map[string]string,
+) []validationError {
 	var validationErrors []validationError
 	for _, argSpec := range scriptArgs {
 		if _, ok := args[argSpec.Name]; argSpec.Required && !ok {
@@ -137,7 +154,10 @@ func validateRequiredArgs(scriptArgs []config.ShuttleScriptArgs, args map[string
 	return validationErrors
 }
 
-func validateUnknownArgs(scriptArgs []config.ShuttleScriptArgs, args map[string]string) []validationError {
+func validateUnknownArgs(
+	scriptArgs []config.ShuttleScriptArgs,
+	args map[string]string,
+) []validationError {
 	var validationErrors []validationError
 	for namedArg := range args {
 		found := false
@@ -177,7 +197,11 @@ func expectedArgumentsHelp(command string, args []config.ShuttleScriptArgs) stri
 	return s.String()
 }
 
-func (r *Registry) executeAction(ctx context.Context, ui *ui.UI, context ActionExecutionContext) error {
+func (r *Registry) executeAction(
+	ctx context.Context,
+	ui *ui.UI,
+	context ActionExecutionContext,
+) error {
 	for _, executor := range r.executors {
 		handler, ok := executor(context.Action)
 		if ok {
@@ -185,5 +209,11 @@ func (r *Registry) executeAction(ctx context.Context, ui *ui.UI, context ActionE
 		}
 	}
 
-	panic(fmt.Sprintf("Could not find an executor for %v.actions[%v]!", context.ScriptContext.ScriptName, context.ActionIndex))
+	panic(
+		fmt.Sprintf(
+			"Could not find an executor for %v.actions[%v]!",
+			context.ScriptContext.ScriptName,
+			context.ActionIndex,
+		),
+	)
 }

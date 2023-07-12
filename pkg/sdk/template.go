@@ -49,7 +49,11 @@ func ResolveTemplatePath(project ShuttleContext, templateName string) (string, e
 	return templatePath, nil
 }
 
-func Generate(templatePath, templateName, outputFilepath string, context TemplateContext, leftDelim, rightDelim string) error {
+func Generate(
+	templatePath, templateName, outputFilepath string,
+	context TemplateContext,
+	leftDelim, rightDelim string,
+) error {
 	file, err := os.Create(outputFilepath)
 	if err != nil {
 		return errors.WithMessagef(err, "create template output file '%s'", outputFilepath)
@@ -63,12 +67,16 @@ func Generate(templatePath, templateName, outputFilepath string, context Templat
 	return nil
 }
 
-func renderTemplate(templatePath, templateName string, output io.Writer, context TemplateContext, leftDelim, rightDelim string) error {
+func renderTemplate(
+	templatePath, templateName string,
+	output io.Writer,
+	context TemplateContext,
+	leftDelim, rightDelim string,
+) error {
 	tmpl, err := template.New(templateName).
 		Delims(leftDelim, rightDelim).
 		Funcs(templates.GetFuncMap()).
 		ParseFiles(templatePath)
-
 	if err != nil {
 		return err
 	}

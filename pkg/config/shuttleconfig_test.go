@@ -23,17 +23,23 @@ func TestShuttleConfig_getConf(t *testing.T) {
 		{
 			name:  "unknown field",
 			input: "testdata/unknown_field",
-			err:   errors.New("exit code 2 - Failed to parse shuttle configuration: yaml: unmarshal errors:\n  line 1: field nothing not found in type config.ShuttleConfig\n\nMake sure your 'shuttle.yaml' is valid."),
+			err: errors.New(
+				"exit code 2 - Failed to parse shuttle configuration: yaml: unmarshal errors:\n  line 1: field nothing not found in type config.ShuttleConfig\n\nMake sure your 'shuttle.yaml' is valid.",
+			),
 		},
 		{
 			name:  "unknown file",
 			input: "testdata/unknown_file",
-			err:   errors.New("exit code 2 - Failed to load shuttle configuration: shuttle.yaml file not found\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available."),
+			err: errors.New(
+				"exit code 2 - Failed to load shuttle configuration: shuttle.yaml file not found\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.",
+			),
 		},
 		{
 			name:  "absolute path to unknown file",
 			input: "/tmp/shuttle-test/unknown",
-			err:   errors.New("exit code 2 - Failed to load shuttle configuration: shuttle.yaml file not found\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available."),
+			err: errors.New(
+				"exit code 2 - Failed to load shuttle configuration: shuttle.yaml file not found\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.",
+			),
 		},
 		{
 			name:      "valid",
@@ -85,7 +91,9 @@ func TestShuttleConfig_getConf(t *testing.T) {
 			name:       "subdir of shuttle.yaml file in strict mode",
 			input:      "testdata/valid/subdir",
 			strictMode: true,
-			err:        errors.New("exit code 2 - Failed to load shuttle configuration: shuttle.yaml file not found\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available."),
+			err: errors.New(
+				"exit code 2 - Failed to load shuttle configuration: shuttle.yaml file not found\n\nMake sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.",
+			),
 		},
 	}
 	for _, tc := range tt {

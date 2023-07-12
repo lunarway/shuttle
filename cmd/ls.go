@@ -50,7 +50,8 @@ func newLs(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		},
 	}
 
-	lsCmd.Flags().StringVar(&lsFlagTemplate, "template", "", "Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].")
+	lsCmd.Flags().
+		StringVar(&lsFlagTemplate, "template", "", "Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].")
 
 	return lsCmd
 }

@@ -32,7 +32,12 @@ type scriptHelpTemplateArg struct {
 	Description string
 }
 
-func Help(scripts map[string]config.ShuttlePlanScript, script string, output io.Writer, template string) error {
+func Help(
+	scripts map[string]config.ShuttlePlanScript,
+	script string,
+	output io.Writer,
+	template string,
+) error {
 	s, ok := scripts[script]
 	if !ok {
 		return errors.New("unrecognized script")

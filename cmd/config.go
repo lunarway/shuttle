@@ -59,7 +59,8 @@ func newConfig(uii *ui.UI, contextProvder contextProvider) *cobra.Command {
 		},
 	}
 
-	envCmd.Flags().StringSliceVar(&envVarsToExclude, "exclude-env-vars", make([]string, 0), "Exclude environment variables from being displayed. Example: shuttle config --exclude-env-vars VAR1,VAR2,VAR3")
+	envCmd.Flags().
+		StringSliceVar(&envVarsToExclude, "exclude-env-vars", make([]string, 0), "Exclude environment variables from being displayed. Example: shuttle config --exclude-env-vars VAR1,VAR2,VAR3")
 	return envCmd
 }
 
