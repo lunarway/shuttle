@@ -347,7 +347,7 @@ func lockFunc(storageLocation string) LockFunc {
 			return false, err
 		}
 
-		if file.ModTime().Add(time.Minute*5).Compare(time.Now()) <= 0 {
+		if file.ModTime().Add(time.Minute * 5).Before(time.Now()) {
 			return false, nil
 		}
 
