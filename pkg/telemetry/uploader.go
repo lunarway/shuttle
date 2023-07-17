@@ -83,7 +83,6 @@ func WithAvailabilityCheck(url string) UploadOptions {
 		tu.availabilityCheck = func(ctx context.Context) (bool, error) {
 			return availabilityCheck(ctx, url)
 		}
-
 	}
 }
 
@@ -92,7 +91,6 @@ func WithDefaultAvailabilityCheck() UploadOptions {
 		tu.availabilityCheck = func(ctx context.Context) (bool, error) {
 			return true, nil
 		}
-
 	}
 }
 
@@ -194,7 +192,6 @@ func upload(ctx context.Context, url string, events []UploadTraceEvent) error {
 	}
 
 	return nil
-
 }
 
 func getTelemetryFiles(ctx context.Context, location string) ([]string, error) {

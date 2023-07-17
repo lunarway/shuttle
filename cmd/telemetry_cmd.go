@@ -22,10 +22,11 @@ func newTelemetry(uii *ui.UI) *cobra.Command {
 }
 
 func newTelemetryUploadCmd(uii *ui.UI) *cobra.Command {
-
-	var availabilityUrl string
-	var cleanUp bool
-	var uploadUrl string
+	var (
+		availabilityUrl string
+		cleanUp         bool
+		uploadUrl       string
+	)
 
 	cmd := &cobra.Command{
 		Use:   "upload",
@@ -57,9 +58,12 @@ func newTelemetryUploadCmd(uii *ui.UI) *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&uploadUrl, "upload-url", "", "upload url is the url to which all the trace events will be uploaded to")
-	cmd.PersistentFlags().StringVar(&availabilityUrl, "availability-url", "", "availability url is an address that needs to return a 200 http OK before continuing to upload, if anything else is returned, this command exits early")
-	cmd.PersistentFlags().BoolVar(&cleanUp, "clean-up", true, "removes shuttle-telemetry files after upload")
+	cmd.PersistentFlags().
+		StringVar(&uploadUrl, "upload-url", "", "upload url is the url to which all the trace events will be uploaded to")
+	cmd.PersistentFlags().
+		StringVar(&availabilityUrl, "availability-url", "", "availability url is an address that needs to return a 200 http OK before continuing to upload, if anything else is returned, this command exits early")
+	cmd.PersistentFlags().
+		BoolVar(&cleanUp, "clean-up", true, "removes shuttle-telemetry files after upload")
 
 	return cmd
 }
