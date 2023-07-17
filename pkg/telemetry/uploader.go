@@ -32,12 +32,15 @@ type (
 		getTelemetryFiles GetTelemetryFilesFunc
 		getTelemetryFile  GetTelemetryFileFunc
 		availabilityCheck AvailabilityCheckFunc
+		lock              LockFunc
 	}
 
 	UploadFunc            = func(ctx context.Context, url string, event []UploadTraceEvent) error
 	GetTelemetryFilesFunc = func(ctx context.Context, location string) ([]string, error)
 	GetTelemetryFileFunc  = func(ctx context.Context, telemetryFilePath string) ([]UploadTraceEvent, func(ctx context.Context) error, error)
 	AvailabilityCheckFunc = func(ctx context.Context) (bool, error)
+	LockFunc              = func(ctx context.Context) (UnlockFunc, bool, error)
+	UnlockFunc            = func(ctx context.Context) error
 
 	UploadOptions = func(*TelemetryUploader)
 )
@@ -94,7 +97,22 @@ func WithDefaultAvailabilityCheck() UploadOptions {
 	}
 }
 
+func WithFileLock(storageLocation string) UploadOptions {
+	return func(tu *TelemetryUploader) {
+		tu.lock = lockFunc(storageLocation)
+	}
+}
+
+func WithNoLock() UploadOptions {
+	return func(tu *TelemetryUploader) {
+		tu.lock = func(ctx context.Context) (UnlockFunc, bool, error) {
+			return func(ctx context.Context) error { return nil }, false, nil
+		}
+	}
+}
+
 func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUploader {
+	storageLocation := getRemoteLogLocation()
 	uploader := &TelemetryUploader{
 		url:               url,
 		upload:            upload,
@@ -103,8 +121,9 @@ func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUpload
 		availabilityCheck: func(ctx context.Context) (bool, error) {
 			return true, nil
 		},
-		storageLocation: getRemoteLogLocation(),
+		storageLocation: storageLocation,
 		cleanUp:         true,
+		lock:            lockFunc(storageLocation),
 	}
 
 	for _, o := range options {
@@ -117,6 +136,21 @@ func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUpload
 func (tu *TelemetryUploader) Upload(ctx context.Context) error {
 	tu.uploadmu.Lock()
 	defer tu.uploadmu.Unlock()
+
+	unlock, locked, err := tu.lock(ctx)
+	if err != nil {
+		return err
+	}
+	if locked {
+		log.Println("file is already locked returning")
+		return nil
+	}
+	defer func(ctx context.Context, unlock UnlockFunc) {
+		return
+		if err := unlock(ctx); err != nil {
+			log.Printf("failed to clean up lock: %s", err)
+		}
+	}(ctx, unlock)
 
 	ok, err := tu.availabilityCheck(ctx)
 	if err != nil {
@@ -282,5 +316,72 @@ func availabilityCheck(ctx context.Context, url string) (bool, error) {
 		}
 
 		return true, nil
+	}
+}
+
+func lockFunc(storageLocation string) LockFunc {
+	handleFolderExists := func() error {
+		if _, err := os.Stat(storageLocation); err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				if err = os.MkdirAll(
+					storageLocation,
+					0o700,
+				); err != nil {
+					return err
+				}
+			} else {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	checkLockExists := func(lockFile string) (exists bool, err error) {
+		file, err := os.Stat(lockFile)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				return false, nil
+			}
+
+			return false, err
+		}
+
+		if file.ModTime().Add(time.Minute*5).Compare(time.Now()) <= 0 {
+			return false, nil
+		}
+
+		return true, nil
+
+	}
+
+	unlockFunc := func(lockFile string) func(ctx context.Context) error {
+		return func(ctx context.Context) error {
+			if err := os.Remove(lockFile); err != nil {
+				return err
+			}
+
+			return nil
+		}
+	}
+
+	return func(ctx context.Context) (UnlockFunc, bool, error) {
+		if err := handleFolderExists(); err != nil {
+			return nil, false, err
+		}
+		lockFile := path.Join(storageLocation, ".shuttle-telemetry-lock")
+		exists, err := checkLockExists(lockFile)
+		if err != nil {
+			return nil, false, err
+		}
+		if exists {
+			return nil, true, nil
+		}
+
+		if _, err := os.Create(lockFile); err != nil {
+			return nil, false, err
+		}
+
+		return unlockFunc(lockFile), false, nil
 	}
 }
