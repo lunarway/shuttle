@@ -13,6 +13,7 @@ func trace(
 	args []string,
 ) (func(options ...telemetry.TelemetryOption), func(err error, options ...telemetry.TelemetryOption), func()) {
 	ctx = telemetry.WithContextID(ctx)
+	ctx = telemetry.WithRunID(ctx)
 	ctx = WithRunTelemetry(ctx, name, args)
 
 	traceInfo := func(options ...telemetry.TelemetryOption) {

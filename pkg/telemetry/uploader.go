@@ -216,8 +216,6 @@ func getTelemetryFile(
 		var event UploadTraceEvent
 		err := json.Unmarshal(line, &event)
 		if err != nil {
-			// log.Println("Error:", err)
-			// continue
 			return nil, nil, err
 		}
 

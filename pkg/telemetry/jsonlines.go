@@ -64,10 +64,12 @@ func (t *JsonLinesTelemetryClient) writeLogLine(ctx context.Context, content []b
 	t.writeMutex.Lock()
 	defer t.writeMutex.Unlock()
 
+	runID := RunIDFrom(ctx)
+
 	file, err := os.OpenFile(
 		path.Join(
 			t.logLocation,
-			fmt.Sprintf("%s%s", fileNameShuttleJsonLines, extensionShuttleJsonLines),
+			fmt.Sprintf("%s-%s%s", fileNameShuttleJsonLines, runID, extensionShuttleJsonLines),
 		),
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE,
 		0o644,

@@ -9,6 +9,7 @@ import (
 
 const (
 	telemetryContextID   string = "shuttle.contextID"
+	telemetryRunID       string = "shuttle.runID"
 	TelemetryCommand     string = "shuttle.command"
 	TelemetryCommandArgs string = "shuttle.command.args"
 )
