@@ -27,7 +27,7 @@ func (t *JsonLinesTelemetryClient) Trace(
 ) {
 	copyHostMap(t.properties, properties)
 
-	event := &uploadTraceEvent{
+	event := &UploadTraceEvent{
 		App:        appKey,
 		Timestamp:  time.Now().UTC(),
 		Properties: includeContext(ctx, properties),
@@ -47,31 +47,11 @@ func (t *JsonLinesTelemetryClient) Trace(
 
 var _ TelemetryClient = &JsonLinesTelemetryClient{}
 
-type uploadTraceEvent struct {
+type UploadTraceEvent struct {
 	App        string            `json:"app"`
 	Timestamp  time.Time         `json:"timestamp"`
 	Properties map[string]string `json:"properties"`
 }
-
-//func (t *JsonLinesTelemetryClient) upload(ctx context.Context, content []byte) error {
-//	resp, err := t.Client.Post(t.url, "application/json", bytes.NewReader(content))
-//	if err != nil {
-//		return err
-//	}
-//	if resp.StatusCode > 299 {
-//		body, err := ioutil.ReadAll(resp.Body)
-//		if err != nil {
-//			return err
-//		}
-//		return fmt.Errorf(
-//			"failed to push trace event with status code: %d, reason: %s",
-//			resp.StatusCode,
-//			string(body),
-//		)
-//	}
-//
-//	return nil
-//}
 
 // filename
 const fileNameShuttleJsonLines = "shuttle-telemetry"
