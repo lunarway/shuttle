@@ -33,5 +33,4 @@ func TestContext(t *testing.T) {
 
 		assert.Equal(t, expected, value)
 	})
-
 }
