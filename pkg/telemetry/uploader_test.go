@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"path"
 	"testing"
 	"time"
 
@@ -148,6 +150,83 @@ func TestTelemetryUploader(t *testing.T) {
 		require.NoError(t, err)
 		assert.True(t, ok)
 	})
+
+	t.Run("lock not exists", func(t *testing.T) {
+		lockF := lockFunc(path.Join("testdata", t.Name()))
+		ctx := context.Background()
+		unlock, locked, err := lockF(ctx)
+		defer unlock(ctx)
+		assert.NoError(t, err)
+		assert.False(t, locked)
+		assert.NotNil(t, unlock)
+	})
+
+	t.Run("lock already exists", func(t *testing.T) {
+		lockDirPath := path.Join("testdata", t.Name())
+		lockFilePath := path.Join(lockDirPath, ".shuttle-telemetry-lock")
+
+		err := os.MkdirAll(lockDirPath, 0o700)
+		require.NoError(t, err)
+
+		_, err = os.Create(lockFilePath)
+		require.NoError(t, err)
+
+		lockF := lockFunc(lockDirPath)
+
+		ctx := context.Background()
+		unlock, locked, err := lockF(ctx)
+		assert.NoError(t, err)
+		assert.True(t, locked)
+		assert.Nil(t, unlock)
+	})
+
+	t.Run("old lock create new lock", func(t *testing.T) {
+		lockDirPath := path.Join("testdata", t.Name())
+		lockFilePath := path.Join(lockDirPath, ".shuttle-telemetry-lock")
+
+		err := os.MkdirAll(lockDirPath, 0o700)
+		require.NoError(t, err)
+
+		_, err = os.Create(lockFilePath)
+		require.NoError(t, err)
+
+		createTime := time.Now().Add(-time.Minute * 10)
+		modificationTime := createTime.Add(time.Minute * 2)
+
+		os.Chtimes(lockFilePath, createTime, modificationTime)
+
+		lockF := lockFunc(lockDirPath)
+
+		ctx := context.Background()
+		unlock, locked, err := lockF(ctx)
+		assert.NoError(t, err)
+		assert.False(t, locked)
+		assert.NotNil(t, unlock)
+	})
+
+	t.Run("new lock doesnt create new lock", func(t *testing.T) {
+		lockDirPath := path.Join("testdata", t.Name())
+		lockFilePath := path.Join(lockDirPath, ".shuttle-telemetry-lock")
+
+		err := os.MkdirAll(lockDirPath, 0o700)
+		require.NoError(t, err)
+
+		_, err = os.Create(lockFilePath)
+		require.NoError(t, err)
+
+		createTime := time.Now().Add(-time.Minute * 4)
+		modificationTime := createTime.Add(time.Minute * 2)
+
+		os.Chtimes(lockFilePath, createTime, modificationTime)
+
+		lockF := lockFunc(lockDirPath)
+
+		ctx := context.Background()
+		unlock, locked, err := lockF(ctx)
+		assert.NoError(t, err)
+		assert.True(t, locked)
+		assert.Nil(t, unlock)
+	})
 }
 
 type serverFunc = func() (string, func(w http.ResponseWriter, r *http.Request))
@@ -156,7 +235,6 @@ func startServer(t *testing.T, serverFuncs ...serverFunc) *http.Server {
 	t.Helper()
 	server := &http.Server{}
 
-	// Create a new mux for handling requests
 	mux := http.NewServeMux()
 
 	for _, f := range serverFuncs {
@@ -169,17 +247,15 @@ func startServer(t *testing.T, serverFuncs ...serverFunc) *http.Server {
 
 	server.Handler = mux
 
-	// Start the server with a dynamically allocated port
 	listener, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
 		t.Fatalf("Failed to start server: %v", err)
 	}
 
-	// Set the listener address to the server
 	server.Addr = listener.Addr().String()
 
-	// Start serving requests
 	go func(t *testing.T) {
+		t.Helper()
 		err := server.Serve(listener)
 		if err != nil && err != http.ErrServerClosed {
 			t.Fatalf("Server error: %v", err)
