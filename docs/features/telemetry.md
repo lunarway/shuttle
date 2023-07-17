@@ -1,5 +1,38 @@
 # Shuttle Telemetry
 
+## How to
+
+To enable shuttle telemetry
+
+```bash
+export SHUTTLE_REMOTE_TRACING=default
+shuttle run build
+
+export SHUTTLE_REMOTE_TRACING_URL=https://your-tracing-server.com/publish/batch
+shuttle telemetry upload
+```
+
+Extra options are available for `shuttle telemetry upload -h`.
+
+The schema of the tracing server should be like so:
+
+```json
+[
+  {
+    "app": "shuttle",
+    "timestamp": "2023-07-17-15:21:27Z",
+    "properties": {
+      "shuttle.contextID": "<uuid>",
+      "shuttle.runID": "<uuid>",
+      "shuttle.command": "build"
+    }
+  },
+  ...
+]
+```
+
+## Theory
+
 This feature introduces telemetry to shuttle, it is a bit different than what
 you might be used to. This is not for shuttle to send telemetry to us (Lunar),
 but rather an option for you (the user/org) to collect telemetry, for your own
