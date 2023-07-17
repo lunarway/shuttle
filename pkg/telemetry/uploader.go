@@ -1,13 +1,21 @@
 package telemetry
 
 import (
+	"bufio"
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type (
@@ -17,15 +25,16 @@ type (
 		uploadmu sync.Mutex
 
 		storageLocation string
+		cleanUp         bool
 
 		upload            UploadFunc
 		getTelemetryFiles GetTelemetryFilesFunc
 		getTelemetryFile  GetTelemetryFileFunc
 	}
 
-	UploadFunc            = func(ctx context.Context) error
+	UploadFunc            = func(ctx context.Context, url string, event []UploadTraceEvent) error
 	GetTelemetryFilesFunc = func(ctx context.Context, location string) ([]string, error)
-	GetTelemetryFileFunc  = func(ctx context.Context, telemetryFilePath string) ([]uploadTraceEvent, error)
+	GetTelemetryFileFunc  = func(ctx context.Context, telemetryFilePath string) ([]UploadTraceEvent, func(ctx context.Context) error, error)
 
 	UploadOptions = func(*TelemetryUploader)
 )
@@ -60,6 +69,12 @@ func WithRemoteLogLocation(location string) UploadOptions {
 	}
 }
 
+func WithCleanUp(enabled bool) UploadOptions {
+	return func(tu *TelemetryUploader) {
+		tu.cleanUp = enabled
+	}
+}
+
 func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUploader {
 	uploader := &TelemetryUploader{
 		url:               url,
@@ -67,6 +82,7 @@ func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUpload
 		getTelemetryFiles: getTelemetryFiles,
 		getTelemetryFile:  getTelemetryFile,
 		storageLocation:   getRemoteLogLocation(),
+		cleanUp:           true,
 	}
 
 	for _, o := range options {
@@ -76,12 +92,75 @@ func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUpload
 	return uploader
 }
 
-func (tu *TelemetryUploader) Upload(ctx context.Context) {
-	tu.getTelemetryFiles(ctx, tu.storageLocation)
+func (tu *TelemetryUploader) Upload(ctx context.Context) error {
+	tu.uploadmu.Lock()
+	defer tu.uploadmu.Unlock()
+
+	files, err := tu.getTelemetryFiles(ctx, tu.storageLocation)
+	if err != nil {
+		return fmt.Errorf("failed to get telemetry files: %w", err)
+	}
+
+	egrp, ctx := errgroup.WithContext(ctx)
+	for _, file := range files {
+		file := file
+		egrp.Go(func() error {
+			events, cleanUpFunc, err := tu.getTelemetryFile(ctx, file)
+			if err != nil {
+				return fmt.Errorf(
+					"failed to read events from shuttle telemetry file: %s, err: %w",
+					file,
+					err,
+				)
+			}
+
+			if err := tu.upload(ctx, tu.url, events); err != nil {
+				return fmt.Errorf("failed to upload events: %w", err)
+			}
+
+			if tu.cleanUp {
+				if err := cleanUpFunc(ctx); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+	}
+
+	if err := egrp.Wait(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func upload(ctx context.Context) error {
+func upload(ctx context.Context, url string, events []UploadTraceEvent) error {
+	content, err := json.Marshal(events)
+	if err != nil {
+		return err
+	}
+
+	client := http.DefaultClient
+
+	resp, err := client.Post(url, "application/json", bytes.NewReader(content))
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode > 299 {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf(
+			"failed to push trace event with status code: %d, reason: %s",
+			resp.StatusCode,
+			string(body),
+		)
+	}
+
 	return nil
+
 }
 
 func getTelemetryFiles(ctx context.Context, location string) ([]string, error) {
@@ -108,6 +187,8 @@ func getTelemetryFiles(ctx context.Context, location string) ([]string, error) {
 		if strings.HasPrefix(fileName, fileNameShuttleJsonLines) &&
 			strings.HasSuffix(fileName, extensionShuttleJsonLines) &&
 			isFile {
+			// TODO: only read files older than a certain threshold
+
 			shuttleTelemetryFiles = append(shuttleTelemetryFiles, path.Join(location, fileName))
 		}
 	}
@@ -118,6 +199,38 @@ func getTelemetryFiles(ctx context.Context, location string) ([]string, error) {
 func getTelemetryFile(
 	ctx context.Context,
 	shuttleTelemetryFilePath string,
-) ([]uploadTraceEvent, error) {
-	return nil, nil
+) ([]UploadTraceEvent, func(ctx context.Context) error, error) {
+	file, err := os.Open(shuttleTelemetryFilePath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return []UploadTraceEvent{}, nil, nil
+		}
+		return nil, nil, err
+	}
+
+	events := make([]UploadTraceEvent, 0)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Bytes()
+
+		var event UploadTraceEvent
+		err := json.Unmarshal(line, &event)
+		if err != nil {
+			// log.Println("Error:", err)
+			// continue
+			return nil, nil, err
+		}
+
+		events = append(events, event)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, nil, err
+	}
+
+	cleanUp := func(ctx context.Context) error {
+		return os.Remove(shuttleTelemetryFilePath)
+	}
+
+	return events, cleanUp, nil
 }
