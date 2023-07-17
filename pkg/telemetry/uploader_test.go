@@ -109,6 +109,28 @@ func TestTelemetryUploader(t *testing.T) {
 			t,
 			func() (string, func(w http.ResponseWriter, r *http.Request)) {
 				return "/available", func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(400)
+				}
+			},
+		)
+		defer server.Close()
+
+		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(ctx, time.Second)
+		defer cancel()
+
+		ok, err := availabilityCheck(ctx, fmt.Sprintf("http://%s/available", server.Addr))
+		require.NoError(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("endpoint available ok response", func(t *testing.T) {
+		t.Parallel()
+
+		server := startServer(
+			t,
+			func() (string, func(w http.ResponseWriter, r *http.Request)) {
+				return "/available", func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(200)
 				}
 			},
