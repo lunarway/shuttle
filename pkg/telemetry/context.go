@@ -31,6 +31,7 @@ func WithContextValue(ctx context.Context, key, value string) context.Context {
 func WithRunID(ctx context.Context) context.Context {
 	return context.WithValue(ctx, telemetryRunID, uuid.New().String())
 }
+
 func RunIDFrom(ctx context.Context) string {
 	if contextID, ok := ctx.Value(telemetryRunID).(string); ok {
 		return contextID

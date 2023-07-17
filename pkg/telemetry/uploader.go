@@ -160,7 +160,6 @@ func upload(ctx context.Context, url string, events []UploadTraceEvent) error {
 	}
 
 	return nil
-
 }
 
 func getTelemetryFiles(ctx context.Context, location string) ([]string, error) {
