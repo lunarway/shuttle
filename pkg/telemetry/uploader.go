@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -30,11 +31,13 @@ type (
 		upload            UploadFunc
 		getTelemetryFiles GetTelemetryFilesFunc
 		getTelemetryFile  GetTelemetryFileFunc
+		availabilityCheck AvailabilityCheckFunc
 	}
 
 	UploadFunc            = func(ctx context.Context, url string, event []UploadTraceEvent) error
 	GetTelemetryFilesFunc = func(ctx context.Context, location string) ([]string, error)
 	GetTelemetryFileFunc  = func(ctx context.Context, telemetryFilePath string) ([]UploadTraceEvent, func(ctx context.Context) error, error)
+	AvailabilityCheckFunc = func(ctx context.Context) (bool, error)
 
 	UploadOptions = func(*TelemetryUploader)
 )
@@ -75,14 +78,33 @@ func WithCleanUp(enabled bool) UploadOptions {
 	}
 }
 
+func WithAvailabilityCheck(url string) UploadOptions {
+	return func(tu *TelemetryUploader) {
+		tu.availabilityCheck = func(ctx context.Context) (bool, error) {
+			return availabilityCheck(ctx, url)
+		}
+	}
+}
+
+func WithDefaultAvailabilityCheck() UploadOptions {
+	return func(tu *TelemetryUploader) {
+		tu.availabilityCheck = func(ctx context.Context) (bool, error) {
+			return true, nil
+		}
+	}
+}
+
 func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUploader {
 	uploader := &TelemetryUploader{
 		url:               url,
 		upload:            upload,
 		getTelemetryFiles: getTelemetryFiles,
 		getTelemetryFile:  getTelemetryFile,
-		storageLocation:   getRemoteLogLocation(),
-		cleanUp:           true,
+		availabilityCheck: func(ctx context.Context) (bool, error) {
+			return true, nil
+		},
+		storageLocation: getRemoteLogLocation(),
+		cleanUp:         true,
 	}
 
 	for _, o := range options {
@@ -95,6 +117,16 @@ func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUpload
 func (tu *TelemetryUploader) Upload(ctx context.Context) error {
 	tu.uploadmu.Lock()
 	defer tu.uploadmu.Unlock()
+
+	ok, err := tu.availabilityCheck(ctx)
+	if err != nil {
+		return fmt.Errorf("checking for endpoint failed so bad that process needs to stop: %w", err)
+	}
+
+	if !ok {
+		log.Println("endpoint was not ready, try again at some other time")
+		return nil
+	}
 
 	files, err := tu.getTelemetryFiles(ctx, tu.storageLocation)
 	if err != nil {
@@ -230,4 +262,25 @@ func getTelemetryFile(
 	}
 
 	return events, cleanUp, nil
+}
+
+func availabilityCheck(ctx context.Context, url string) (bool, error) {
+	select {
+	case <-ctx.Done():
+		log.Println("availability deadline exceeded")
+		return false, errors.New("met deadline returning")
+	default:
+		resp, err := http.DefaultClient.Get(url)
+		if err != nil {
+			log.Printf("checking endpoint failed with: %s", err)
+			return false, nil
+		}
+
+		if resp.StatusCode != 200 {
+			log.Printf("status code is not 200: status=%d", resp.StatusCode)
+			return false, nil
+		}
+
+		return true, nil
+	}
 }
