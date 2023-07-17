@@ -62,6 +62,7 @@ func WithGoInfo() TelemetryOption {
 
 func includeContext(ctx context.Context, properties map[string]string) map[string]string {
 	getFromContext(ctx, telemetryContextID, properties)
+	getFromContext(ctx, telemetryRunID, properties)
 	getFromContext(ctx, TelemetryCommand, properties)
 	getFromContext(ctx, TelemetryCommandArgs, properties)
 
@@ -69,7 +70,7 @@ func includeContext(ctx context.Context, properties map[string]string) map[strin
 }
 
 func getFromContext(ctx context.Context, key string, properties map[string]string) {
-	if val, ok := ctx.Value(TelemetryCommandArgs).(string); ok && val != "" {
+	if val, ok := ctx.Value(key).(string); ok && val != "" {
 		properties[key] = val
 	}
 }
