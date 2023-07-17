@@ -35,52 +35,72 @@ type (
 		lock              LockFunc
 	}
 
-	UploadFunc            = func(ctx context.Context, url string, event []UploadTraceEvent) error
+	// UploadFunc handles upload for a set of trace events
+	UploadFunc = func(ctx context.Context, url string, event []UploadTraceEvent) error
+
+	// GetTelemetryFilesFunc fetches trace event file name from a certain location. Each read is delegated to GetTelemetryFileFunc
 	GetTelemetryFilesFunc = func(ctx context.Context, location string) ([]string, error)
-	GetTelemetryFileFunc  = func(ctx context.Context, telemetryFilePath string) ([]UploadTraceEvent, func(ctx context.Context) error, error)
+
+	// GetTelemetryFileFunc reads the trace event files and returns a set of tracevents and the option to delete the file after upload is finished
+	GetTelemetryFileFunc = func(ctx context.Context, telemetryFilePath string) ([]UploadTraceEvent, func(ctx context.Context) error, error)
+
+	// AvailabilityCheckFunc gets whether the telemetry uploader is available for upload
 	AvailabilityCheckFunc = func(ctx context.Context) (bool, error)
-	LockFunc              = func(ctx context.Context) (UnlockFunc, bool, error)
-	UnlockFunc            = func(ctx context.Context) error
+
+	// LockFunc  makes sure only a single upload process is run pr storage location
+	LockFunc = func(ctx context.Context) (UnlockFunc, bool, error)
+
+	// UnluckFunc clears the locks set for the storage location
+	UnlockFunc = func(ctx context.Context) error
 
 	UploadOptions = func(*TelemetryUploader)
 )
 
+// WithRate sets the current rate of which events will be uploaded
 func WithRate(rate time.Duration) UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.rate = &rate
 	}
 }
 
+// WithUploadFunction sets the upload function to something custom
 func WithUploadFunction(uploadFunc UploadFunc) UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.upload = uploadFunc
 	}
 }
 
+// WithGetTelemetryFiles sets the get telemetry files
 func WithGetTelemetryFiles(getTelemetryFilesFunc GetTelemetryFilesFunc) UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.getTelemetryFiles = getTelemetryFilesFunc
 	}
 }
 
+// WithGetTelemetryFile sets the get telemetry file func
 func WithGetTelemetryFile(getTelemetryFileFunc GetTelemetryFileFunc) UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.getTelemetryFile = getTelemetryFileFunc
 	}
 }
 
+// WithRemoteLogLocation sets where shuttle telemetry files are located
 func WithRemoteLogLocation(location string) UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.storageLocation = location
 	}
 }
 
+// WithCleanUp determines whether to remove telemetry files after they've been read.
+// There are no consistency guarantees that no duplicates will be uploaded on error if run, or dropped traces
 func WithCleanUp(enabled bool) UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.cleanUp = enabled
 	}
 }
 
+// WithAvailabilityCheck adds a check for the upload location, this is useful if there are scenarios where the upload
+// process shouldn't be run. I.e. you're not on a vpn, or on a slow internet connection
 func WithAvailabilityCheck(url string) UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.availabilityCheck = func(ctx context.Context) (bool, error) {
@@ -89,6 +109,7 @@ func WithAvailabilityCheck(url string) UploadOptions {
 	}
 }
 
+// WithDefaultAvailabilityCheck sets a Noop availability check
 func WithDefaultAvailabilityCheck() UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.availabilityCheck = func(ctx context.Context) (bool, error) {
@@ -97,12 +118,15 @@ func WithDefaultAvailabilityCheck() UploadOptions {
 	}
 }
 
+// WithFileLock this adds a file lock at a certain location,
+// this is useful if there may be concurrent/parallel processes on the same storage location
 func WithFileLock(storageLocation string) UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.lock = lockFunc(storageLocation)
 	}
 }
 
+// WithNoLock removes the default file lock
 func WithNoLock() UploadOptions {
 	return func(tu *TelemetryUploader) {
 		tu.lock = func(ctx context.Context) (UnlockFunc, bool, error) {
@@ -133,7 +157,10 @@ func NewTelemetryUploader(url string, options ...UploadOptions) *TelemetryUpload
 	return uploader
 }
 
+// Upload kicks off the file upload process. This involves reading trace event files and uploading them to a determined location.
+// See Options (With*) for extra documentation
 func (tu *TelemetryUploader) Upload(ctx context.Context) error {
+	// Makes sure only a single upload process is run for each instance
 	tu.uploadmu.Lock()
 	defer tu.uploadmu.Unlock()
 
