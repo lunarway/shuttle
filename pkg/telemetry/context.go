@@ -18,7 +18,7 @@ func WithContextID(ctx context.Context) context.Context {
 }
 
 func ContextIDFrom(ctx context.Context) string {
-	if contextID, ok := ctx.Value(envContextID).(string); ok {
+	if contextID, ok := ctx.Value(telemetryContextID).(string); ok {
 		return contextID
 	}
 	return ""
@@ -26,4 +26,15 @@ func ContextIDFrom(ctx context.Context) string {
 
 func WithContextValue(ctx context.Context, key, value string) context.Context {
 	return context.WithValue(ctx, key, value)
+}
+
+func WithRunID(ctx context.Context) context.Context {
+	return context.WithValue(ctx, telemetryRunID, uuid.New().String())
+}
+
+func RunIDFrom(ctx context.Context) string {
+	if contextID, ok := ctx.Value(telemetryRunID).(string); ok {
+		return contextID
+	}
+	return ""
 }

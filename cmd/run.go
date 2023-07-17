@@ -29,7 +29,7 @@ func newRun(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			commandName := args[0]
 			ctx := cmd.Context()
-			traceInfo, traceError, traceEnd := trace(ctx, commandName, args)
+			ctx, traceInfo, traceError, traceEnd := trace(ctx, commandName, args)
 			defer traceEnd()
 
 			context, err := contextProvider()

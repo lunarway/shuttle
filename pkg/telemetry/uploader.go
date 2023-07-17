@@ -160,7 +160,6 @@ func upload(ctx context.Context, url string, events []UploadTraceEvent) error {
 	}
 
 	return nil
-
 }
 
 func getTelemetryFiles(ctx context.Context, location string) ([]string, error) {
@@ -216,8 +215,6 @@ func getTelemetryFile(
 		var event UploadTraceEvent
 		err := json.Unmarshal(line, &event)
 		if err != nil {
-			// log.Println("Error:", err)
-			// continue
 			return nil, nil, err
 		}
 

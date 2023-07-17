@@ -11,8 +11,9 @@ func trace(
 	ctx stdcontext.Context,
 	name string,
 	args []string,
-) (func(options ...telemetry.TelemetryOption), func(err error, options ...telemetry.TelemetryOption), func()) {
+) (stdcontext.Context, func(options ...telemetry.TelemetryOption), func(err error, options ...telemetry.TelemetryOption), func()) {
 	ctx = telemetry.WithContextID(ctx)
+	ctx = telemetry.WithRunID(ctx)
 	ctx = WithRunTelemetry(ctx, name, args)
 
 	traceInfo := func(options ...telemetry.TelemetryOption) {
@@ -23,7 +24,8 @@ func trace(
 		telemetry.TraceError(ctx, name, err)
 	}
 
-	return traceInfo,
+	return ctx,
+		traceInfo,
 		traceErr,
 		func() {
 			telemetry.Trace(ctx, name, telemetry.WithPhase("end"))

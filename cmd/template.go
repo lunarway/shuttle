@@ -33,7 +33,7 @@ func newTemplate(uii *ui.UI, contextProvider contextProvider) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			templateName := args[0]
 			ctx := cmd.Context()
-			_, _, traceEnd := trace(ctx, "template", args)
+			ctx, _, _, traceEnd := trace(ctx, "template", args)
 			defer traceEnd()
 
 			projectContext, err := contextProvider()
