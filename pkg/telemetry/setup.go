@@ -30,22 +30,13 @@ func Setup() {
 		sysinfo := WithGoInfo()
 		sysinfo(properties)
 
-		logLocation := os.Getenv("SHUTTLE_REMOTE_LOG_LOCATION")
-		if logLocation == "default" || logLocation == "" {
-			usr, _ := user.Current()
-			homeDir := usr.HomeDir
-			logLocation = path.Join(
-				homeDir,
-				".local",
-				"share",
-				"shuttle",
-				"telemetry",
-			)
-
+		logLocation := getRemoteLogLocation()
+		if logLocation != "" {
 			if err := os.MkdirAll(logLocation, 0o755); err != nil {
 				log.Fatal(err)
 			}
 		}
+
 		client = &JsonLinesTelemetryClient{
 			labelPrefix: appKey,
 			properties:  properties,
@@ -69,4 +60,21 @@ func Setup() {
 
 		return
 	}
+}
+
+func getRemoteLogLocation() string {
+	logLocation := os.Getenv("SHUTTLE_REMOTE_LOG_LOCATION")
+	if logLocation == "default" || logLocation == "" {
+		usr, _ := user.Current()
+		homeDir := usr.HomeDir
+		logLocation = path.Join(
+			homeDir,
+			".local",
+			"share",
+			"shuttle",
+			"telemetry",
+		)
+	}
+
+	return logLocation
 }

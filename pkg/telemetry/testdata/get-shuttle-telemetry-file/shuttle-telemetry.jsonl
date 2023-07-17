@@ -1,0 +1,2 @@
+{ "app": "some-app", "timestamp": "2006-01-02T15:04:05Z", "properties": {}}
+{ "app": "some-app", "timestamp": "2007-01-02T15:04:05Z", "properties": {"some-key": "some-value", "some-other-key": "some-other-value"}}
