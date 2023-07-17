@@ -75,16 +75,19 @@ func TestTelemetryUploader(t *testing.T) {
 
 		uploader := NewTelemetryUploader(
 			"some-url",
-			WithUploadFunction(func(ctx context.Context, url string, event []UploadTraceEvent) error {
-				assert.Equal(t, "some-url", url)
-				assert.NotEmpty(t, event)
+			WithUploadFunction(
+				func(ctx context.Context, url string, event []UploadTraceEvent) error {
+					assert.Equal(t, "some-url", url)
+					assert.NotEmpty(t, event)
 
-				return nil
-			}),
+					return nil
+				},
+			),
 			WithGetTelemetryFiles(func(ctx context.Context, location string) ([]string, error) {
 				return getTelemetryFiles(ctx, "testdata/full-upload-test")
 			}),
-			WithCleanUp(false))
+			WithCleanUp(false),
+		)
 
 		err := uploader.Upload(context.Background())
 		require.NoError(t, err)
