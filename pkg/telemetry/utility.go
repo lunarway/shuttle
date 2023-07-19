@@ -2,7 +2,10 @@ package telemetry
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"strings"
 
 	"github.com/matishsiao/goInfo"
 )
@@ -32,7 +35,6 @@ func WithGoInfo() TelemetryOption {
 	return func(properties map[string]string) {
 		gi, err := goInfo.GetInfo()
 		if err != nil {
-
 			properties["system.goinfo.error"] = err.Error()
 			return
 		}
@@ -64,7 +66,7 @@ func includeContext(ctx context.Context, properties map[string]string) map[strin
 	getFromContext(ctx, telemetryContextID, properties)
 	getFromContext(ctx, telemetryRunID, properties)
 	getFromContext(ctx, TelemetryCommand, properties)
-	getFromContext(ctx, TelemetryCommandArgs, properties)
+	getFromContextHashValue(ctx, TelemetryCommandArgs, properties)
 
 	return properties
 }
@@ -72,6 +74,24 @@ func includeContext(ctx context.Context, properties map[string]string) map[strin
 func getFromContext(ctx context.Context, key string, properties map[string]string) {
 	if val, ok := ctx.Value(key).(string); ok && val != "" {
 		properties[key] = val
+	}
+}
+
+func getFromContextHashValue(ctx context.Context, key string, properties map[string]string) {
+	hasher := sha256.New()
+
+	if val, ok := ctx.Value(key).(string); ok && val != "" {
+		for _, arg := range strings.Split(val, " ") {
+			keyvaluepair := strings.Split(arg, "=")
+			if len(keyvaluepair) != 2 {
+				return
+			}
+
+			properties[fmt.Sprintf("%s.%s", key, keyvaluepair[0])] = fmt.Sprintf(
+				"sha256(16)=%s",
+				hex.EncodeToString(hasher.Sum([]byte(keyvaluepair[1])))[0:16],
+			)
+		}
 	}
 }
 
