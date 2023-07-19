@@ -109,6 +109,30 @@ plan: git://git@github.com:lunarway/station-plan.git
 - Write templates in plans and overwrite them in projects when they defer
 - ...
 
+### Golang actions 
+
+Execute golang directly from shuttle, replacing shell scripts with a more thoroghly engineered Developer Experience.
+
+```sh
+workspace
+│
+└───moon-base          # project
+│   │───actions        # golang actions
+│   │   │   go.mod     # shuttle run build script file as golang code
+│   │   │   build.go
+│   │   shuttle.yaml   # project specific shuttle.yaml file
+│   │   main.go
+│
+└───station-plan       # plan to be shared by projects
+│   │───actions        # golang plan actions
+│   │   │   go.mod     
+│   │   │   build.go
+    │   plan.yaml
+    │   Dockerfile
+```
+
+see [golang actions](./docs/features/golang-actions.md)
+
 ### Telemetry
 
 see [telemetry](./docs/features/telemetry.md)
