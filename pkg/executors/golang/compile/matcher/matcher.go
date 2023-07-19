@@ -40,10 +40,12 @@ func BinaryMatches(
 	// We only expect a single binary in the folder, so we just take the first entry if it exists
 	binary := entries[0]
 
-	if binary.Name() == fmt.Sprintf("actions-%s", hex.EncodeToString([]byte(hash)[:16])) {
+	expectedPath := fmt.Sprintf("actions-%s", hex.EncodeToString([]byte(hash)[:16]))
+	actualName := binary.Name()
+	if actualName == expectedPath {
 		return path.Join(shuttlebindir, binary.Name()), true, nil
 	} else {
-		ui.Verboseln("binary does not match, rebuilding...")
+		ui.Verboseln("binary does not match, rebuilding... (actual=%s, expected=%s)", actualName, expectedPath)
 		return "", false, nil
 	}
 }
