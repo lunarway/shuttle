@@ -379,7 +379,6 @@ func lockFunc(storageLocation string) LockFunc {
 		}
 
 		return true, nil
-
 	}
 
 	unlockFunc := func(lockFile string) func(ctx context.Context) error {

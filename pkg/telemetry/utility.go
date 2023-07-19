@@ -78,10 +78,13 @@ func getFromContext(ctx context.Context, key string, properties map[string]strin
 }
 
 func getFromContextHashValue(ctx context.Context, key string, properties map[string]string) {
-	hasher := sha256.New224()
+	hasher := sha256.New()
 
 	if val, ok := ctx.Value(key).(string); ok && val != "" {
-		properties[key] = fmt.Sprintf("sha256(16)=%s", hex.EncodeToString(hasher.Sum([]byte(val)))[0:16])
+		properties[key] = fmt.Sprintf(
+			"sha256(16)=%s",
+			hex.EncodeToString(hasher.Sum([]byte(val)))[0:16],
+		)
 	}
 }
 
