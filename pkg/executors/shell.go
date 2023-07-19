@@ -135,4 +135,8 @@ func setupCommandEnvironmentVariables(execCmd *cmd.Cmd, context ActionExecutionC
 			context.ScriptContext.Project.LocalPlanPath,
 		),
 	)
+	execCmd.Env = append(
+		execCmd.Env,
+		"SHUTTLE_INTERACTIVE=default",
+	)
 }

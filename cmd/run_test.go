@@ -73,13 +73,24 @@ Make sure you are in a project using shuttle and that a 'shuttle.yaml' file is a
  'foo' not supplied but is required
 
 Script 'required_arg' accepts the following arguments:
-  foo (required)
-`,
-			err: errors.New(`exit code 2 - Arguments not valid:
- 'foo' not supplied but is required
+  foo (requiredshuttle run required_arg [flags]
 
-Script 'required_arg' accepts the following arguments:
-  foo (required)`),
+        Flags:
+              --foo string
+          -h, --help         help for required_arg
+
+        Global Flags:
+          -c, --clean            Start from clean setup
+              --interactive      sets whether to enable ui for getting missing values via. prompt instead of failing immediadly, default is set by [SHUTTLE_INTERACTIVE=true/false]
+              --plan string      Overload the plan used.
+                                 Specifying a local path with either an absolute path (/some/plan) or a relative path (../some/plan) to another location
+                                 for the selected plan.
+                                 Select a version of a git plan by using #branch, #sha or #tag
+                                 If none of above is used, then the argument will expect a full plan spec.
+          -p, --project string   Project path (default ".")
+              --skip-pull        Skip git plan pulling step
+          -v, --verbose          Print verbose outpu)`,
+			err: errors.New(`EOF`),
 		},
 		{
 			name:      "script succeeds with required argument",

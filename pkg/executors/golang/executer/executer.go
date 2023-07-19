@@ -61,6 +61,7 @@ func executeBinaryAction(ctx context.Context, binary *compile.Binary, args ...st
 
 	execmd.Env = os.Environ()
 	execmd.Env = append(execmd.Env, fmt.Sprintf("TASK_CONTEXT_DIR=%s", workdir))
+	execmd.Env = append(execmd.Env, "SHUTTLE_INTERACTIVE=default")
 	execmd.Env = append(
 		execmd.Env,
 		fmt.Sprintf("%s=%s",

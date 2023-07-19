@@ -46,7 +46,7 @@ func (r *Registry) Execute(
 	ctx context.Context,
 	p config.ShuttleProjectContext,
 	command string,
-	args []string,
+	args map[string]string,
 	validateArgs bool,
 ) error {
 	script, ok := p.Scripts[command]
@@ -54,16 +54,11 @@ func (r *Registry) Execute(
 		return errors.NewExitCode(2, "Script '%s' not found", command)
 	}
 
-	namedArgs, err := validateArguments(p, command, script.Args, args, validateArgs)
-	if err != nil {
-		return err
-	}
-
 	scriptContext := ScriptExecutionContext{
 		ScriptName: command,
 		Script:     script,
 		Project:    p,
-		Args:       namedArgs,
+		Args:       args,
 	}
 
 	for actionIndex, action := range script.Actions {

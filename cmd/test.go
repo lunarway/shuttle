@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func args(s ...string) []string {
@@ -16,6 +17,7 @@ func args(s ...string) []string {
 type testCase struct {
 	name      string
 	input     []string
+	initErr   error
 	stdoutput string
 	erroutput string
 	err       error
@@ -38,10 +40,13 @@ func executeTestCasesWithCustomAssertion(
 			stdBuf := new(bytes.Buffer)
 			errBuf := new(bytes.Buffer)
 
-			rootCmd, _ := initializedRoot(stdBuf, errBuf)
+			rootCmd, _, err := initializedRootFromArgs(stdBuf, errBuf, tc.input)
+			if err != nil {
+				require.Equal(t, tc.initErr, err)
+			}
 			rootCmd.SetArgs(tc.input)
 
-			err := rootCmd.Execute()
+			err = rootCmd.Execute()
 			if tc.err == nil {
 				assert.NoError(t, err)
 			} else {
@@ -77,10 +82,17 @@ func executeTestContainsCases(t *testing.T, testCases []testCase) {
 
 			stdBuf := new(bytes.Buffer)
 			errBuf := new(bytes.Buffer)
-			rootCmd, _ := initializedRoot(stdBuf, errBuf)
+			rootCmd, _, err := initializedRootFromArgs(stdBuf, errBuf, tc.input)
+			if err != nil {
+				if tc.initErr == nil {
+					require.NoError(t, err)
+				} else {
+					require.Equal(t, tc.initErr, err)
+				}
+			}
 			rootCmd.SetArgs(tc.input)
 
-			err := rootCmd.Execute()
+			err = rootCmd.Execute()
 			if tc.err == nil {
 				assert.NoError(t, err)
 			} else {

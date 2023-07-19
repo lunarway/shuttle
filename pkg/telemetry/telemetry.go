@@ -14,7 +14,9 @@ func TraceError(ctx context.Context, label string, err error, options ...Telemet
 
 	// TODO: consider enum for error (const list)
 	properties["phase"] = "error"
-	properties["error"] = err.Error()
+	if err != nil {
+		properties["error"] = err.Error()
+	}
 
 	client.Trace(ctx, properties)
 }
