@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"strings"
 
 	"github.com/matishsiao/goInfo"
 )
@@ -34,7 +35,6 @@ func WithGoInfo() TelemetryOption {
 	return func(properties map[string]string) {
 		gi, err := goInfo.GetInfo()
 		if err != nil {
-
 			properties["system.goinfo.error"] = err.Error()
 			return
 		}
@@ -81,10 +81,17 @@ func getFromContextHashValue(ctx context.Context, key string, properties map[str
 	hasher := sha256.New()
 
 	if val, ok := ctx.Value(key).(string); ok && val != "" {
-		properties[key] = fmt.Sprintf(
-			"sha256(16)=%s",
-			hex.EncodeToString(hasher.Sum([]byte(val)))[0:16],
-		)
+		for _, arg := range strings.Split(val, " ") {
+			keyvaluepair := strings.Split(arg, "=")
+			if len(keyvaluepair) != 2 {
+				return
+			}
+
+			properties[fmt.Sprintf("%s.%s", key, keyvaluepair[0])] = fmt.Sprintf(
+				"sha256(16)=%s",
+				hex.EncodeToString(hasher.Sum([]byte(keyvaluepair[1])))[0:16],
+			)
+		}
 	}
 }
 
