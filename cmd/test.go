@@ -55,8 +55,6 @@ func executeTestCasesWithCustomAssertion(
 			} else {
 				assert.EqualError(t, err, tc.err.Error())
 			}
-			//t.Logf("STDOUT: %s", stdBuf.String())
-			//t.Logf("STDERR: %s", errBuf.String())
 			assertion(t, tc, stdBuf.String(), errBuf.String())
 		})
 	}
