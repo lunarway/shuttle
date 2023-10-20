@@ -220,8 +220,7 @@ something masterly
 				"shuttle/cmd/testdata/wrong-project-local/plan: no such file or directory",
 			),
 			initErr: errors.New(
-				`failed to copy plan to .shuttle/plan, make sure the upstream plan exists
-	err: stat /Users/kah/git/github.com/lunarway/shuttle/cmd/testdata/wrong-project-local/plan: no such file or directory`,
+				`failed to copy plan to .shuttle/plan, make sure the upstream plan exists`,
 			),
 		},
 	}
