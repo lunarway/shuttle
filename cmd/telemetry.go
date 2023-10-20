@@ -39,7 +39,6 @@ func WithRunTelemetry(
 ) stdcontext.Context {
 	ctx = stdcontext.WithValue(ctx, telemetry.TelemetryCommand, commandName)
 	if len(args) != 0 {
-		// TODO: Make sure we sanitize secrets, somehow
 		ctx = stdcontext.WithValue(ctx, telemetry.TelemetryCommandArgs, strings.Join(args[1:], " "))
 	}
 	return ctx

@@ -120,8 +120,16 @@ If none of above is used, then the argument will expect a full plan spec.`)
 	return rootCmd, ctxProvider
 }
 
-func Execute(out, err io.Writer) {
-	rootCmd, uii := initializedRoot(out, err)
+func Execute(stdout, stderr io.Writer) {
+	rootCmd, uii, err := initializedRoot(stdout, stderr)
+	if err != nil {
+		telemetry.TraceError(stdcontext.Background(), "init", err)
+		if uii != nil {
+			checkError(uii, err)
+		}
+		fmt.Printf("failed to initialize with error: %s", err)
+		return
+	}
 
 	if err := rootCmd.Execute(); err != nil {
 		telemetry.TraceError(
@@ -134,13 +142,22 @@ func Execute(out, err io.Writer) {
 	}
 }
 
-func initializedRoot(out, err io.Writer) (*cobra.Command, *ui.UI) {
-	uii := ui.Create(out, err)
+func initializedRootFromArgs(stdout, stderr io.Writer, args []string) (*cobra.Command, *ui.UI, error) {
+	uii := ui.Create(stdout, stderr)
 
 	rootCmd, ctxProvider := newRoot(uii)
-	rootCmd.SetOut(out)
-	rootCmd.SetErr(err)
+	rootCmd.SetOut(stdout)
+	rootCmd.SetErr(stderr)
 
+	// Parses falgs early such that we can build PersistentFlags on rootCmd used
+	// for building various subcommands in both run and ls. This is required otherwise
+	// Run and LS will not get closured variables from contextProvider
+	rootCmd.ParseFlags(args)
+
+	runCmd, initErr := newRun(uii, ctxProvider)
+	if initErr != nil {
+		return nil, nil, initErr
+	}
 	rootCmd.AddCommand(
 		newDocumentation(uii, ctxProvider),
 		newCompletion(uii),
@@ -149,15 +166,19 @@ func initializedRoot(out, err io.Writer) (*cobra.Command, *ui.UI) {
 		newHas(uii, ctxProvider),
 		newLs(uii, ctxProvider),
 		newPlan(uii, ctxProvider),
+		runCmd,
 		newPrepare(uii, ctxProvider),
-		newRun(uii, ctxProvider),
 		newTemplate(uii, ctxProvider),
 		newVersion(uii),
 		newConfig(uii, ctxProvider),
 		newTelemetry(uii),
 	)
 
-	return rootCmd, uii
+	return rootCmd, uii, nil
+}
+
+func initializedRoot(out, err io.Writer) (*cobra.Command, *ui.UI, error) {
+	return initializedRootFromArgs(out, err, os.Args[1:])
 }
 
 type contextProvider func() (config.ShuttleProjectContext, error)
