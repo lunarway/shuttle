@@ -2,8 +2,14 @@ package compile
 
 import (
 	"context"
+	"fmt"
+	"log"
+	"os"
+	"os/exec"
 	"path"
+	"strings"
 
+	"dagger.io/dagger"
 	"github.com/lunarway/shuttle/pkg/executors/golang/codegen"
 	"github.com/lunarway/shuttle/pkg/executors/golang/compile/matcher"
 	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
@@ -105,20 +111,103 @@ func compile(ctx context.Context, ui *ui.UI, actions *discover.ActionsDiscovered
 		return "", err
 	}
 
-	if err = codegen.Format(ctx, ui, shuttlelocaldir); err != nil {
-		return "", err
-	}
+	var binarypath string
 
-	if err = codegen.ModTidy(ctx, ui, shuttlelocaldir); err != nil {
-		return "", err
-	}
-	binarypath, err := codegen.CompileBinary(ctx, ui, shuttlelocaldir)
-	if err != nil {
-		return "", err
+	if goInstalled() {
+		if err = codegen.Format(ctx, ui, shuttlelocaldir); err != nil {
+			return "", err
+		}
+
+		if err = codegen.ModTidy(ctx, ui, shuttlelocaldir); err != nil {
+			return "", err
+		}
+		binarypath, err = codegen.CompileBinary(ctx, ui, shuttlelocaldir)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		binarypath, err = compileWithDagger(ctx, ui, shuttlelocaldir)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	finalBinaryPath := shuttlefolder.CalculateBinaryPath(shuttlelocaldir, hash)
-	shuttlefolder.Move(binarypath, finalBinaryPath)
+	if err := shuttlefolder.Move(binarypath, finalBinaryPath); err != nil {
+		return "", fmt.Errorf("failed to remove actions binary to final destination: %w", err)
+	}
 
 	return finalBinaryPath, nil
+}
+
+func compileWithDagger(ctx context.Context, ui *ui.UI, shuttlelocaldir string) (string, error) {
+	client, err := dagger.Connect(ctx, dagger.WithLogOutput(os.Stderr))
+	if err != nil {
+		return "", fmt.Errorf("failed to start dagger: %w", err)
+	}
+
+	src := client.Host().Directory(".", dagger.HostDirectoryOpts{
+		Exclude: []string{
+			".git/",
+			".node_modules/",
+			"target/",
+		},
+		Include: []string{},
+	})
+
+	log.Printf("shuttlelocaldir: %s", shuttlelocaldir)
+
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("dagger failed to get your current dir: %w", err)
+	}
+
+	nakedShuttleDir := strings.TrimPrefix(strings.TrimPrefix(shuttlelocaldir, dir), "/")
+	log.Printf("nakedShuttleDir: %s", nakedShuttleDir)
+
+	shuttleBinary := client.Container().
+		From("golang:1.20-alpine").
+		WithWorkdir("/app").
+		WithDirectory(".", src).
+		WithWorkdir(path.Join(nakedShuttleDir, "tmp")).
+		WithExec([]string{
+			"go", "mod", "tidy",
+		}).
+		WithExec([]string{
+			"go", "fmt", "./...",
+		}).
+		WithExec([]string{
+			"go",
+			"build",
+			// TODO: add cross compilation
+		})
+
+	_, err = shuttleBinary.ExitCode(ctx)
+	if err != nil {
+		return "", fmt.Errorf("dagger failed to build binary, see shuttle ls -v to see error output: %w", err)
+	}
+
+	shuttleActionsDirectory := shuttleBinary.File("actions")
+	exported, err := shuttleActionsDirectory.Export(ctx, path.Join(shuttlelocaldir, "tmp", "actions"))
+	if err != nil {
+		return "", fmt.Errorf("could not export dagger shuttle actions binary, err: %w", err)
+	}
+	if !exported {
+		return "", fmt.Errorf("failed to export binary")
+	}
+
+	return path.Join(shuttlelocaldir, "tmp", "actions"), nil
+}
+
+func goInstalled() bool {
+	gopath, err := exec.LookPath("go")
+	if err != nil {
+		return false
+	}
+
+	if gopath == "" {
+		return false
+	}
+
+	return true
 }
