@@ -53,14 +53,14 @@ func newRun(uii *ui.UI, contextProvider contextProvider) (*cobra.Command, error)
 				value,
 				executorRegistry,
 				&interactiveArg,
-				validateArgs,
+				&validateArgs,
 			),
 		)
 	}
 
-	runCmd.Flags().
+	runCmd.PersistentFlags().
 		StringVar(&flagTemplate, "template", "", "Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].")
-	runCmd.Flags().
+	runCmd.PersistentFlags().
 		BoolVar(&validateArgs, "validate", true, "Validate arguments against script definition in plan and exit with 1 on unknown or missing arguments")
 	runCmd.PersistentFlags().
 		BoolVar(&interactiveArg, "interactive", shuttleInteractiveDefault, "sets whether to enable ui for getting missing values via. prompt instead of failing immediadly, default is set by [SHUTTLE_INTERACTIVE=true/false]")
@@ -74,7 +74,7 @@ func newRunSubCommand(
 	value config.ShuttlePlanScript,
 	executorRegistry *executors.Registry,
 	interactiveArg *bool,
-	validateArgs bool,
+	validateArgs *bool,
 ) *cobra.Command {
 	// Args are best suited as kebab-case on the command line
 	argName := func(input string) string {
@@ -141,7 +141,7 @@ func newRunSubCommand(
 					inputArgs[arg.Name] = &output
 				}
 
-			} else if *inputArgs[arg.Name] == "" && arg.Required {
+			} else if *inputArgs[arg.Name] == "" && arg.Required && *validateArgs {
 				return fmt.Errorf("Error: required flag(s) \"%s\" not set", argName(arg.Name))
 			}
 		}
@@ -186,7 +186,7 @@ func newRunSubCommand(
 				actualArgs[k] = *v
 			}
 
-			err := executorRegistry.Execute(ctx, context, script, actualArgs, validateArgs)
+			err := executorRegistry.Execute(ctx, context, script, actualArgs, *validateArgs)
 			if err != nil {
 				traceError(err)
 				return err
@@ -195,6 +195,11 @@ func newRunSubCommand(
 			return nil
 		},
 	}
+
+	if !*validateArgs {
+		cmd.Args = cobra.ArbitraryArgs
+	}
+
 	for _, arg := range value.Args {
 		arg := arg
 		cmd.Flags().StringVar(inputArgs[arg.Name], argName(arg.Name), "", arg.Description)

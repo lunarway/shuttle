@@ -124,7 +124,9 @@ func Execute(stdout, stderr io.Writer) {
 	rootCmd, uii, err := initializedRoot(stdout, stderr)
 	if err != nil {
 		telemetry.TraceError(stdcontext.Background(), "init", err)
-		checkError(uii, err)
+		if uii != nil {
+			checkError(uii, err)
+		}
 		fmt.Printf("failed to initialize with error: %s", err)
 		return
 	}
@@ -140,12 +142,12 @@ func Execute(stdout, stderr io.Writer) {
 	}
 }
 
-func initializedRootFromArgs(out, err io.Writer, args []string) (*cobra.Command, *ui.UI, error) {
-	uii := ui.Create(out, err)
+func initializedRootFromArgs(stdout, stderr io.Writer, args []string) (*cobra.Command, *ui.UI, error) {
+	uii := ui.Create(stdout, stderr)
 
 	rootCmd, ctxProvider := newRoot(uii)
-	rootCmd.SetOut(out)
-	rootCmd.SetErr(err)
+	rootCmd.SetOut(stdout)
+	rootCmd.SetErr(stderr)
 
 	// Parses falgs early such that we can build PersistentFlags on rootCmd used
 	// for building various subcommands in both run and ls. This is required otherwise

@@ -42,7 +42,10 @@ func executeTestCasesWithCustomAssertion(
 
 			rootCmd, _, err := initializedRootFromArgs(stdBuf, errBuf, tc.input)
 			if err != nil {
-				require.Equal(t, tc.initErr, err)
+				require.Error(t, err)
+				require.Error(t, tc.initErr)
+				require.Equal(t, tc.initErr.Error(), err.Error())
+				return
 			}
 			rootCmd.SetArgs(tc.input)
 
@@ -52,8 +55,8 @@ func executeTestCasesWithCustomAssertion(
 			} else {
 				assert.EqualError(t, err, tc.err.Error())
 			}
-			t.Logf("STDOUT: %s", stdBuf.String())
-			t.Logf("STDERR: %s", errBuf.String())
+			//t.Logf("STDOUT: %s", stdBuf.String())
+			//t.Logf("STDERR: %s", errBuf.String())
 			assertion(t, tc, stdBuf.String(), errBuf.String())
 		})
 	}
@@ -87,7 +90,10 @@ func executeTestContainsCases(t *testing.T, testCases []testCase) {
 				if tc.initErr == nil {
 					require.NoError(t, err)
 				} else {
-					require.Equal(t, tc.initErr, err)
+					require.Error(t, err)
+					require.Error(t, tc.initErr)
+					require.Equal(t, tc.initErr.Error(), err.Error())
+					return
 				}
 			}
 			rootCmd.SetArgs(tc.input)

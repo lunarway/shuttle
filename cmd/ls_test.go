@@ -12,7 +12,7 @@ func TestLs(t *testing.T) {
 			input:     args("-p", "testdata/invalid-yaml", "ls"),
 			stdoutput: "",
 			erroutput: "Error: exit code 2 - Failed to parse shuttle configuration: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `plan` into config.ShuttleConfig\n\nMake sure your 'shuttle.yaml' is valid.\n",
-			err: errors.New(
+			initErr: errors.New(
 				"exit code 2 - Failed to parse shuttle configuration: yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `plan` into config.ShuttleConfig\n\nMake sure your 'shuttle.yaml' is valid.",
 			),
 		},

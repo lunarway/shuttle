@@ -156,7 +156,7 @@ func handleFilePath(plan string, projectPath string) (string, error) {
 	ignorelist := []string{".git", ".shuttle"}
 	err := copy.Dir(plan, toPath, ignorelist)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to copy plan to .shuttle/plan, make sure the upstream plan exists\n\terr: %w", err)
 	}
 	return toPath, nil
 }
