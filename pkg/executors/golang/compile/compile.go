@@ -115,20 +115,20 @@ func compile(ctx context.Context, ui *ui.UI, actions *discover.ActionsDiscovered
 
 	if goInstalled() {
 		if err = codegen.Format(ctx, ui, shuttlelocaldir); err != nil {
-			return "", err
+			return "", fmt.Errorf("go fmt failed: %w", err)
 		}
 
 		if err = codegen.ModTidy(ctx, ui, shuttlelocaldir); err != nil {
-			return "", err
+			return "", fmt.Errorf("go mod tidy failed: %w", err)
 		}
 		binarypath, err = codegen.CompileBinary(ctx, ui, shuttlelocaldir)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("go build failed: %w", err)
 		}
 	} else {
 		binarypath, err = compileWithDagger(ctx, ui, shuttlelocaldir)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to compile with dagger: %w", err)
 		}
 	}
 

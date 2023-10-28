@@ -21,7 +21,7 @@ func prepare(
 
 	disc, err := discover.Discover(ctx, path, c)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fiscover actions: %v", err)
+		return nil, fmt.Errorf("failed to discover actions: %v", err)
 	}
 
 	binaries, err := compile.Compile(ctx, ui, disc)
