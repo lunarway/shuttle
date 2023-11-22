@@ -65,7 +65,7 @@ func executeShell(ctx context.Context, ui *ui.UI, context ActionExecutionContext
 					execCmd.Stderr = nil
 					continue
 				}
-				context.ScriptContext.Project.UI.Errorln("%s", line)
+				context.ScriptContext.Project.UI.Infoln("%s", line)
 			}
 		}
 	}()
