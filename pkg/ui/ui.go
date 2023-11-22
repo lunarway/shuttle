@@ -21,7 +21,7 @@ func Create(out, err io.Writer) *UI {
 		EffectiveLevel: LevelInfo,
 		DefaultLevel:   LevelInfo,
 		UserLevelSet:   false,
-		Out:            out,
+		Out:            err,
 		Err:            err,
 	}
 }
