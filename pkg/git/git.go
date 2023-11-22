@@ -164,7 +164,7 @@ func GetGitPlan(
 			panic(fmt.Sprintf("Unknown protocol '%s'", parsedGitPlan.Protocol))
 		}
 
-		uii.Infoln("Cloning plan %s", cloneArg)
+		uii.Errorln("Cloning plan %s", cloneArg)
 		err = gitCmd(fmt.Sprintf("clone %v --branch %v plan", cloneArg, parsedGitPlan.Head), localShuttleDirectoryPath, uii)
 		if err != nil {
 			return "", err
