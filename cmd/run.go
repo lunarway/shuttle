@@ -130,6 +130,10 @@ func newRunSubCommand(
 	// Decide whether to fall back on prompt or give a hard error
 	validateInputArgs := func(value config.ShuttlePlanScript, inputArgs map[string]*string) error {
 		for _, arg := range value.Args {
+			if !arg.Required {
+				continue
+			}
+
 			arg := arg
 
 			if *inputArgs[arg.Name] == "" && *interactiveArg {
