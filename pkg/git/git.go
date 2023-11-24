@@ -216,7 +216,7 @@ func RunGitPlanCommand(command string, plan string, uii *ui.UI) {
 					execCmd.Stdout = nil
 					continue
 				}
-				uii.Infoln("%s", line)
+				fmt.Printf("%s", line)
 			case line, open := <-execCmd.Stderr:
 				if !open {
 					execCmd.Stderr = nil
