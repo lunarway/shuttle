@@ -118,12 +118,21 @@ func (c *ShuttleConfig) getConf(projectPath string, strictConfigLookup bool) (st
 		)
 	}
 
+	if c.PlanRaw == nil {
+		return "", shuttleerrors.NewExitCode(
+			2,
+			"Failed to parse shuttle configuration: %s\n\nFailed to find a `plan`. Make sure your 'shuttle.yaml' is valid.",
+			err,
+		)
+	}
+
 	switch c.PlanRaw {
 	case false:
 		// no plan
 	default:
 		c.Plan = c.PlanRaw.(string)
 	}
+
 	// return the path where the shuttle.yaml file was found
 	return path.Dir(file.Name()), nil
 }
