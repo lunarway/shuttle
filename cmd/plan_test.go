@@ -14,11 +14,10 @@ func TestPlan(t *testing.T) {
 			err:       nil,
 		},
 		{
-			name:  "git plan",
-			input: args("-p", "testdata/project-git", "plan"),
-			stdoutput: `Cloning plan https://github.com/lunarway/shuttle-example-go-plan.git
-https://github.com/lunarway/shuttle-example-go-plan.git`,
-			erroutput: "",
+			name:      "git plan",
+			input:     args("-p", "testdata/project-git", "plan"),
+			stdoutput: "https://github.com/lunarway/shuttle-example-go-plan.git",
+			erroutput: "Cloning plan https://github.com/lunarway/shuttle-example-go-plan.git\n",
 			err:       nil,
 		},
 		{

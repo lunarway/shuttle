@@ -21,7 +21,7 @@ func Create(out, err io.Writer) *UI {
 		EffectiveLevel: LevelInfo,
 		DefaultLevel:   LevelInfo,
 		UserLevelSet:   false,
-		Out:            err,
+		Out:            out,
 		Err:            err,
 	}
 }
@@ -46,23 +46,28 @@ func (ui *UI) SetContext(level Level) *UI {
 	return ui
 }
 
+// Output.
+func (ui *UI) Output(format string, args ...interface{}) {
+	fmt.Fprintln(ui.Out, fmt.Sprintf(format, args...))
+}
+
 // Verboseln prints a formatted verbose message line.
 func (ui *UI) Verboseln(format string, args ...interface{}) {
 	if ui.EffectiveLevel.OutputIsIncluded(LevelVerbose) {
-		fmt.Fprintln(ui.Out, fmt.Sprintf(format, args...))
+		fmt.Fprintln(ui.Err, fmt.Sprintf(format, args...))
 	}
 }
 
 // Infoln prints a formatted info message line.
 func (ui *UI) Infoln(format string, args ...interface{}) {
 	if ui.EffectiveLevel.OutputIsIncluded(LevelInfo) {
-		fmt.Fprintln(ui.Out, fmt.Sprintf(format, args...))
+		fmt.Fprintln(ui.Err, fmt.Sprintf(format, args...))
 	}
 }
 
 func (ui *UI) EmphasizeInfoln(format string, args ...interface{}) {
 	if ui.EffectiveLevel.OutputIsIncluded(LevelInfo) {
-		fmt.Fprintf(ui.Out, "\x1b[032;1m%s\x1b[0m\n", fmt.Sprintf(format, args...))
+		fmt.Fprintf(ui.Err, "\x1b[032;1m%s\x1b[0m\n", fmt.Sprintf(format, args...))
 	}
 }
 

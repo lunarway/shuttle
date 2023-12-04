@@ -59,7 +59,7 @@ func executeShell(ctx context.Context, ui *ui.UI, context ActionExecutionContext
 					execCmd.Stdout = nil
 					continue
 				}
-				context.ScriptContext.Project.UI.Infoln("%s", line)
+				context.ScriptContext.Project.UI.Output("%s", line)
 			case line, open := <-execCmd.Stderr:
 				if !open {
 					execCmd.Stderr = nil

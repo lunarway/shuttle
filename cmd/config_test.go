@@ -37,7 +37,7 @@ func TestConfig(t *testing.T) {
 			name:      "git plan",
 			input:     args("-p", "testdata/project-git", "config"),
 			stdoutput: "Version <dev-version>\nPlan:\nhttps://github.com/lunarway/shuttle-example-go-plan.git master\nEnvironment:\nVAR1=TEST1\nVAR2=TEST2\nVAR3=TEST3\n",
-			erroutput: "",
+			erroutput: "Cloning plan https://github.com/lunarway/shuttle-example-go-plan.git\n",
 			err:       nil,
 		},
 	}
