@@ -113,14 +113,19 @@ func compile(ctx context.Context, ui *ui.UI, actions *discover.ActionsDiscovered
 
 	var binarypath string
 
+	if err := codegen.PatchGoMod(actions.ParentDir, shuttlelocaldir); err != nil {
+		return "", fmt.Errorf("failed to patch generated go.mod: %w", err)
+	}
+
 	if goInstalled() {
+		if err = codegen.ModTidy(ctx, ui, shuttlelocaldir); err != nil {
+			return "", fmt.Errorf("go mod tidy failed: %w", err)
+		}
+
 		if err = codegen.Format(ctx, ui, shuttlelocaldir); err != nil {
 			return "", fmt.Errorf("go fmt failed: %w", err)
 		}
 
-		if err = codegen.ModTidy(ctx, ui, shuttlelocaldir); err != nil {
-			return "", fmt.Errorf("go mod tidy failed: %w", err)
-		}
 		binarypath, err = codegen.CompileBinary(ctx, ui, shuttlelocaldir)
 		if err != nil {
 			return "", fmt.Errorf("go build failed: %w", err)
