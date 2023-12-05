@@ -49,7 +49,7 @@ Global Flags:
 			name:      "std err echo",
 			input:     args("-p", "testdata/project", "run", "hello_stderr"),
 			stdoutput: "",
-			erroutput: "\x1b[31;1mHello stderr\x1b[0m\n",
+			erroutput: "Hello stderr\n",
 			err:       nil,
 		},
 		{
@@ -154,28 +154,24 @@ Make sure you are in a project using shuttle and that a 'shuttle.yaml' file is a
 			err: errors.New(`unknown flag: --a b`),
 		},
 		{
-			name:  "branched git plan",
-			input: args("-p", "testdata/project-git-branched", "run", "say"),
-			stdoutput: `Cloning plan https://github.com/lunarway/shuttle-example-go-plan.git
-something clever
-`,
-			erroutput: "",
+			name:      "branched git plan",
+			input:     args("-p", "testdata/project-git-branched", "run", "say"),
+			stdoutput: "something clever\n",
+			erroutput: "Cloning plan https://github.com/lunarway/shuttle-example-go-plan.git\n",
 			err:       nil,
 		},
 		{
-			name:  "git plan",
-			input: args("-p", "testdata/project-git", "run", "say"),
-			stdoutput: `Cloning plan https://github.com/lunarway/shuttle-example-go-plan.git
-something masterly
-`,
-			erroutput: "",
+			name:      "git plan",
+			input:     args("-p", "testdata/project-git", "run", "say"),
+			stdoutput: "something masterly\n",
+			erroutput: "Cloning plan https://github.com/lunarway/shuttle-example-go-plan.git\n",
 			initErr:   errors.New("something"),
 		},
 		{
 			name:      "tagged git plan",
 			input:     args("-p", "testdata/project-git", "--plan", "#tagged", "run", "say"),
-			stdoutput: "\x1b[032;1mOverload git plan branch/tag/sha with tagged\x1b[0m\nCloning plan https://github.com/lunarway/shuttle-example-go-plan.git\nsomething tagged\n",
-			erroutput: "",
+			stdoutput: "something tagged\n",
+			erroutput: "\x1b[032;1mOverload git plan branch/tag/sha with tagged\x1b[0m\nCloning plan https://github.com/lunarway/shuttle-example-go-plan.git\n",
 			err:       nil,
 		},
 		{
@@ -188,8 +184,8 @@ something masterly
 				"run",
 				"hello-plan",
 			),
-			stdoutput: "Using overloaded plan ./testdata/project-local/plan\nHello from plan\n",
-			erroutput: "",
+			stdoutput: "Hello from plan\n",
+			erroutput: "Using overloaded plan ./testdata/project-local/plan\n",
 			err:       nil,
 		},
 		// FIXME: This case actually hits a bug as we do not support fetching specific commits
