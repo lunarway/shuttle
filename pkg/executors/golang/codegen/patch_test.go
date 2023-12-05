@@ -12,7 +12,7 @@ func TestPatchGoMod(t *testing.T) {
 	t.Parallel()
 
 	t.Run("finds root module adds to actions plan", func(t *testing.T) {
-		err := patchGoMod("testdata/patch/root_module/", ".shuttle/actions", func(name string, contents []byte, permissions fs.FileMode) error {
+		err := patchGoMod("testdata/patch/root_module/", "testdata/patch/root_module/.shuttle/actions", func(name string, contents []byte, permissions fs.FileMode) error {
 			assert.Equal(t, "testdata/patch/root_module/.shuttle/actions/tmp/go.mod", name)
 			assert.Equal(t, `module actions
 
@@ -22,7 +22,7 @@ require (
 
 go 1.21.4
 
-replace root_module => ../../..
+replace root_module => ../../../..
 `, string(contents))
 
 			return nil
