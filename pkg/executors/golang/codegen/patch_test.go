@@ -23,7 +23,7 @@ require (
 go 1.21.4
 
 
-replace root_module => ../..`, string(contents))
+replace root_module => ../../..`, string(contents))
 
 			return nil
 		})
@@ -41,8 +41,33 @@ require (
 
 go 1.21.4
 
-replace replace_existing => ../..
+replace replace_existing => ../../..
 `, string(contents))
+
+			return nil
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("finds root workspace adds entries", func(t *testing.T) {
+		err := patchGoMod("testdata/patch/root_workspace/", "testdata/patch/root_workspace/.shuttle/actions", func(name string, contents []byte, permissions fs.FileMode) error {
+			assert.Equal(t, "testdata/patch/root_workspace/.shuttle/actions/tmp/go.mod", name)
+			assert.Equal(t, `module actions
+
+require (
+	root_workspace v0.0.0
+	subpackage v0.0.0
+	othersubpackage v0.0.0
+)
+
+go 1.21.4
+
+
+replace root_workspace => ../../..
+
+replace subpackage => ../../../subpackage
+
+replace othersubpackage => ../../../other/subpackage`, string(contents))
 
 			return nil
 		})
