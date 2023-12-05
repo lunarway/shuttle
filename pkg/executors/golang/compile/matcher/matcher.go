@@ -12,6 +12,7 @@ import (
 
 	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
 	"github.com/lunarway/shuttle/pkg/ui"
+	"golang.org/x/exp/slices"
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
@@ -66,6 +67,7 @@ func GetHash(ctx context.Context, actions *discover.ActionsDiscovered) (string, 
 		return io.NopCloser(bytes.NewReader(b)), nil
 	}
 
+	slices.Sort(entries)
 	hash, err := dirhash.Hash1(entries, open)
 	if err != nil {
 		return "", err

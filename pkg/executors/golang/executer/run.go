@@ -20,6 +20,7 @@ func Run(
 		return err
 	}
 
+	ui.Verboseln("executing shuttle golang actions")
 	if err := executeAction(ctx, binaries, args...); err != nil {
 		return err
 	}
