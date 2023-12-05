@@ -13,8 +13,6 @@ import (
 type writeFileFunc = func(name string, contents []byte, permissions fs.FileMode) error
 
 func PatchGoMod(rootDir string, shuttleLocalDir string) error {
-	fmt.Printf("dirs: %s %s\n", rootDir, shuttleLocalDir)
-
 	return patchGoMod(
 		rootDir,
 		shuttleLocalDir,
@@ -44,7 +42,7 @@ func patchGoMod(rootDir, shuttleLocalDir string, writeFileFunc writeFileFunc) er
 
 func patchPackagesUsed(rootDir string, shuttleLocalDir string, packages map[string]string, writeFileFunc writeFileFunc) error {
 	actionsModFilePath := path.Join(shuttleLocalDir, "tmp/go.mod")
-	segmentsToRoot := strings.Count(path.Join(strings.TrimPrefix(rootDir, shuttleLocalDir), "tmp/go.mod"), "/")
+	segmentsToRoot := strings.Count(path.Join(strings.TrimPrefix(shuttleLocalDir, rootDir), "tmp/go.mod"), "/") - 1
 	actionsModFileContents, err := os.ReadFile(actionsModFilePath)
 	if err != nil {
 		return err
@@ -55,7 +53,7 @@ func patchPackagesUsed(rootDir string, shuttleLocalDir string, packages map[stri
 	}
 
 	actionsModFile := string(actionsModFileContents)
-	actionsFileWriter := bytes.NewBufferString(actionsModFile)
+	actionsModFileLines := strings.Split(actionsModFile, "\n")
 
 	actionsModFileContainsModule := func(moduleName string) bool {
 		return strings.Contains(actionsModFile, moduleName)
@@ -68,12 +66,31 @@ func patchPackagesUsed(rootDir string, shuttleLocalDir string, packages map[stri
 
 		relativeToActionsModulePath := path.Join(strings.Repeat("../", segmentsToRoot), modulePath)
 
-		_, err := fmt.Fprintf(actionsFileWriter, "\nreplace %s => %s\n", moduleName, relativeToActionsModulePath)
+		foundReplace := false
+		for i, line := range actionsModFileLines {
+			lineTrim := strings.TrimSpace(line)
+
+			if strings.Contains(lineTrim, fmt.Sprintf("replace %s", moduleName)) {
+				actionsModFileLines[i] = fmt.Sprintf("replace %s => %s", moduleName, relativeToActionsModulePath)
+				foundReplace = true
+				break
+			}
+		}
+
+		if !foundReplace {
+			actionsModFileLines = append(
+				actionsModFileLines,
+				fmt.Sprintf("\nreplace %s => %s", moduleName, relativeToActionsModulePath),
+			)
+
+		}
+
 		if err != nil {
 			return err
 		}
 	}
 
+	actionsFileWriter := bytes.NewBufferString(strings.Join(actionsModFileLines, "\n"))
 	err = writeFileFunc(actionsModFilePath, actionsFileWriter.Bytes(), actionsModFilePermissions.Mode())
 	if err != nil {
 		return err

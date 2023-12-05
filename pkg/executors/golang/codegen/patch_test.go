@@ -22,7 +22,26 @@ require (
 
 go 1.21.4
 
-replace root_module => ../../../..
+
+replace root_module => ../..`, string(contents))
+
+			return nil
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("finds root module replaces existing", func(t *testing.T) {
+		err := patchGoMod("testdata/patch/replace_existing/", "testdata/patch/replace_existing/.shuttle/actions", func(name string, contents []byte, permissions fs.FileMode) error {
+			assert.Equal(t, "testdata/patch/replace_existing/.shuttle/actions/tmp/go.mod", name)
+			assert.Equal(t, `module actions
+
+require (
+	replace_existing v0.0.0
+)
+
+go 1.21.4
+
+replace replace_existing => ../..
 `, string(contents))
 
 			return nil
