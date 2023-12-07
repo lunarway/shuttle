@@ -117,7 +117,7 @@ func compile(ctx context.Context, ui *ui.UI, actions *discover.ActionsDiscovered
 
 	var binarypath string
 
-	if err := codegen.PatchGoMod(actions.ParentDir, shuttlelocaldir, ui); err != nil {
+	if err := codegen.NewPatcher().Patch(ctx, actions.ParentDir, shuttlelocaldir); err != nil {
 		return "", fmt.Errorf("failed to patch generated go.mod: %w", err)
 	}
 

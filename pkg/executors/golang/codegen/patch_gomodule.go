@@ -9,22 +9,18 @@ import (
 	"strings"
 )
 
-type goModuleFinder struct {
-	rootDir string
+type goModuleFinder struct{}
+
+func newGoModuleFinder() *goModuleFinder {
+	return &goModuleFinder{}
 }
 
-func newGoModuleFinder(rootDir string) *goModuleFinder {
-	return &goModuleFinder{
-		rootDir: rootDir,
-	}
-}
-
-func (s *goModuleFinder) Find(ctx context.Context) (packages map[string]string, ok bool, err error) {
-	if !s.rootModExists() {
+func (s *goModuleFinder) Find(ctx context.Context, rootDir string) (packages map[string]string, ok bool, err error) {
+	if !s.rootModExists(rootDir) {
 		return nil, false, nil
 	}
 
-	moduleName, modulePath, err := s.getRootModule()
+	moduleName, modulePath, err := s.getRootModule(rootDir)
 	if err != nil {
 		return nil, true, fmt.Errorf("failed to parse go.mod in root of project: %w", err)
 	}
@@ -35,8 +31,8 @@ func (s *goModuleFinder) Find(ctx context.Context) (packages map[string]string, 
 	return packages, true, nil
 }
 
-func (g *goModuleFinder) getRootModule() (moduleName string, modulePath string, err error) {
-	modFile, err := os.ReadFile(path.Join(g.rootDir, "go.mod"))
+func (g *goModuleFinder) getRootModule(rootDir string) (moduleName string, modulePath string, err error) {
+	modFile, err := os.ReadFile(path.Join(rootDir, "go.mod"))
 	if err != nil {
 		return "", "", err
 	}
@@ -64,8 +60,8 @@ func (g *goModuleFinder) getRootModule() (moduleName string, modulePath string, 
 	return "", "", errors.New("failed to find a valid go.mod file")
 }
 
-func (g *goModuleFinder) rootModExists() bool {
-	goMod := path.Join(g.rootDir, "go.mod")
+func (g *goModuleFinder) rootModExists(rootDir string) bool {
+	goMod := path.Join(rootDir, "go.mod")
 	if _, err := os.Stat(goMod); errors.Is(err, os.ErrNotExist) {
 		return false
 	}

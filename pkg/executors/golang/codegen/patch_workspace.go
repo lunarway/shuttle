@@ -9,18 +9,14 @@ import (
 	"strings"
 )
 
-type workspaceFinder struct {
-	rootDir string
+type workspaceFinder struct{}
+
+func newWorkspaceFinder() *workspaceFinder {
+	return &workspaceFinder{}
 }
 
-func newWorkspaceFinder(rootDir string) *workspaceFinder {
-	return &workspaceFinder{
-		rootDir: rootDir,
-	}
-}
-
-func (w *workspaceFinder) rootWorkspaceExists() bool {
-	goWork := path.Join(w.rootDir, "go.work")
+func (w *workspaceFinder) rootWorkspaceExists(rootDir string) bool {
+	goWork := path.Join(rootDir, "go.work")
 	if _, err := os.Stat(goWork); errors.Is(err, os.ErrNotExist) {
 		return false
 	}
@@ -28,19 +24,19 @@ func (w *workspaceFinder) rootWorkspaceExists() bool {
 	return true
 }
 
-func (s *workspaceFinder) Find(ctx context.Context) (packages map[string]string, ok bool, err error) {
-	if !s.rootWorkspaceExists() {
+func (s *workspaceFinder) Find(ctx context.Context, rootDir string) (packages map[string]string, ok bool, err error) {
+	if !s.rootWorkspaceExists(rootDir) {
 		return nil, false, nil
 	}
 
-	modules, err := s.getWorkspaceModules()
+	modules, err := s.getWorkspaceModules(rootDir)
 	if err != nil {
 		return nil, true, err
 	}
 
 	packages = make(map[string]string, 0)
 	for _, module := range modules {
-		moduleName, modulePath, err := s.getWorkspaceModule(module)
+		moduleName, modulePath, err := s.getWorkspaceModule(rootDir, module)
 		if err != nil {
 			return nil, true, err
 		}
@@ -50,8 +46,8 @@ func (s *workspaceFinder) Find(ctx context.Context) (packages map[string]string,
 	return packages, true, nil
 }
 
-func (w *workspaceFinder) getWorkspaceModules() (modules []string, err error) {
-	workFile, err := os.ReadFile(path.Join(w.rootDir, "go.work"))
+func (w *workspaceFinder) getWorkspaceModules(rootDir string) (modules []string, err error) {
+	workFile, err := os.ReadFile(path.Join(rootDir, "go.work"))
 	if err != nil {
 		return nil, err
 	}
@@ -79,8 +75,8 @@ func (w *workspaceFinder) getWorkspaceModules() (modules []string, err error) {
 	return modules, nil
 }
 
-func (w *workspaceFinder) getWorkspaceModule(absoluteModulePath string) (moduleName string, modulePath string, err error) {
-	modFile, err := os.ReadFile(path.Join(w.rootDir, absoluteModulePath, "go.mod"))
+func (w *workspaceFinder) getWorkspaceModule(rootDir string, absoluteModulePath string) (moduleName string, modulePath string, err error) {
+	modFile, err := os.ReadFile(path.Join(rootDir, absoluteModulePath, "go.mod"))
 	if err != nil {
 		return "", "", fmt.Errorf("failed to find go.mod at: %s: %w", absoluteModulePath, err)
 	}
@@ -100,7 +96,7 @@ func (w *workspaceFinder) getWorkspaceModule(absoluteModulePath string) (moduleN
 			}
 
 			moduleName := sections[1]
-			modulePath = strings.TrimPrefix(absoluteModulePath, w.rootDir)
+			modulePath = strings.TrimPrefix(absoluteModulePath, rootDir)
 
 			return moduleName, modulePath, nil
 		}
