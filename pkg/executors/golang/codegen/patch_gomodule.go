@@ -16,11 +16,11 @@ func newGoModuleFinder() *goModuleFinder {
 }
 
 func (s *goModuleFinder) Find(ctx context.Context, rootDir string) (packages map[string]string, ok bool, err error) {
-	contents, err := s.getGoModFile(rootDir)
+	contents, ok, err := s.getGoModFile(rootDir)
 	if err != nil {
 		return nil, true, err
 	}
-	if contents == nil {
+	if !ok {
 		return nil, false, nil
 	}
 
@@ -35,28 +35,28 @@ func (s *goModuleFinder) Find(ctx context.Context, rootDir string) (packages map
 	return packages, true, nil
 }
 
-func (g *goModuleFinder) getGoModFile(rootDir string) (contents []string, err error) {
+func (g *goModuleFinder) getGoModFile(rootDir string) (contents []string, ok bool, err error) {
 	goMod := path.Join(rootDir, "go.mod")
 	if _, err := os.Stat(goMod); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, nil
+			return nil, false, nil
 		}
 
-		return nil, err
+		return nil, true, err
 	}
 
 	modFile, err := os.ReadFile(path.Join(rootDir, "go.mod"))
 	if err != nil {
-		return nil, err
+		return nil, true, err
 	}
 
 	lines := strings.Split(string(modFile), "\n")
 
 	if len(lines) == 0 {
-		return nil, errors.New("go mod is empty")
+		return nil, true, errors.New("go mod is empty")
 	}
 
-	return lines, nil
+	return lines, true, nil
 }
 
 func (g *goModuleFinder) getModuleFromModFile(contents []string) (moduleName string, modulePath string, err error) {
