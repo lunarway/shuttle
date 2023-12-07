@@ -2,7 +2,7 @@ package codegen
 
 import (
 	"bytes"
-	"errors"
+	"context"
 	"fmt"
 	"io/fs"
 	"os"
@@ -14,8 +14,9 @@ import (
 
 type writeFileFunc = func(name string, contents []byte, permissions fs.FileMode) error
 
-func PatchGoMod(rootDir string, shuttleLocalDir string, ui *ui.UI) error {
+func PatchGoMod(ctx context.Context, rootDir string, shuttleLocalDir string) error {
 	return patchGoMod(
+		ctx,
 		rootDir,
 		shuttleLocalDir,
 		ui,
@@ -23,35 +24,17 @@ func PatchGoMod(rootDir string, shuttleLocalDir string, ui *ui.UI) error {
 	)
 }
 
-func patchGoMod(rootDir, shuttleLocalDir string, ui *ui.UI, writeFileFunc writeFileFunc) error {
-	packages := make(map[string]string, 0)
-
-	if rootWorkspaceExists(rootDir) {
-		ui.Verboseln("patching go action using workspace file")
-		modules, err := GetWorkspaceModules(rootDir)
-		if err != nil {
-			return fmt.Errorf("failed to parse go.mod in root of project: %w", err)
-		}
-
-		for _, module := range modules {
-			moduleName, modulePath, err := GetWorkspaceModule(rootDir, module)
-			if err != nil {
-				return err
-			}
-			packages[moduleName] = modulePath
-		}
-
-	} else if rootModExists(rootDir) {
-		ui.Verboseln("patching go action using mod file")
-		moduleName, modulePath, err := GetRootModule(rootDir)
-		if err != nil {
-			return fmt.Errorf("failed to parse go.mod in root of project: %w", err)
-		}
-
-		packages[moduleName] = modulePath
+func patchGoMod(ctx context.Context, rootDir, shuttleLocalDir string, writeFileFunc writeFileFunc) error {
+	packages, err := newChainedwPatchFinder(
+		newWorkspaceFinder(rootDir),
+		newGoModuleFinder(rootDir),
+		newDefaultFinder(),
+	).findPackages(ctx)
+	if err != nil {
+		return err
 	}
 
-	if err := patchPackagesUsed(rootDir, shuttleLocalDir, packages, ui, writeFileFunc); err != nil {
+	if err := newGoModPatcher(writeFileFunc).patchPackagesUsed(rootDir, shuttleLocalDir, packages); err != nil {
 		return err
 	}
 
@@ -59,7 +42,21 @@ func patchGoMod(rootDir, shuttleLocalDir string, ui *ui.UI, writeFileFunc writeF
 
 }
 
-func patchPackagesUsed(rootDir string, shuttleLocalDir string, packages map[string]string, ui *ui.UI, writeFileFunc writeFileFunc) error {
+// packageFinder exists to find whatever patches are required for a given shuttle golang action to function
+type packageFinder interface {
+	// Find should return how many packages are required to function
+	Find(ctx context.Context) (packages map[string]string, ok bool, err error)
+}
+
+type goModPatcher struct {
+	writeFileFunc writeFileFunc
+}
+
+func newGoModPatcher(writeFileFunc writeFileFunc) *goModPatcher {
+	return &goModPatcher{writeFileFunc: writeFileFunc}
+}
+
+func (p *goModPatcher) patchPackagesUsed(rootDir string, shuttleLocalDir string, packages map[string]string) error {
 	actionsModFilePath := path.Join(shuttleLocalDir, "tmp/go.mod")
 	relativeActionsModFilePath := strings.TrimPrefix(path.Join(strings.TrimPrefix(shuttleLocalDir, rootDir), "tmp/go.mod"), "/")
 	segmentsToRoot := strings.Count(relativeActionsModFilePath, "/")
@@ -84,7 +81,6 @@ func patchPackagesUsed(rootDir string, shuttleLocalDir string, packages map[stri
 		if !actionsModFileContainsModule(moduleName) {
 			continue
 		}
-		ui.Verboseln("golang binary patch adding: moduleName: %s and modulePath: %s", moduleName, modulePath)
 
 		relativeToActionsModulePath := path.Join(strings.Repeat("../", segmentsToRoot), modulePath)
 
@@ -113,116 +109,10 @@ func patchPackagesUsed(rootDir string, shuttleLocalDir string, packages map[stri
 	}
 
 	actionsFileWriter := bytes.NewBufferString(strings.Join(actionsModFileLines, "\n"))
-	err = writeFileFunc(actionsModFilePath, actionsFileWriter.Bytes(), actionsModFilePermissions.Mode())
+	err = p.writeFileFunc(actionsModFilePath, actionsFileWriter.Bytes(), actionsModFilePermissions.Mode())
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func GetRootModule(rootDir string) (moduleName string, modulePath string, err error) {
-	modFile, err := os.ReadFile(path.Join(rootDir, "go.mod"))
-	if err != nil {
-		return "", "", err
-	}
-
-	modFileContent := string(modFile)
-	lines := strings.Split(modFileContent, "\n")
-	if len(lines) == 0 {
-		return "", "", errors.New("go mod is empty")
-	}
-
-	for _, line := range lines {
-		modFileLine := strings.TrimSpace(line)
-		if strings.HasPrefix(modFileLine, "module") {
-			sections := strings.Split(modFileLine, " ")
-			if len(sections) < 2 {
-				return "", "", fmt.Errorf("invalid module line: %s", modFileLine)
-			}
-
-			moduleName := sections[1]
-
-			return moduleName, ".", nil
-		}
-	}
-
-	return "", "", errors.New("failed to find a valid go.mod file")
-}
-
-func GetWorkspaceModule(rootDir string, absoluteModulePath string) (moduleName string, modulePath string, err error) {
-	modFile, err := os.ReadFile(path.Join(rootDir, absoluteModulePath, "go.mod"))
-	if err != nil {
-		return "", "", fmt.Errorf("failed to find go.mod at: %s: %w", absoluteModulePath, err)
-	}
-
-	modFileContent := string(modFile)
-	lines := strings.Split(modFileContent, "\n")
-	if len(lines) == 0 {
-		return "", "", errors.New("go mod is empty")
-	}
-
-	for _, line := range lines {
-		modFileLine := strings.TrimSpace(line)
-		if strings.HasPrefix(modFileLine, "module") {
-			sections := strings.Split(modFileLine, " ")
-			if len(sections) < 2 {
-				return "", "", fmt.Errorf("invalid module line: %s", modFileLine)
-			}
-
-			moduleName := sections[1]
-			modulePath = strings.TrimPrefix(absoluteModulePath, rootDir)
-
-			return moduleName, modulePath, nil
-		}
-	}
-
-	return "", "", errors.New("failed to find a valid go.mod file")
-}
-
-func GetWorkspaceModules(rootDir string) (modules []string, err error) {
-	workFile, err := os.ReadFile(path.Join(rootDir, "go.work"))
-	if err != nil {
-		return nil, err
-	}
-
-	workFileContent := string(workFile)
-	lines := strings.Split(workFileContent, "\n")
-	if len(lines) == 0 {
-		return nil, errors.New("go work is empty")
-	}
-
-	modules = make([]string, 0)
-	for _, line := range lines {
-		modFileLine := strings.Trim(strings.TrimSpace(line), "\t")
-		if strings.HasPrefix(modFileLine, ".") && modFileLine != "./actions" {
-			modules = append(
-				modules,
-				strings.TrimPrefix(
-					strings.TrimPrefix(modFileLine, "."),
-					"/",
-				),
-			)
-		}
-	}
-
-	return modules, nil
-}
-
-func rootModExists(rootDir string) bool {
-	goMod := path.Join(rootDir, "go.mod")
-	if _, err := os.Stat(goMod); errors.Is(err, os.ErrNotExist) {
-		return false
-	}
-
-	return true
-}
-
-func rootWorkspaceExists(rootDir string) bool {
-	goWork := path.Join(rootDir, "go.work")
-	if _, err := os.Stat(goWork); errors.Is(err, os.ErrNotExist) {
-		return false
-	}
-
-	return true
 }
