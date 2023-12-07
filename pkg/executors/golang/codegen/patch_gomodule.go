@@ -16,11 +16,15 @@ func newGoModuleFinder() *goModuleFinder {
 }
 
 func (s *goModuleFinder) Find(ctx context.Context, rootDir string) (packages map[string]string, ok bool, err error) {
-	if !s.rootModExists(rootDir) {
+	contents, err := s.getGoModFile(rootDir)
+	if err != nil {
+		return nil, true, err
+	}
+	if contents == nil {
 		return nil, false, nil
 	}
 
-	moduleName, modulePath, err := s.getRootModule(rootDir)
+	moduleName, modulePath, err := s.getModuleFromModFile(contents)
 	if err != nil {
 		return nil, true, fmt.Errorf("failed to parse go.mod in root of project: %w", err)
 	}
@@ -31,19 +35,32 @@ func (s *goModuleFinder) Find(ctx context.Context, rootDir string) (packages map
 	return packages, true, nil
 }
 
-func (g *goModuleFinder) getRootModule(rootDir string) (moduleName string, modulePath string, err error) {
+func (g *goModuleFinder) getGoModFile(rootDir string) (contents []string, err error) {
+	goMod := path.Join(rootDir, "go.mod")
+	if _, err := os.Stat(goMod); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
 	modFile, err := os.ReadFile(path.Join(rootDir, "go.mod"))
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	modFileContent := string(modFile)
-	lines := strings.Split(modFileContent, "\n")
+	lines := strings.Split(string(modFile), "\n")
+
 	if len(lines) == 0 {
-		return "", "", errors.New("go mod is empty")
+		return nil, errors.New("go mod is empty")
 	}
 
-	for _, line := range lines {
+	return lines, nil
+}
+
+func (g *goModuleFinder) getModuleFromModFile(contents []string) (moduleName string, modulePath string, err error) {
+	for _, line := range contents {
 		modFileLine := strings.TrimSpace(line)
 		if strings.HasPrefix(modFileLine, "module") {
 			sections := strings.Split(modFileLine, " ")
@@ -58,13 +75,4 @@ func (g *goModuleFinder) getRootModule(rootDir string) (moduleName string, modul
 	}
 
 	return "", "", errors.New("failed to find a valid go.mod file")
-}
-
-func (g *goModuleFinder) rootModExists(rootDir string) bool {
-	goMod := path.Join(rootDir, "go.mod")
-	if _, err := os.Stat(goMod); errors.Is(err, os.ErrNotExist) {
-		return false
-	}
-
-	return true
 }
