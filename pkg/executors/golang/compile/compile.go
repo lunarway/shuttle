@@ -48,6 +48,8 @@ func Compile(ctx context.Context, ui *ui.UI, discovered *discover.Discovered) (*
 	binaries := &Binaries{}
 	if discovered.Local != nil {
 		egrp.Go(func() error {
+			ui.Verboseln("compiling golang actions binary for: %s", discovered.Local.DirPath)
+
 			path, err := compile(ctx, ui, discovered.Local)
 			if err != nil {
 				return err
@@ -59,6 +61,8 @@ func Compile(ctx context.Context, ui *ui.UI, discovered *discover.Discovered) (*
 	}
 	if discovered.Plan != nil {
 		egrp.Go(func() error {
+			ui.Verboseln("compiling golang actions binary for: %s", discovered.Plan.DirPath)
+
 			path, err := compile(ctx, ui, discovered.Plan)
 			if err != nil {
 				return err
@@ -113,7 +117,7 @@ func compile(ctx context.Context, ui *ui.UI, actions *discover.ActionsDiscovered
 
 	var binarypath string
 
-	if err := codegen.PatchGoMod(actions.ParentDir, shuttlelocaldir); err != nil {
+	if err := codegen.PatchGoMod(actions.ParentDir, shuttlelocaldir, ui); err != nil {
 		return "", fmt.Errorf("failed to patch generated go.mod: %w", err)
 	}
 

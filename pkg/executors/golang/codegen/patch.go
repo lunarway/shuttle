@@ -8,22 +8,26 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"github.com/lunarway/shuttle/pkg/ui"
 )
 
 type writeFileFunc = func(name string, contents []byte, permissions fs.FileMode) error
 
-func PatchGoMod(rootDir string, shuttleLocalDir string) error {
+func PatchGoMod(rootDir string, shuttleLocalDir string, ui *ui.UI) error {
 	return patchGoMod(
 		rootDir,
 		shuttleLocalDir,
+		ui,
 		os.WriteFile,
 	)
 }
 
-func patchGoMod(rootDir, shuttleLocalDir string, writeFileFunc writeFileFunc) error {
+func patchGoMod(rootDir, shuttleLocalDir string, ui *ui.UI, writeFileFunc writeFileFunc) error {
 	packages := make(map[string]string, 0)
 
 	if rootWorkspaceExists(rootDir) {
+		ui.Verboseln("patching go action using workspace file")
 		modules, err := GetWorkspaceModules(rootDir)
 		if err != nil {
 			return fmt.Errorf("failed to parse go.mod in root of project: %w", err)
@@ -38,6 +42,7 @@ func patchGoMod(rootDir, shuttleLocalDir string, writeFileFunc writeFileFunc) er
 		}
 
 	} else if rootModExists(rootDir) {
+		ui.Verboseln("patching go action using mod file")
 		moduleName, modulePath, err := GetRootModule(rootDir)
 		if err != nil {
 			return fmt.Errorf("failed to parse go.mod in root of project: %w", err)
@@ -46,7 +51,7 @@ func patchGoMod(rootDir, shuttleLocalDir string, writeFileFunc writeFileFunc) er
 		packages[moduleName] = modulePath
 	}
 
-	if err := patchPackagesUsed(rootDir, shuttleLocalDir, packages, writeFileFunc); err != nil {
+	if err := patchPackagesUsed(rootDir, shuttleLocalDir, packages, ui, writeFileFunc); err != nil {
 		return err
 	}
 
@@ -54,11 +59,11 @@ func patchGoMod(rootDir, shuttleLocalDir string, writeFileFunc writeFileFunc) er
 
 }
 
-func patchPackagesUsed(rootDir string, shuttleLocalDir string, packages map[string]string, writeFileFunc writeFileFunc) error {
+func patchPackagesUsed(rootDir string, shuttleLocalDir string, packages map[string]string, ui *ui.UI, writeFileFunc writeFileFunc) error {
 	actionsModFilePath := path.Join(shuttleLocalDir, "tmp/go.mod")
 	relativeActionsModFilePath := strings.TrimPrefix(path.Join(strings.TrimPrefix(shuttleLocalDir, rootDir), "tmp/go.mod"), "/")
-
 	segmentsToRoot := strings.Count(relativeActionsModFilePath, "/")
+
 	actionsModFileContents, err := os.ReadFile(actionsModFilePath)
 	if err != nil {
 		return err
@@ -79,6 +84,7 @@ func patchPackagesUsed(rootDir string, shuttleLocalDir string, packages map[stri
 		if !actionsModFileContainsModule(moduleName) {
 			continue
 		}
+		ui.Verboseln("golang binary patch adding: moduleName: %s and modulePath: %s", moduleName, modulePath)
 
 		relativeToActionsModulePath := path.Join(strings.Repeat("../", segmentsToRoot), modulePath)
 
