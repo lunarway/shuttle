@@ -1,14 +1,120 @@
 package codegen
 
 import (
-	"bytes"
 	"fmt"
+	"io/fs"
 	"os"
 	"path"
 	"strings"
 
 	"golang.org/x/exp/slices"
 )
+
+type goModPatcher struct {
+	writeFileFunc writeFileFunc
+}
+
+func newGoModPatcher(writeFileFunc writeFileFunc) *goModPatcher {
+	return &goModPatcher{writeFileFunc: writeFileFunc}
+}
+
+func (p *goModPatcher) patch(rootDir string, shuttleLocalDir string, packages map[string]string) error {
+	actionsModFile, err := p.readActionsMod(shuttleLocalDir)
+	if err != nil {
+		return err
+	}
+
+	for _, module := range modulesFromMap(packages) {
+		if !actionsModFile.containsModule(module.name) {
+			continue
+		}
+
+		actionsModFile.replaceModulePath(rootDir, module)
+	}
+
+	return actionsModFile.commit()
+}
+
+func (g *goModPatcher) readActionsMod(shuttleLocalDir string) (*actionsModFile, error) {
+	path := path.Join(shuttleLocalDir, "tmp/go.mod")
+
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+
+	lines := strings.Split(string(content), "\n")
+
+	return &actionsModFile{
+		info:    info,
+		content: lines,
+		path:    path,
+
+		writeFileFunc: g.writeFileFunc,
+	}, nil
+}
+
+type actionsModFile struct {
+	info    fs.FileInfo
+	content []string
+	path    string
+
+	writeFileFunc writeFileFunc
+}
+
+func (a *actionsModFile) containsModule(moduleName string) bool {
+	return slices.ContainsFunc(a.content, func(s string) bool {
+		return strings.Contains(s, moduleName)
+	})
+}
+
+func (a *actionsModFile) replaceModulePath(rootDir string, module module) {
+	relativeToActionsModulePath := path.Join(strings.Repeat("../", a.segmentsTo(rootDir)), module.path)
+
+	foundReplace := false
+	for i, line := range a.content {
+		lineTrim := strings.TrimSpace(line)
+
+		if strings.Contains(lineTrim, fmt.Sprintf("replace %s", module.name)) {
+			a.content[i] = fmt.Sprintf("replace %s => %s", module.name, relativeToActionsModulePath)
+			foundReplace = true
+			break
+		}
+
+	}
+
+	if !foundReplace {
+		a.content = append(
+			a.content,
+			fmt.Sprintf("\nreplace %s => %s", module.name, relativeToActionsModulePath),
+		)
+
+	}
+}
+
+func (a *actionsModFile) segmentsTo(dirPath string) int {
+	relativeActionsModFilePath := strings.TrimPrefix(
+		strings.TrimPrefix(
+			a.path,
+			dirPath,
+		),
+		"/",
+	)
+
+	return strings.Count(relativeActionsModFilePath, "/")
+}
+
+func (a *actionsModFile) commit() error {
+	return a.writeFileFunc(
+		a.path,
+		[]byte(strings.Join(a.content, "\n")),
+		a.info.Mode(),
+	)
+}
 
 type module struct {
 	name string
@@ -28,73 +134,4 @@ func modulesFromMap(packages map[string]string) []module {
 	})
 
 	return modules
-}
-
-type goModPatcher struct {
-	writeFileFunc writeFileFunc
-}
-
-func newGoModPatcher(writeFileFunc writeFileFunc) *goModPatcher {
-	return &goModPatcher{writeFileFunc: writeFileFunc}
-}
-
-func (p *goModPatcher) patch(rootDir string, shuttleLocalDir string, packages map[string]string) error {
-	actionsModFilePath := path.Join(shuttleLocalDir, "tmp/go.mod")
-	relativeActionsModFilePath := strings.TrimPrefix(path.Join(strings.TrimPrefix(shuttleLocalDir, rootDir), "tmp/go.mod"), "/")
-
-	segmentsToRoot := strings.Count(relativeActionsModFilePath, "/")
-	actionsModFileContents, err := os.ReadFile(actionsModFilePath)
-	if err != nil {
-		return err
-	}
-	actionsModFilePermissions, err := os.Stat(actionsModFilePath)
-	if err != nil {
-		return err
-	}
-
-	actionsModFile := string(actionsModFileContents)
-	actionsModFileLines := strings.Split(actionsModFile, "\n")
-
-	actionsModFileContainsModule := func(moduleName string) bool {
-		return strings.Contains(actionsModFile, moduleName)
-	}
-
-	for _, module := range modulesFromMap(packages) {
-		if !actionsModFileContainsModule(module.name) {
-			continue
-		}
-
-		relativeToActionsModulePath := path.Join(strings.Repeat("../", segmentsToRoot), module.path)
-
-		foundReplace := false
-		for i, line := range actionsModFileLines {
-			lineTrim := strings.TrimSpace(line)
-
-			if strings.Contains(lineTrim, fmt.Sprintf("replace %s", module.name)) {
-				actionsModFileLines[i] = fmt.Sprintf("replace %s => %s", module.name, relativeToActionsModulePath)
-				foundReplace = true
-				break
-			}
-		}
-
-		if !foundReplace {
-			actionsModFileLines = append(
-				actionsModFileLines,
-				fmt.Sprintf("\nreplace %s => %s", module.name, relativeToActionsModulePath),
-			)
-
-		}
-
-		if err != nil {
-			return err
-		}
-	}
-
-	actionsFileWriter := bytes.NewBufferString(strings.Join(actionsModFileLines, "\n"))
-	err = p.writeFileFunc(actionsModFilePath, actionsFileWriter.Bytes(), actionsModFilePermissions.Mode())
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

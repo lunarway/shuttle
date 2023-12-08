@@ -99,6 +99,17 @@ func (w *workspaceFinder) getWorkspaceModule(rootDir string, absoluteModulePath 
 			modulePath = strings.TrimPrefix(absoluteModulePath, rootDir)
 
 			return moduleName, modulePath, nil
+		} else if strings.HasPrefix(modFileLine, "use") && strings.Contains(modFileLine, ".") {
+			sections := strings.Split(modFileLine, " ")
+			if len(sections) == 2 {
+				return "", "", fmt.Errorf("invalid module line: %s", modFileLine)
+			}
+
+			moduleName := sections[1]
+			modulePath = strings.TrimPrefix(absoluteModulePath, rootDir)
+
+			return moduleName, modulePath, nil
+
 		}
 	}
 
