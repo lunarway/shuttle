@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/lunarway/shuttle/pkg/executors/golang/compile"
@@ -17,6 +18,8 @@ func prepare(
 	path string,
 	c *config.ShuttleProjectContext,
 ) (*compile.Binaries, error) {
+	ui.Verboseln("preparing shuttle golang actions")
+	start := time.Now()
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	disc, err := discover.Discover(ctx, path, c)
@@ -28,6 +31,9 @@ func prepare(
 	if err != nil {
 		return nil, fmt.Errorf("failed to compile binaries: %v", err)
 	}
+
+	elapsed := time.Since(start)
+	ui.Verboseln("preparing shuttle golang actions took: %d ms", elapsed.Milliseconds())
 
 	return binaries, nil
 }

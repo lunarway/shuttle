@@ -48,6 +48,8 @@ func Compile(ctx context.Context, ui *ui.UI, discovered *discover.Discovered) (*
 	binaries := &Binaries{}
 	if discovered.Local != nil {
 		egrp.Go(func() error {
+			ui.Verboseln("compiling golang actions binary for: %s", discovered.Local.DirPath)
+
 			path, err := compile(ctx, ui, discovered.Local)
 			if err != nil {
 				return err
@@ -59,6 +61,8 @@ func Compile(ctx context.Context, ui *ui.UI, discovered *discover.Discovered) (*
 	}
 	if discovered.Plan != nil {
 		egrp.Go(func() error {
+			ui.Verboseln("compiling golang actions binary for: %s", discovered.Plan.DirPath)
+
 			path, err := compile(ctx, ui, discovered.Plan)
 			if err != nil {
 				return err
@@ -113,14 +117,19 @@ func compile(ctx context.Context, ui *ui.UI, actions *discover.ActionsDiscovered
 
 	var binarypath string
 
+	if err := codegen.NewPatcher().Patch(ctx, actions.ParentDir, shuttlelocaldir); err != nil {
+		return "", fmt.Errorf("failed to patch generated go.mod: %w", err)
+	}
+
 	if goInstalled() {
+		if err = codegen.ModTidy(ctx, ui, shuttlelocaldir); err != nil {
+			return "", fmt.Errorf("go mod tidy failed: %w", err)
+		}
+
 		if err = codegen.Format(ctx, ui, shuttlelocaldir); err != nil {
 			return "", fmt.Errorf("go fmt failed: %w", err)
 		}
 
-		if err = codegen.ModTidy(ctx, ui, shuttlelocaldir); err != nil {
-			return "", fmt.Errorf("go mod tidy failed: %w", err)
-		}
 		binarypath, err = codegen.CompileBinary(ctx, ui, shuttlelocaldir)
 		if err != nil {
 			return "", fmt.Errorf("go build failed: %w", err)

@@ -26,7 +26,7 @@ func executeTask(ctx context.Context, ui *ui.UI, context ActionExecutionContext)
 		args = append(args, value)
 	}
 
-	err := executer.Run(ctx, ui, &context.ScriptContext.Project, "shuttle.yaml", args...)
+	err := executer.Run(ctx, ui, &context.ScriptContext.Project, fmt.Sprintf("%s/shuttle.yaml", context.ScriptContext.Project.ProjectPath), args...)
 	if err != nil {
 		return err
 	}
