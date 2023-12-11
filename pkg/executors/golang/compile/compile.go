@@ -28,8 +28,8 @@ type Binary struct {
 }
 
 type Binaries struct {
-	Local Binary
-	Plan  Binary
+	Local *Binary
+	Plan  *Binary
 }
 
 // discovered: Discovered actions projects
@@ -53,7 +53,7 @@ func Compile(ctx context.Context, ui *ui.UI, discovered *discover.Discovered) (*
 				return err
 			}
 
-			binaries.Local = Binary{Path: path}
+			binaries.Local = &Binary{Path: path}
 			return nil
 		})
 	}
@@ -64,7 +64,7 @@ func Compile(ctx context.Context, ui *ui.UI, discovered *discover.Discovered) (*
 				return err
 			}
 
-			binaries.Plan = Binary{Path: path}
+			binaries.Plan = &Binary{Path: path}
 			return nil
 		})
 	}
