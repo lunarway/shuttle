@@ -48,7 +48,7 @@ func (rc *RootCmd) TryExecute(args []string) error {
 			Hidden: true,
 			Use:    "lsjson",
 			RunE: func(cmd *cobra.Command, args []string) error {
-				actions := executer.Actions{}
+				actions := executer.NewActions()
 				for _, cmd := range rc.Cmds {
 					args := make([]executer.ActionArg, 0)
 

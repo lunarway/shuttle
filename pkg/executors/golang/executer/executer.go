@@ -26,27 +26,19 @@ func executeAction(ctx context.Context, binaries *compile.Binaries, args ...stri
 
 	cmdToExecute := args[0]
 
-	for _, cmd := range localInquire {
-		if cmd == cmdToExecute {
+	if localInquire != nil {
+		if _, ok := localInquire.Actions[cmdToExecute]; ok {
 			return executeBinaryAction(ctx, &binaries.Local, args...)
 		}
 	}
 
-	for _, cmd := range planInquire {
-		if cmd == cmdToExecute {
+	if planInquire != nil {
+		if _, ok := planInquire.Actions[cmdToExecute]; ok {
 			return executeBinaryAction(ctx, &binaries.Plan, args...)
 		}
 	}
 
-	combinedOptions := make(map[string]struct{}, 0)
-	for _, cmd := range localInquire {
-		combinedOptions[cmd] = struct{}{}
-	}
-	for _, cmd := range planInquire {
-		combinedOptions[cmd] = struct{}{}
-	}
-
-	return fmt.Errorf("no action available in commds, available options are: %s", combinedOptions)
+	return fmt.Errorf("no action available in commands, available options are available through shuttle run -h")
 }
 
 func executeBinaryAction(ctx context.Context, binary *compile.Binary, args ...string) error {
@@ -94,7 +86,13 @@ func inquire(ctx context.Context, binary *compile.Binary) (actions *Actions, err
 	cmd := exec.Command(binary.Path, "lsjson")
 	output, err := cmd.Output()
 	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			fmt.Printf("shuttle_actions: err: %s", string(exitErr.Stderr))
+		}
+
+		fmt.Printf("shuttle_actions: %s", string(output))
 		return nil, fmt.Errorf("inquire failed and could not get a list of commands: %v", err)
+
 	}
 
 	actions = &Actions{}
