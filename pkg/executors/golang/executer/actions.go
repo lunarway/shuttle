@@ -32,3 +32,15 @@ func (a *Actions) Merge(other ...*Actions) *Actions {
 
 	return a
 }
+
+func (a *Actions) Execute(action string, fn func() error) (ran bool, err error) {
+	if a == nil {
+		return false, nil
+	}
+
+	if _, ok := a.Actions[action]; ok {
+		return true, fn()
+	}
+
+	return true, nil
+}

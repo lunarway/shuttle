@@ -26,16 +26,24 @@ func executeAction(ctx context.Context, binaries *compile.Binaries, args ...stri
 
 	cmdToExecute := args[0]
 
-	if localInquire != nil {
-		if _, ok := localInquire.Actions[cmdToExecute]; ok {
-			return executeBinaryAction(ctx, &binaries.Local, args...)
-		}
+	ran, err := localInquire.Execute(cmdToExecute, func() error {
+		return executeBinaryAction(ctx, &binaries.Local, args...)
+	})
+	if err != nil {
+		return err
+	}
+	if ran {
+		return nil
 	}
 
-	if planInquire != nil {
-		if _, ok := planInquire.Actions[cmdToExecute]; ok {
-			return executeBinaryAction(ctx, &binaries.Plan, args...)
-		}
+	ran, err = planInquire.Execute(cmdToExecute, func() error {
+		return executeBinaryAction(ctx, &binaries.Plan, args...)
+	})
+	if err != nil {
+		return err
+	}
+	if ran {
+		return nil
 	}
 
 	return fmt.Errorf("no action available in commands, available options are available through shuttle run -h")
