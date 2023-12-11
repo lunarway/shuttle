@@ -237,7 +237,9 @@ func getProjectContext(
 		return config.ShuttleProjectContext{}, err
 	}
 
-	for name := range taskActions {
+	for name, taskArgs := range taskActions {
+		args := make([]config.ShuttleScriptArgs, 0)
+
 		c.Scripts[name] = config.ShuttlePlanScript{
 			Description: name,
 			Actions: []config.ShuttleAction{
@@ -245,7 +247,6 @@ func getProjectContext(
 					Task: name,
 				},
 			},
-
 			Args: []config.ShuttleScriptArgs{},
 		}
 	}

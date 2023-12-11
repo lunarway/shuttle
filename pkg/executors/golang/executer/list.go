@@ -7,14 +7,12 @@ import (
 	"github.com/lunarway/shuttle/pkg/ui"
 )
 
-type TaskArg struct{}
-
 func List(
 	ctx context.Context,
 	ui *ui.UI,
 	path string,
 	c *config.ShuttleProjectContext,
-) (map[string]TaskArg, error) {
+) (*Actions, error) {
 	binaries, err := prepare(ctx, ui, path, c)
 	if err != nil {
 		return nil, err
@@ -29,13 +27,9 @@ func List(
 		return nil, err
 	}
 
-	combinedOptions := make(map[string]TaskArg, 0)
-	for _, cmd := range localInquire {
-		combinedOptions[cmd] = struct{}{}
-	}
-	for _, cmd := range planInquire {
-		combinedOptions[cmd] = struct{}{}
-	}
+	actions := NewActions().
+		Merge(localInquire).
+		Merge(planInquire)
 
-	return combinedOptions, nil
+	return actions, nil
 }

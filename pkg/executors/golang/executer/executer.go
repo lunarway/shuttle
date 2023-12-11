@@ -82,13 +82,13 @@ func executeBinaryAction(ctx context.Context, binary *compile.Binary, args ...st
 	return nil
 }
 
-func inquire(ctx context.Context, binary *compile.Binary) (actions []string, err error) {
+func inquire(ctx context.Context, binary *compile.Binary) (actions *Actions, err error) {
 	if binary == nil {
-		return []string{}, nil
+		return nil, nil
 	}
 
 	if binary.Path == "" {
-		return []string{}, nil
+		return nil, nil
 	}
 
 	cmd := exec.Command(binary.Path, "lsjson")
@@ -97,7 +97,8 @@ func inquire(ctx context.Context, binary *compile.Binary) (actions []string, err
 		return nil, fmt.Errorf("inquire failed and could not get a list of commands: %v", err)
 	}
 
-	if err := json.Unmarshal(output, &actions); err != nil {
+	actions = &Actions{}
+	if err := json.Unmarshal(output, actions); err != nil {
 		return nil, fmt.Errorf("inquire failed with json unmarshal: %v", err)
 	}
 
