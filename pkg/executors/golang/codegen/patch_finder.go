@@ -15,7 +15,7 @@ type chainedPackageFinder struct {
 	finders []packageFinder
 }
 
-func newChainedwPatchFinder(finders ...packageFinder) *chainedPackageFinder {
+func newChainedPatchFinder(finders ...packageFinder) *chainedPackageFinder {
 	return &chainedPackageFinder{
 		finders: finders,
 	}

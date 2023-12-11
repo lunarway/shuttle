@@ -15,7 +15,7 @@ type Patcher struct {
 
 func NewPatcher() *Patcher {
 	return &Patcher{
-		patchFinder: newChainedwPatchFinder(
+		patchFinder: newChainedPatchFinder(
 			newWorkspaceFinder(),
 			newGoModuleFinder(),
 			newDefaultFinder(),
