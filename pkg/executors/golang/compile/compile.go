@@ -191,7 +191,7 @@ func compileWithDagger(ctx context.Context, ui *ui.UI, shuttlelocaldir string) (
 			// TODO: add cross compilation
 		})
 
-	_, err = shuttleBinary.ExitCode(ctx)
+	_, err = shuttleBinary.Sync(ctx)
 	if err != nil {
 		return "", fmt.Errorf("dagger failed to build binary, see shuttle ls -v to see error output: %w", err)
 	}

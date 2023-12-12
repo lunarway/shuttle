@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 
+	"github.com/lunarway/shuttle/pkg/executors/golang/executer"
 	"github.com/spf13/cobra"
 )
 
@@ -47,13 +48,22 @@ func (rc *RootCmd) TryExecute(args []string) error {
 			Hidden: true,
 			Use:    "lsjson",
 			RunE: func(cmd *cobra.Command, args []string) error {
-				cmdNames := make([]string, len(rc.Cmds))
-				for i, cmd := range rc.Cmds {
-					cmd := cmd
-					cmdNames[i] = cmd.Name
+				actions := executer.NewActions()
+				for _, cmd := range rc.Cmds {
+					args := make([]executer.ActionArg, 0)
+
+					for _, arg := range cmd.Args {
+						args = append(args, executer.ActionArg{
+							Name: arg.Name,
+						})
+					}
+
+					actions.Actions[cmd.Name] = executer.Action{
+						Args: args,
+					}
 				}
 
-				rawJson, err := json.Marshal(cmdNames)
+				rawJson, err := json.Marshal(actions)
 				if err != nil {
 					return err
 				}

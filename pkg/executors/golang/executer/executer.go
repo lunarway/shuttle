@@ -26,27 +26,27 @@ func executeAction(ctx context.Context, binaries *compile.Binaries, args ...stri
 
 	cmdToExecute := args[0]
 
-	for _, cmd := range localInquire {
-		if cmd == cmdToExecute {
-			return executeBinaryAction(ctx, &binaries.Local, args...)
-		}
+	ran, err := localInquire.Execute(cmdToExecute, func() error {
+		return executeBinaryAction(ctx, &binaries.Local, args...)
+	})
+	if err != nil {
+		return err
+	}
+	if ran {
+		return nil
 	}
 
-	for _, cmd := range planInquire {
-		if cmd == cmdToExecute {
-			return executeBinaryAction(ctx, &binaries.Plan, args...)
-		}
+	ran, err = planInquire.Execute(cmdToExecute, func() error {
+		return executeBinaryAction(ctx, &binaries.Plan, args...)
+	})
+	if err != nil {
+		return err
+	}
+	if ran {
+		return nil
 	}
 
-	combinedOptions := make(map[string]struct{}, 0)
-	for _, cmd := range localInquire {
-		combinedOptions[cmd] = struct{}{}
-	}
-	for _, cmd := range planInquire {
-		combinedOptions[cmd] = struct{}{}
-	}
-
-	return fmt.Errorf("no action available in commds, available options are: %s", combinedOptions)
+	return fmt.Errorf("no action available in commands, available options are available through shuttle run -h")
 }
 
 func executeBinaryAction(ctx context.Context, binary *compile.Binary, args ...string) error {
@@ -82,22 +82,29 @@ func executeBinaryAction(ctx context.Context, binary *compile.Binary, args ...st
 	return nil
 }
 
-func inquire(ctx context.Context, binary *compile.Binary) (actions []string, err error) {
+func inquire(ctx context.Context, binary *compile.Binary) (actions *Actions, err error) {
 	if binary == nil {
-		return []string{}, nil
+		return nil, nil
 	}
 
 	if binary.Path == "" {
-		return []string{}, nil
+		return nil, nil
 	}
 
 	cmd := exec.Command(binary.Path, "lsjson")
 	output, err := cmd.Output()
 	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			fmt.Printf("shuttle_actions: err: %s", string(exitErr.Stderr))
+		}
+
+		fmt.Printf("shuttle_actions: %s", string(output))
 		return nil, fmt.Errorf("inquire failed and could not get a list of commands: %v", err)
+
 	}
 
-	if err := json.Unmarshal(output, &actions); err != nil {
+	actions = &Actions{}
+	if err := json.Unmarshal(output, actions); err != nil {
 		return nil, fmt.Errorf("inquire failed with json unmarshal: %v", err)
 	}
 
