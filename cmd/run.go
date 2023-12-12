@@ -17,6 +17,25 @@ import (
 	"github.com/lunarway/shuttle/pkg/ui"
 )
 
+func newNoopRun() *cobra.Command {
+	return &cobra.Command{
+		Use:          "run [command]",
+		Short:        "Run a plan script",
+		Long:         `Specify which plan script to run`,
+		SilenceUsage: true,
+	}
+}
+
+func newNoContextRun() *cobra.Command {
+	runCmd := newNoopRun()
+
+	runCmd.RunE = func(cmd *cobra.Command, args []string) error {
+		return fmt.Errorf("shuttle run is not available in this context. To use shuttle run you need to be in a project with a shuttle.yaml file")
+	}
+
+	return runCmd
+}
+
 func newRun(uii *ui.UI, contextProvider contextProvider) (*cobra.Command, error) {
 	var (
 		flagTemplate   string
@@ -31,12 +50,7 @@ func newRun(uii *ui.UI, contextProvider contextProvider) (*cobra.Command, error)
 
 	executorRegistry := executors.NewRegistry(executors.ShellExecutor, executors.TaskExecutor)
 
-	runCmd := &cobra.Command{
-		Use:          "run [command]",
-		Short:        "Run a plan script",
-		Long:         `Specify which plan script to run`,
-		SilenceUsage: true,
-	}
+	runCmd := newNoopRun()
 
 	context, err := contextProvider()
 	if err != nil {
