@@ -2,6 +2,7 @@ package cmd
 
 import (
 	stdcontext "context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -70,7 +71,7 @@ __shuttle_custom_func() {
 }
 `
 
-func newRoot(uii *ui.UI) (*cobra.Command, contextProvider) {
+func newRoot(uii *ui.UI) (*cobra.Command, contextProvider, repositoryContext) {
 	telemetry.Setup()
 
 	var (
@@ -117,7 +118,11 @@ If none of above is used, then the argument will expect a full plan spec.`)
 		return getProjectContext(rootCmd, uii, projectPath, clean, plan, skipGitPlanPulling)
 	}
 
-	return rootCmd, ctxProvider
+	repositoryCtxProvider := func() bool {
+		return getRepositoryContext(projectPath)
+	}
+
+	return rootCmd, ctxProvider, repositoryCtxProvider
 }
 
 func Execute(stdout, stderr io.Writer) {
@@ -145,7 +150,7 @@ func Execute(stdout, stderr io.Writer) {
 func initializedRootFromArgs(stdout, stderr io.Writer, args []string) (*cobra.Command, *ui.UI, error) {
 	uii := ui.Create(stdout, stderr)
 
-	rootCmd, ctxProvider := newRoot(uii)
+	rootCmd, ctxProvider, isInRepoContext := newRoot(uii)
 	rootCmd.SetOut(stdout)
 	rootCmd.SetErr(stderr)
 
@@ -154,27 +159,37 @@ func initializedRootFromArgs(stdout, stderr io.Writer, args []string) (*cobra.Co
 	// Run and LS will not get closured variables from contextProvider
 	rootCmd.ParseFlags(args)
 
-	runCmd, initErr := newRun(uii, ctxProvider)
-	if initErr != nil {
-		return nil, nil, initErr
-	}
-	rootCmd.AddCommand(
-		newDocumentation(uii, ctxProvider),
-		newCompletion(uii),
-		newGet(uii, ctxProvider),
-		newGitPlan(uii, ctxProvider),
-		newHas(uii, ctxProvider),
-		newLs(uii, ctxProvider),
-		newPlan(uii, ctxProvider),
-		runCmd,
-		newPrepare(uii, ctxProvider),
-		newTemplate(uii, ctxProvider),
-		newVersion(uii),
-		newConfig(uii, ctxProvider),
-		newTelemetry(uii),
-	)
+	if isInRepoContext() {
+		runCmd, initErr := newRun(uii, ctxProvider)
+		if initErr != nil {
+			return nil, nil, initErr
+		}
+		rootCmd.AddCommand(
+			newDocumentation(uii, ctxProvider),
+			newCompletion(uii),
+			newGet(uii, ctxProvider),
+			newGitPlan(uii, ctxProvider),
+			newHas(uii, ctxProvider),
+			newLs(uii, ctxProvider),
+			newPlan(uii, ctxProvider),
+			runCmd,
+			newPrepare(uii, ctxProvider),
+			newTemplate(uii, ctxProvider),
+			newVersion(uii),
+			newConfig(uii, ctxProvider),
+			newTelemetry(uii),
+		)
 
-	return rootCmd, uii, nil
+		return rootCmd, uii, nil
+	} else {
+		rootCmd.AddCommand(
+			newCompletion(uii),
+			newVersion(uii),
+			newTelemetry(uii),
+		)
+
+		return rootCmd, uii, nil
+	}
 }
 
 func initializedRoot(out, err io.Writer) (*cobra.Command, *ui.UI, error) {
@@ -182,6 +197,7 @@ func initializedRoot(out, err io.Writer) (*cobra.Command, *ui.UI, error) {
 }
 
 type contextProvider func() (config.ShuttleProjectContext, error)
+type repositoryContext func() bool
 
 func getProjectContext(
 	rootCmd *cobra.Command,
@@ -194,7 +210,6 @@ func getProjectContext(
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
 
 	projectFlagSet := rootCmd.Flags().Changed("project")
@@ -259,4 +274,30 @@ func getProjectContext(
 	}
 
 	return c, nil
+}
+
+// getRepositoryContext makes sure that we're in a repository context, this is useful to add extra commands, which are only useful when in a repository with a shuttle file
+func getRepositoryContext(projectPath string) bool {
+
+	var fullProjectPath string
+	if path.IsAbs(projectPath) {
+		fullProjectPath = projectPath
+	} else {
+		dir, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fullProjectPath = path.Join(dir, projectPath)
+	}
+
+	shuttleFile := path.Join(fullProjectPath, "shuttle.yaml")
+
+	if _, err := os.Stat(shuttleFile); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return false
+		}
+	}
+
+	return false
 }
