@@ -99,14 +99,9 @@ Global Flags:
 			name:      "project without shuttle.yaml",
 			input:     args("-p", "testdata/base", "run", "hello_stdout"),
 			stdoutput: "",
-			erroutput: `Error: exit code 2 - Failed to load shuttle configuration: shuttle.yaml file not found
-
-Make sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.
-`,
-			initErr: errors.New(
-				`exit code 2 - Failed to load shuttle configuration: shuttle.yaml file not found
-
-Make sure you are in a project using shuttle and that a 'shuttle.yaml' file is available.`,
+			erroutput: "Error: shuttle run is not available in this context. To use shuttle run you need to be in a project with a shuttle.yaml file\n",
+			err: errors.New(
+				"shuttle run is not available in this context. To use shuttle run you need to be in a project with a shuttle.yaml file",
 			),
 		},
 		{

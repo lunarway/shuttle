@@ -160,9 +160,9 @@ func initializedRootFromArgs(stdout, stderr io.Writer, args []string) (*cobra.Co
 	rootCmd.ParseFlags(args)
 
 	if isInRepoContext() {
-		runCmd, initErr := newRun(uii, ctxProvider)
-		if initErr != nil {
-			return nil, nil, initErr
+		runCmd, err := newRun(uii, ctxProvider)
+		if err != nil {
+			return nil, nil, err
 		}
 		rootCmd.AddCommand(
 			newDocumentation(uii, ctxProvider),
@@ -183,9 +183,12 @@ func initializedRootFromArgs(stdout, stderr io.Writer, args []string) (*cobra.Co
 		return rootCmd, uii, nil
 	} else {
 		rootCmd.AddCommand(
+			newNoContextRun(),
 			newCompletion(uii),
 			newVersion(uii),
 			newTelemetry(uii),
+			newHas(uii, ctxProvider),
+			newConfig(uii, ctxProvider),
 		)
 
 		return rootCmd, uii, nil
@@ -299,5 +302,5 @@ func getRepositoryContext(projectPath string) bool {
 		}
 	}
 
-	return false
+	return true
 }
