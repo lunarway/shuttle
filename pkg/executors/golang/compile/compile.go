@@ -175,7 +175,7 @@ func compileWithDagger(ctx context.Context, ui *ui.UI, shuttlelocaldir string) (
 	log.Printf("nakedShuttleDir: %s", nakedShuttleDir)
 
 	shuttleBinary := client.Container().
-		From("golang:1.20-alpine").
+		From(getGolangImage()).
 		WithWorkdir("/app").
 		WithDirectory(".", src).
 		WithWorkdir(path.Join(nakedShuttleDir, "tmp")).
@@ -219,4 +219,19 @@ func goInstalled() bool {
 	}
 
 	return true
+}
+
+func getGolangImage() string {
+	const (
+		// renovate: datasource=docker depName=golang
+		golangImageVersion = "1.20-alpine"
+	)
+
+	golangImage := fmt.Sprintf("golang:%s", golangImageVersion)
+	golangImageOverride := os.Getenv("SHUTTLE_GOLANG_ACTIONS_IMAGE")
+	if golangImageOverride != "" {
+		return golangImageOverride
+	}
+
+	return golangImage
 }

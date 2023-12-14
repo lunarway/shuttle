@@ -2,6 +2,7 @@ package executer
 
 import (
 	"context"
+	"os"
 
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/lunarway/shuttle/pkg/ui"
@@ -13,6 +14,11 @@ func List(
 	path string,
 	c *config.ShuttleProjectContext,
 ) (*Actions, error) {
+	if !isActionsEnabled() {
+		ui.Verboseln("shuttle golang actions disabled")
+		return NewActions(), nil
+	}
+
 	binaries, err := prepare(ctx, ui, path, c)
 	if err != nil {
 		return nil, err
@@ -32,4 +38,14 @@ func List(
 		Merge(planInquire)
 
 	return actions, nil
+}
+
+func isActionsEnabled() bool {
+	enabled := os.Getenv("SHUTTLE_GOLANG_ACTIONS")
+
+	if enabled == "false" {
+		return false
+	}
+
+	return true
 }

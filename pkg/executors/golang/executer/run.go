@@ -14,6 +14,11 @@ func Run(
 	path string,
 	args ...string,
 ) error {
+	if !isActionsEnabled() {
+		ui.Verboseln("shuttle golang actions disabled")
+		return nil
+	}
+
 	binaries, err := prepare(ctx, ui, path, c)
 	if err != nil {
 		ui.Errorln("failed to run command: %v", err)
