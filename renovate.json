@@ -2,5 +2,28 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>lunarway/renovate-config"
+  ],
+  "regexManagers": [
+    {
+      "description": "Update docker images in go files",
+      "fileMatch": [
+        "^.*\\.go$"
+      ],
+      "matchStrings": [
+        "\\/\\/ renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>[a-z-]+)\\s+([a-zA-Z]*)\\s*[:|=]\\s+\"(?<currentValue>.*)\"\\,?"
+      ],
+      "versioningTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Update docker tags frequently",
+      "matchDatasources": [
+        "docker"
+      ],
+      "extends": [
+        "schedule:nonOfficeHours"
+      ]
+    }
   ]
 }
