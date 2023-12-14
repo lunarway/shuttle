@@ -2,9 +2,11 @@ package executer
 
 import (
 	"context"
+	"errors"
 	"os"
 
 	"github.com/lunarway/shuttle/pkg/config"
+	golangerrors "github.com/lunarway/shuttle/pkg/executors/golang/errors"
 	"github.com/lunarway/shuttle/pkg/ui"
 )
 
@@ -21,6 +23,9 @@ func List(
 
 	binaries, err := prepare(ctx, ui, path, c)
 	if err != nil {
+		if errors.Is(err, golangerrors.ErrGolangActionNoBuilder) {
+			return NewActions(), nil
+		}
 		return nil, err
 	}
 

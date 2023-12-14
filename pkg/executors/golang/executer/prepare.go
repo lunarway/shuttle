@@ -2,6 +2,7 @@ package executer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/lunarway/shuttle/pkg/config"
 	"github.com/lunarway/shuttle/pkg/executors/golang/compile"
 	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
+	golangerrors "github.com/lunarway/shuttle/pkg/executors/golang/errors"
 	"github.com/lunarway/shuttle/pkg/ui"
 )
 
@@ -29,6 +31,9 @@ func prepare(
 
 	binaries, err := compile.Compile(ctx, ui, disc)
 	if err != nil {
+		if errors.Is(err, golangerrors.ErrGolangActionNoBuilder) {
+			return nil, err
+		}
 		return nil, fmt.Errorf("failed to compile binaries: %v", err)
 	}
 
