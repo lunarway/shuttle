@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	golangerrors "github.com/lunarway/shuttle/okg/executors/golang/errors"
 	"github.com/lunarway/shuttle/pkg/config"
+	golangerrors "github.com/lunarway/shuttle/pkg/executors/golang/errors"
 	"github.com/lunarway/shuttle/pkg/ui"
 )
 

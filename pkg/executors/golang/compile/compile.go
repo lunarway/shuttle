@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 	"strings"
 
 	"dagger.io/dagger"
@@ -241,9 +242,11 @@ func getGolangImage() string {
 
 func goDaggerFallback() bool {
 	daggerFallback := os.Getenv("SHUTTLE_GOLANG_ACTIONS_DAGGER_FALLBACK")
-	if daggerFallback == "true" {
-		return true
+
+	daggerFallbackEnabled, err := strconv.ParseBool(daggerFallback)
+	if err != nil {
+		return false
 	}
 
-	return false
+	return daggerFallbackEnabled
 }
