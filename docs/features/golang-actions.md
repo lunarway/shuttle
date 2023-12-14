@@ -110,3 +110,10 @@ The variable is default `true`, `false` will disable golang, and any other value
 ### SHUTTLE_GOLANG_ACTIONS_IMAGE
 
 This variable controls an override for proving different image for building the golang actions. The image is automatically kept up-to-date, but it may be needed to set this in the place of use, such that a race condition doesn't occur.
+
+### SHUTTLE_GOLANG_ACTIONS_DAGGER_FALLBACK
+
+default: `false`, meaning we don't use dagger as a fallback
+`true` is enabled, and will use a dagger pipeline to build the actions if go isn't installed
+anything is false and will be disabled
+

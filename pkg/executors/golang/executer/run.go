@@ -2,8 +2,10 @@ package executer
 
 import (
 	"context"
+	"errors"
 
 	"github.com/lunarway/shuttle/pkg/config"
+	golangerrors "github.com/lunarway/shuttle/pkg/executors/golang/errors"
 	"github.com/lunarway/shuttle/pkg/ui"
 )
 
@@ -21,6 +23,10 @@ func Run(
 
 	binaries, err := prepare(ctx, ui, path, c)
 	if err != nil {
+		if errors.Is(err, golangerrors.ErrGolangActionNoBuilder) {
+			return nil
+		}
+
 		ui.Errorln("failed to run command: %v", err)
 		return err
 	}

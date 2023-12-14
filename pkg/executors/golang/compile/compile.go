@@ -7,12 +7,14 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 	"strings"
 
 	"dagger.io/dagger"
 	"github.com/lunarway/shuttle/pkg/executors/golang/codegen"
 	"github.com/lunarway/shuttle/pkg/executors/golang/compile/matcher"
 	"github.com/lunarway/shuttle/pkg/executors/golang/discover"
+	golangerrors "github.com/lunarway/shuttle/pkg/executors/golang/errors"
 	"github.com/lunarway/shuttle/pkg/executors/golang/parser"
 	"github.com/lunarway/shuttle/pkg/executors/golang/shuttlefolder"
 	"github.com/lunarway/shuttle/pkg/ui"
@@ -134,11 +136,13 @@ func compile(ctx context.Context, ui *ui.UI, actions *discover.ActionsDiscovered
 		if err != nil {
 			return "", fmt.Errorf("go build failed: %w", err)
 		}
-	} else {
+	} else if goDaggerFallback() {
 		binarypath, err = compileWithDagger(ctx, ui, shuttlelocaldir)
 		if err != nil {
 			return "", fmt.Errorf("failed to compile with dagger: %w", err)
 		}
+	} else {
+		return "", golangerrors.ErrGolangActionNoBuilder
 	}
 
 	finalBinaryPath := shuttlefolder.CalculateBinaryPath(shuttlelocaldir, hash)
@@ -234,4 +238,15 @@ func getGolangImage() string {
 	}
 
 	return golangImage
+}
+
+func goDaggerFallback() bool {
+	daggerFallback := os.Getenv("SHUTTLE_GOLANG_ACTIONS_DAGGER_FALLBACK")
+
+	daggerFallbackEnabled, err := strconv.ParseBool(daggerFallback)
+	if err != nil {
+		return false
+	}
+
+	return daggerFallbackEnabled
 }
