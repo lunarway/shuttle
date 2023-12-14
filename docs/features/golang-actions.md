@@ -98,3 +98,15 @@ Why would you want such a feature?
 - A more thorough user experience can be designed.
 - No longer bound to what is installed on a client machine, you don't need curl,
   wget, uname, grep, yq, jq etc. installed
+
+## Configuration
+
+### SHUTTLE_GOLANG_ACTIONS
+
+This variable controls whether or not to enable or disable the golang actions. This may be wanted in environments where golang or docker isn't available, or wanted.
+
+The variable is default `true`, `false` will disable golang, and any other value will be considered `true`
+
+### SHUTTLE_GOLANG_ACTIONS_IMAGE
+
+This variable controls an override for proving different image for building the golang actions. The image is automatically kept up-to-date, but it may be needed to set this in the place of use, such that a race condition doesn't occur.

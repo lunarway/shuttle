@@ -228,7 +228,7 @@ func getGolangImage() string {
 	)
 
 	golangImage := fmt.Sprintf("golang:%s", golangImageVersion)
-	golangImageOverride := os.Getenv("SHUTTLE_GOLANG_IMAGE")
+	golangImageOverride := os.Getenv("SHUTTLE_GOLANG_ACTIONS_IMAGE")
 	if golangImageOverride != "" {
 		return golangImageOverride
 	}
