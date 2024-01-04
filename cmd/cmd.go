@@ -2,12 +2,12 @@ package cmd
 
 import (
 	stdcontext "context"
-	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -281,26 +281,48 @@ func getProjectContext(
 
 // getRepositoryContext makes sure that we're in a repository context, this is useful to add extra commands, which are only useful when in a repository with a shuttle file
 func getRepositoryContext(projectPath string) bool {
-
-	var fullProjectPath string
-	if path.IsAbs(projectPath) {
-		fullProjectPath = projectPath
+	if projectPath != "" && projectPath != "." {
+		return shuttleFileExists(projectPath, fileExists)
 	} else {
 		dir, err := os.Getwd()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		fullProjectPath = path.Join(dir, projectPath)
+		fullProjectPath := path.Join(dir, projectPath)
+		exists := shuttleFileExistsRecursive(fullProjectPath, fileExists)
+		return exists
 	}
+}
 
-	shuttleFile := path.Join(fullProjectPath, "shuttle.yaml")
+type fileExistsFunc func(filePath string) bool
 
-	if _, err := os.Stat(shuttleFile); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return false
+// shuttleFileExistsRecursive tries to find a shuttle file by going towards the root the path, it will check each folder towards the root.
+func shuttleFileExistsRecursive(projectPath string, existsFunc fileExistsFunc) bool {
+	if strings.Contains(projectPath, "/") {
+		exists := shuttleFileExists(projectPath, existsFunc)
+		if exists {
+			return true
 		}
+
+		return shuttleFileExistsRecursive(path.Dir(projectPath), existsFunc)
+
 	}
 
+	return shuttleFileExists(projectPath, existsFunc)
+
+}
+
+// shuttleFileExists will check the given directory and return if a shuttle.yaml file is found
+func shuttleFileExists(projectPath string, existsFunc fileExistsFunc) bool {
+	shuttleFile := path.Join(projectPath, "shuttle.yaml")
+	return existsFunc(shuttleFile)
+}
+
+func fileExists(filePath string) bool {
+	_, err := os.Stat(filePath)
+	if err != nil {
+		return false
+	}
 	return true
 }
