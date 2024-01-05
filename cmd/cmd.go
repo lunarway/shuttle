@@ -305,8 +305,12 @@ func shuttleFileExistsRecursive(projectPath string, existsFunc fileExistsFunc) b
 			return true
 		}
 
-		return shuttleFileExistsRecursive(path.Dir(projectPath), existsFunc)
+		parentProjectDir := path.Dir(projectPath)
+		if parentProjectDir == projectPath {
+			return false
+		}
 
+		return shuttleFileExistsRecursive(parentProjectDir, existsFunc)
 	}
 
 	return shuttleFileExists(projectPath, existsFunc)

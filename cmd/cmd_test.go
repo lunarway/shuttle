@@ -119,6 +119,28 @@ func TestShuttleFileExistsRecursive(t *testing.T) {
 		assert.True(t, actual)
 	})
 
+	t.Run("full path, file not found", func(t *testing.T) {
+		actual := shuttleFileExistsRecursive("/some/long/path", func(filePath string) bool {
+			switch filePath {
+			case "/some/long/path/shuttle.yaml":
+				return false
+			case "/some/long/shuttle.yaml":
+				return false
+			case "/some/shuttle.yaml":
+				return false
+			case "/shuttle.yaml":
+				return false
+			case "/":
+				return false
+			default:
+				pathNotExpected(t, filePath)
+				return true
+			}
+		})
+
+		assert.False(t, actual)
+	})
+
 	t.Run("empty path, file false", func(t *testing.T) {
 		actual := shuttleFileExistsRecursive("", func(filePath string) bool {
 			switch filePath {
