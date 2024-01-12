@@ -120,6 +120,13 @@ Global Flags:
 			err:       nil,
 		},
 		{
+			name:      "script succeeds with required argument with hash in value",
+			input:     args("-p", "testdata/project", "run", "required_arg", "foo=bar="),
+			stdoutput: "bar=\n",
+			erroutput: "",
+			err:       nil,
+		},
+		{
 			name:      "script succeeds with required argument missing and validation disabled",
 			input:     args("-p", "testdata/project", "run", "--validate=false", "required_arg"),
 			stdoutput: "\n",
