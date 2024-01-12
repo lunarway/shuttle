@@ -96,7 +96,7 @@ func newRunSubCommand(
 	}
 
 	parseKeyValuePair := func(arg string) (string, string, bool) {
-		keyvaluearg := strings.Split(arg, "=")
+		keyvaluearg := strings.SplitN(arg, "=", 1)
 		if len(keyvaluearg) == 2 {
 			key := keyvaluearg[0]
 			value := keyvaluearg[1]
