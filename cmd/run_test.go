@@ -120,7 +120,7 @@ Global Flags:
 			err:       nil,
 		},
 		{
-			name:      "script succeeds with required argument with hash in name",
+			name:      "script succeeds with required argument with hash in value",
 			input:     args("-p", "testdata/project", "run", "required_arg", "foo=bar="),
 			stdoutput: "bar=\n",
 			erroutput: "",
