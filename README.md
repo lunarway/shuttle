@@ -214,6 +214,16 @@ chmod +x shuttle-darwin-amd64
 sudo mv shuttle-darwin-amd64 /usr/local/bin/shuttle
 ```
 
+#### Mac OS Sonoma (broke grep)
+
+Use ripgrep instead (rg)
+
+```console
+curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | rg -o '[^/]*$')/shuttle-darwin-amd64
+chmod +x shuttle-darwin-amd64
+sudo mv shuttle-darwin-amd64 /usr/local/bin/shuttle
+```
+
 ### Linux
 
 ```console
