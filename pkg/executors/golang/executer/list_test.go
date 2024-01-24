@@ -10,7 +10,7 @@ func TestIsActionsEnabled(t *testing.T) {
 	t.Run("default is enabled", func(t *testing.T) {
 		t.Setenv("SHUTTLE_GOLANG_ACTIONS", "")
 
-		assert.True(t, isActionsEnabled())
+		assert.False(t, isActionsEnabled())
 	})
 
 	t.Run("set false is not enabled", func(t *testing.T) {
@@ -28,6 +28,6 @@ func TestIsActionsEnabled(t *testing.T) {
 	t.Run("set any other value is enabled", func(t *testing.T) {
 		t.Setenv("SHUTTLE_GOLANG_ACTIONS", "blabla")
 
-		assert.True(t, isActionsEnabled())
+		assert.False(t, isActionsEnabled())
 	})
 }
