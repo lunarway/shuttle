@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strconv"
 
 	"github.com/lunarway/shuttle/pkg/config"
 	golangerrors "github.com/lunarway/shuttle/pkg/executors/golang/errors"
@@ -45,12 +46,19 @@ func List(
 	return actions, nil
 }
 
-func isActionsEnabled() bool {
-	enabled := os.Getenv("SHUTTLE_GOLANG_ACTIONS")
+const defaultGolangActions = false
 
-	if enabled == "false" {
-		return false
+func isActionsEnabled() bool {
+	enabledRaw := os.Getenv("SHUTTLE_GOLANG_ACTIONS")
+	if enabledRaw == "" {
+		return defaultGolangActions
 	}
 
-	return true
+	enabled, err := strconv.ParseBool(enabledRaw)
+	if err != nil {
+		return defaultGolangActions
+	}
+
+	return enabled
+
 }

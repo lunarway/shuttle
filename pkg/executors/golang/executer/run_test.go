@@ -17,6 +17,8 @@ func TestRunVersion(t *testing.T) {
 	updateShuttle(t, "testdata/child")
 	ctx := context.Background()
 
+	t.Setenv("SHUTTLE_GOLANG_ACTIONS", "true")
+
 	c := &config.ShuttleProjectContext{Config: config.ShuttleConfig{Plan: "something"}}
 
 	ui := ui.Create(os.Stdout, os.Stderr)
