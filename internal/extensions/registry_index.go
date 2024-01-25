@@ -35,7 +35,7 @@ func (r *registryIndex) getExtensions(ctx context.Context) ([]registryExtension,
 
 		extensionContent, err := os.ReadFile(extensionPath)
 		if err != nil {
-			log.Printf("failed to get extension: %w, skipping extension", err)
+			log.Printf("failed to get extension: %s, skipping extension", err.Error())
 			continue
 		}
 
