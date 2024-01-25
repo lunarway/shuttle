@@ -59,6 +59,7 @@ type registryExtensionDownloadLink struct {
 	Os           string `json:"os"`
 	Url          string `json:"url"`
 	Checksum     string `json:"checksum"`
+	Provider     string `json:"provider"`
 }
 
 type registryExtension struct {
