@@ -3,6 +3,7 @@ package extensions
 import (
 	"context"
 	"fmt"
+	"path"
 
 	"github.com/lunarway/shuttle/internal/global"
 )
@@ -18,13 +19,14 @@ func (*gitRegistry) Get(ctx context.Context) error {
 }
 
 func (g *gitRegistry) Update(ctx context.Context) error {
-	registry := getRegistryPath(g.globalStore)
 
-	if exists(registry) {
+	if g.registryClonedAlready() {
 		if err := g.fetchGitRepository(ctx); err != nil {
 			return fmt.Errorf("failed to update registry: %w", err)
 		}
 	} else {
+		registry := getRegistryPath(g.globalStore)
+
 		if err := ensureExists(registry); err != nil {
 			return fmt.Errorf("failed to create registry path: %w", err)
 		}
@@ -50,4 +52,10 @@ func (g *gitRegistry) fetchGitRepository(ctx context.Context) error {
 
 func (g *gitRegistry) cloneGitRepository(ctx context.Context) error {
 	panic("unimplemented")
+}
+
+func (g *gitRegistry) registryClonedAlready() bool {
+	registry := getRegistryPath(g.globalStore)
+
+	return exists(path.Join(registry, ".git"))
 }
