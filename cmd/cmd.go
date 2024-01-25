@@ -159,6 +159,8 @@ func initializedRootFromArgs(stdout, stderr io.Writer, args []string) (*cobra.Co
 	// Run and LS will not get closured variables from contextProvider
 	rootCmd.ParseFlags(args)
 
+	rootCmd.AddCommand(newExtCmd())
+
 	if isInRepoContext() {
 		runCmd, err := newRun(uii, ctxProvider)
 		if err != nil {
