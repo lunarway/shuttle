@@ -3,6 +3,8 @@ package extensions
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/exec"
 	"path"
 
 	"github.com/lunarway/shuttle/internal/global"
@@ -19,7 +21,6 @@ func (*gitRegistry) Get(ctx context.Context) error {
 }
 
 func (g *gitRegistry) Update(ctx context.Context) error {
-
 	if g.registryClonedAlready() {
 		if err := g.fetchGitRepository(ctx); err != nil {
 			return fmt.Errorf("failed to update registry: %w", err)
@@ -47,11 +48,34 @@ func newGitRegistry(url string, globalStore *global.GlobalStore) Registry {
 }
 
 func (g *gitRegistry) fetchGitRepository(ctx context.Context) error {
-	panic("unimplemented")
+	registry := getRegistryPath(g.globalStore)
+
+	cmd := exec.CommandContext(ctx, "git", "pull")
+
+	cmd.Dir = registry
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	return cmd.Wait()
 }
 
 func (g *gitRegistry) cloneGitRepository(ctx context.Context) error {
-	panic("unimplemented")
+	registry := getRegistryPath(g.globalStore)
+
+	cmd := exec.CommandContext(ctx, "git", "clone", g.url, registry)
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	return cmd.Wait()
 }
 
 func (g *gitRegistry) registryClonedAlready() bool {
