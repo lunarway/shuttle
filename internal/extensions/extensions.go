@@ -44,7 +44,5 @@ func (e *ExtensionsManager) Update(ctx context.Context, registry string) error {
 		return err
 	}
 
-	// 3. Initiate install
-
 	return nil
 }
