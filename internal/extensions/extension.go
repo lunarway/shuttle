@@ -43,9 +43,16 @@ func (e *Extension) Ensure(ctx context.Context) error {
 		return fmt.Errorf("failed to find a valid extension matching your os and architecture")
 	}
 
-	//TODO: Initiate download
+	downloader, err := NewDownloader(downloadLink)
+	if err != nil {
+		return err
+	}
 
-	panic("not implemented yet")
+	if err := downloader.Download(ctx, binaryPath); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (e *Extension) getExtensionBinaryName() string {

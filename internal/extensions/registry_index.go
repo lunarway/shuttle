@@ -19,6 +19,7 @@ type (
 		Os           string `json:"os"`
 		Url          string `json:"url"`
 		Checksum     string `json:"checksum"`
+		Provider     string `json:"provider"`
 	}
 
 	registryExtension struct {
