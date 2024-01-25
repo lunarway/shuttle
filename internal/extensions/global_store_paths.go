@@ -21,7 +21,7 @@ func getExtensionsCachePath(globalStore *global.GlobalStore) string {
 }
 
 func ensureExists(dirPath string) error {
-	return os.MkdirAll(dirPath, 0o666)
+	return os.MkdirAll(dirPath, 755)
 }
 
 func exists(dirPath string) bool {
