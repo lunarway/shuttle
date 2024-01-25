@@ -25,7 +25,28 @@ func (e *ExtensionsManager) Init(ctx context.Context) error {
 
 // GetAll will return all known and installed extensions
 func (e *ExtensionsManager) GetAll(ctx context.Context) ([]Extension, error) {
-	return nil, nil
+	registry := getRegistryPath(e.globalStore)
+
+	index := newRegistryIndex(registry)
+
+	registryExtensions, err := index.getExtensions(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to install extensions, could not get extensions from index: %w", err)
+	}
+
+	extensions := make([]Extension, 0)
+	for _, registryExtension := range registryExtensions {
+		extension, err := newExtensionFromRegistry(e.globalStore, &registryExtension)
+		if err != nil {
+			return nil, err
+		}
+
+		if extension != nil {
+			extensions = append(extensions, *extension)
+		}
+	}
+
+	return extensions, nil
 }
 
 // Install will ensure that all known extensions are installed and ready for use

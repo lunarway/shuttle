@@ -3,6 +3,9 @@ package cmd
 import (
 	"errors"
 	"os"
+	"os/exec"
+
+	stdcontext "context"
 
 	"github.com/lunarway/shuttle/internal/extensions"
 	"github.com/lunarway/shuttle/internal/global"
@@ -23,6 +26,53 @@ func (c *extGlobalConfig) getRegistry() (string, bool) {
 	}
 
 	return "", false
+}
+
+func addExtensions(rootCmd *cobra.Command) error {
+	extManager := extensions.NewExtensionsManager(global.NewGlobalStore())
+
+	extensions, err := extManager.GetAll(stdcontext.Background())
+	if err != nil {
+		return err
+	}
+	grp := &cobra.Group{
+		ID:    "extensions",
+		Title: "Extensions",
+	}
+	rootCmd.AddGroup(grp)
+	for _, extension := range extensions {
+		extension := extension
+
+		rootCmd.AddCommand(
+			&cobra.Command{
+				Use:                extension.Name(),
+				Short:              extension.Description(),
+				Version:            extension.Version(),
+				GroupID:            "extensions",
+				DisableFlagParsing: true,
+				RunE: func(cmd *cobra.Command, args []string) error {
+
+					extCmd := exec.CommandContext(cmd.Context(), extension.FullPath(), args...)
+
+					extCmd.Stdout = os.Stdout
+					extCmd.Stderr = os.Stderr
+					extCmd.Stdin = os.Stdin
+
+					if err := extCmd.Start(); err != nil {
+						return err
+					}
+
+					if err := extCmd.Wait(); err != nil {
+						return err
+					}
+
+					return nil
+				},
+			},
+		)
+	}
+
+	return nil
 }
 
 func newExtCmd() *cobra.Command {
