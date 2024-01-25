@@ -24,7 +24,8 @@ func newExtCmd() *cobra.Command {
 
 func newExtInstallCmd(extManager *extensions.ExtensionsManager) *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "install",
+		Use:  "install",
+		Long: "Install ensures that extensions already known about are downloaded and available",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
@@ -35,7 +36,8 @@ func newExtInstallCmd(extManager *extensions.ExtensionsManager) *cobra.Command {
 
 func newExtUpdateCmd(extManager *extensions.ExtensionsManager) *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "update",
+		Use:  "update",
+		Long: "Update will fetch the latest version of the extensions from the given registry",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
@@ -46,7 +48,8 @@ func newExtUpdateCmd(extManager *extensions.ExtensionsManager) *cobra.Command {
 
 func newExtInitCmd(extManager *extensions.ExtensionsManager) *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "init",
+		Use:  "init",
+		Long: "init will create an initial extensions repository",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
