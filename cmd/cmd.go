@@ -160,6 +160,7 @@ func initializedRootFromArgs(stdout, stderr io.Writer, args []string) (*cobra.Co
 	rootCmd.ParseFlags(args)
 
 	rootCmd.AddCommand(newExtCmd())
+	addExtensions(rootCmd)
 
 	if isInRepoContext() {
 		runCmd, err := newRun(uii, ctxProvider)
