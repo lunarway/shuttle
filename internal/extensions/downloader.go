@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -60,11 +61,16 @@ func (d *gitHubReleaseDownloader) Download(ctx context.Context, dest string) err
 	}
 	defer resp.Body.Close()
 
+	if err := os.RemoveAll(dest); err != nil {
+		log.Printf("failed to remove extension before downloading new: %s", err.Error())
+	}
+
 	extensionBinary, err := os.Create(dest)
 	if err != nil {
 		return err
 	}
 	defer extensionBinary.Close()
+	extensionBinary.Chmod(0o755)
 
 	if _, err := io.Copy(extensionBinary, resp.Body); err != nil {
 		return err

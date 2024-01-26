@@ -12,10 +12,11 @@ import (
 type Registry interface {
 	Get(ctx context.Context) error
 	Update(ctx context.Context) error
+	Publish(ctx context.Context, extFile *shuttleExtensionsFile, version string) error
 }
 
-// NewRegistry is a shim for concrete implementations of the registries, such as gitRegistry
-func NewRegistry(registry string, globalStore *global.GlobalStore) (Registry, error) {
+// NewRegistryFromCombined is a shim for concrete implementations of the registries, such as gitRegistry
+func NewRegistryFromCombined(registry string, globalStore *global.GlobalStore) (Registry, error) {
 	registryType, registryUrl, ok := strings.Cut(registry, "=")
 	if !ok {
 		return nil, fmt.Errorf("registry was not a valid url: %s", registry)
@@ -24,6 +25,18 @@ func NewRegistry(registry string, globalStore *global.GlobalStore) (Registry, er
 	switch registryType {
 	case "git":
 		return newGitRegistry(registryUrl, globalStore), nil
+	default:
+		return nil, fmt.Errorf("registry type was not valid: %s", registryType)
+	}
+}
+
+// NewRegistry is a shim for concrete implementations of the registries, such as gitRegistry
+func NewRegistry(registryType string, registryUrl string, globalStore *global.GlobalStore) (Registry, error) {
+	switch registryType {
+	case "git":
+		return newGitRegistry(registryUrl, globalStore), nil
+	case "github":
+		return newGitHubRegistry()
 	default:
 		return nil, fmt.Errorf("registry type was not valid: %s", registryType)
 	}

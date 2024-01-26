@@ -74,7 +74,7 @@ func (e *ExtensionsManager) Install(ctx context.Context) error {
 
 // Update will fetch the latest extensions from a registry and install them afterwards so that they're ready for use
 func (e *ExtensionsManager) Update(ctx context.Context, registry string) error {
-	reg, err := NewRegistry(registry, e.globalStore)
+	reg, err := NewRegistryFromCombined(registry, e.globalStore)
 	if err != nil {
 		return fmt.Errorf("failed to update extensions: %w", err)
 	}
@@ -84,6 +84,24 @@ func (e *ExtensionsManager) Update(ctx context.Context, registry string) error {
 	}
 
 	if err := e.Install(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *ExtensionsManager) Publish(ctx context.Context, version string) error {
+	extensionsFile, err := getExtensionsFile(ctx)
+	if err != nil {
+		return err
+	}
+
+	registry, err := NewRegistry("github", "", e.globalStore)
+	if err != nil {
+		return err
+	}
+
+	if err := registry.Publish(ctx, extensionsFile, version); err != nil {
 		return err
 	}
 
