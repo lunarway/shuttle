@@ -50,8 +50,8 @@ func addExtensions(rootCmd *cobra.Command) error {
 				Version:            extension.Version(),
 				GroupID:            "extensions",
 				DisableFlagParsing: true,
-				RunE: func(cmd *cobra.Command, args []string) error {
 
+				RunE: func(cmd *cobra.Command, args []string) error {
 					extCmd := exec.CommandContext(cmd.Context(), extension.FullPath(), args...)
 
 					extCmd.Stdout = os.Stdout
@@ -87,6 +87,7 @@ func newExtCmd() *cobra.Command {
 		newExtInstallCmd(globalConfig),
 		newExtUpdateCmd(globalConfig),
 		newExtInitCmd(globalConfig),
+		newExtPublishCmd(globalConfig),
 	)
 
 	cmd.PersistentFlags().StringVar(&globalConfig.registry, "registry", "", "the given registry, if not set will default to SHUTTLE_EXTENSIONS_REGISTRY")
@@ -143,6 +144,29 @@ func newExtInitCmd(globalConfig *extGlobalConfig) *cobra.Command {
 			return nil
 		},
 	}
+
+	return cmd
+}
+
+func newExtPublishCmd(globalConfig *extGlobalConfig) *cobra.Command {
+	var version string
+
+	cmd := &cobra.Command{
+		Use:   "publish",
+		Short: "Publishes the current extension to a registry",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			extManager := extensions.NewExtensionsManager(global.NewGlobalStore())
+
+			if err := extManager.Publish(cmd.Context(), version); err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&version, "version", "", "the version to publish")
+	cmd.MarkFlagRequired("version")
 
 	return cmd
 }
