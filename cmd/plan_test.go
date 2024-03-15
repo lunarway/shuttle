@@ -24,7 +24,7 @@ func TestPlan(t *testing.T) {
 		{
 			name:    "git plan invalid checkout",
 			input:   args("-p", "testdata/project-git", "--plan", "something-invalid", "plan"),
-			initErr: errors.New("Plan argument wasn't valid for a git plan: something-invalid"),
+			initErr: errors.New("Plan argument wasn't valid for a git plan (#<branch / tag name>): something-invalid"),
 		},
 		{
 			name:      "no plan with template",
