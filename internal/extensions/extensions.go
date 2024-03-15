@@ -36,6 +36,8 @@ func (e *ExtensionsManager) GetAll(ctx context.Context) ([]Extension, error) {
 
 	extensions := make([]Extension, 0)
 	for _, registryExtension := range registryExtensions {
+		registryExtension := registryExtension
+
 		extension, err := newExtensionFromRegistry(e.globalStore, &registryExtension)
 		if err != nil {
 			return nil, err
