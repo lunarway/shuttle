@@ -83,9 +83,13 @@ func GetGitPlan(
 ) (string, error) {
 	parsedGitPlan := ParsePlan(plan)
 
-	if strings.HasPrefix(planArgument, "#") {
-		parsedGitPlan.Head = planArgument[1:]
-		uii.EmphasizeInfoln("Overload git plan branch/tag/sha with %v", parsedGitPlan.Head)
+	if planArgument != "" {
+		if strings.HasPrefix(planArgument, "#") {
+			parsedGitPlan.Head = planArgument[1:]
+			uii.EmphasizeInfoln("Overload git plan branch/tag/sha with %v", parsedGitPlan.Head)
+		} else {
+			return "", fmt.Errorf("Plan argument wasn't valid for a git plan: %s", planArgument)
+		}
 	}
 
 	planPath := path.Join(localShuttleDirectoryPath, "plan")
