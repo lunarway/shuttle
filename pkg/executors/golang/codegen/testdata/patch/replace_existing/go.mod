@@ -1,3 +1,3 @@
 module replace_existing
 
-go 1.21.4
+go 1.21.8
