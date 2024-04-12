@@ -3,6 +3,7 @@ package cmder
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -10,6 +11,10 @@ import (
 
 	"github.com/lunarway/shuttle/pkg/executors/golang/executer"
 	"github.com/spf13/cobra"
+)
+
+var (
+	ErrNoHelp = errors.New("cmd failed with exit 1")
 )
 
 type RootCmd struct {
@@ -30,7 +35,12 @@ func (rc *RootCmd) AddCmds(cmd ...*Cmd) *RootCmd {
 
 func (rc *RootCmd) Execute() {
 	if err := rc.TryExecute(os.Args[1:]); err != nil {
-		log.Fatalf("%v\n", err)
+		if errors.Is(err, ErrNoHelp) {
+			os.Exit(1)
+		} else {
+			log.Fatalf("%v\n", err)
+		}
+
 	}
 }
 
@@ -85,9 +95,10 @@ func (rc *RootCmd) TryExecute(args []string) error {
 
 		cobracmd := &cobra.Command{
 			Use: cmd.Name,
-			Run: func(cobracmd *cobra.Command, args []string) {
+			RunE: func(cobracmd *cobra.Command, args []string) error {
 				if err := cobracmd.ParseFlags(args); err != nil {
-					log.Fatal(err)
+					log.Println(err)
+					return ErrNoHelp
 				}
 
 				inputs := make([]reflect.Value, 0, len(cmd.Args)+1)
@@ -101,19 +112,20 @@ func (rc *RootCmd) TryExecute(args []string) error {
 					Call(inputs)
 
 				if len(returnValues) == 0 {
-					return
+					return nil
 				}
 
 				for _, val := range returnValues {
 					if val.Type().Implements(reflect.TypeOf((*error)(nil)).Elem()) {
 						err, ok := val.Interface().(error)
 						if ok && err != nil {
-							log.Fatal(err)
+							log.Println(err)
+							return ErrNoHelp
 						}
 					}
 				}
 
-				return
+				return nil
 			},
 		}
 		for i, arg := range cmd.Args {

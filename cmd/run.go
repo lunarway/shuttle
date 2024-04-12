@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/lunarway/shuttle/pkg/config"
+	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/executors"
 	"github.com/lunarway/shuttle/pkg/ui"
 )
@@ -177,9 +178,10 @@ func newRunSubCommand(
 	}
 
 	cmd := &cobra.Command{
-		Use:   script,
-		Short: value.Description,
-		Long:  value.Description,
+		Use:          script,
+		Short:        value.Description,
+		Long:         value.Description,
+		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if *interactiveArg {
 				uii.Verboseln("Running using interactive mode!")
@@ -204,7 +206,7 @@ func newRunSubCommand(
 			err := executorRegistry.Execute(ctx, context, script, actualArgs, *validateArgs)
 			if err != nil {
 				traceError(err)
-				return err
+				return errors.NewExitCode(1, "cmd failed: %s", err.Error())
 			}
 
 			return nil
