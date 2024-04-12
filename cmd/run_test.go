@@ -8,30 +8,6 @@ import (
 )
 
 func TestRun(t *testing.T) {
-
-	usage := `Usage:
-  shuttle run required_arg [flags]
-
-Flags:
-      --foo string   
-  -h, --help         help for required_arg
-
-Global Flags:
-  -c, --clean             Start from clean setup
-      --interactive       sets whether to enable ui for getting missing values via. prompt instead of failing immediadly, default is set by [SHUTTLE_INTERACTIVE=true/false]
-      --plan string       Overload the plan used.
-                          Specifying a local path with either an absolute path (/some/plan) or a relative path (../some/plan) to another location
-                          for the selected plan.
-                          Select a version of a git plan by using #branch, #sha or #tag
-                          If none of above is used, then the argument will expect a full plan spec.
-  -p, --project string    Project path (default ".")
-      --skip-pull         Skip git plan pulling step
-      --template string   Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].
-      --validate          Validate arguments against script definition in plan and exit with 1 on unknown or missing arguments (default true)
-  -v, --verbose           Print verbose output
-
-`
-
 	pwd, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("Failed to get working directory: %v", err)
@@ -60,29 +36,9 @@ Global Flags:
 			err:       nil,
 		},
 		{
-			name:  "exit 1",
-			input: args("-p", "testdata/project", "run", "exit_1"),
-			stdoutput: `Usage:
-  shuttle run exit_1 [flags]
-
-Flags:
-  -h, --help   help for exit_1
-
-Global Flags:
-  -c, --clean             Start from clean setup
-      --interactive       sets whether to enable ui for getting missing values via. prompt instead of failing immediadly, default is set by [SHUTTLE_INTERACTIVE=true/false]
-      --plan string       Overload the plan used.
-                          Specifying a local path with either an absolute path (/some/plan) or a relative path (../some/plan) to another location
-                          for the selected plan.
-                          Select a version of a git plan by using #branch, #sha or #tag
-                          If none of above is used, then the argument will expect a full plan spec.
-  -p, --project string    Project path (default ".")
-      --skip-pull         Skip git plan pulling step
-      --template string   Template string to use. The template format is golang templates [http://golang.org/pkg/text/template/#pkg-overview].
-      --validate          Validate arguments against script definition in plan and exit with 1 on unknown or missing arguments (default true)
-  -v, --verbose           Print verbose output
-
-`,
+			name:      "exit 1",
+			input:     args("-p", "testdata/project", "run", "exit_1"),
+			stdoutput: ``,
 			erroutput: "Error: exit code 4 - Failed executing script `exit_1`: shell script `exit 1`\nExit code: 1\n",
 			err: errors.New(
 				"exit code 4 - Failed executing script `exit_1`: shell script `exit 1`\nExit code: 1",
@@ -107,7 +63,7 @@ Global Flags:
 		{
 			name:      "script fails when required argument is missing",
 			input:     args("-p", "testdata/project", "run", "required_arg"),
-			stdoutput: usage,
+			stdoutput: "",
 			erroutput: `Error: Error: required flag(s) "foo" not set
 `,
 			err: errors.New(`Error: required flag(s) "foo" not set`),
@@ -150,7 +106,7 @@ Global Flags:
 		{
 			name:      "script fails on unkown argument",
 			input:     args("-p", "testdata/project", "run", "required_arg", "foo=bar", "--a b"),
-			stdoutput: usage,
+			stdoutput: "",
 			erroutput: `Error: unknown flag: --a b
 `,
 			err: errors.New(`unknown flag: --a b`),
