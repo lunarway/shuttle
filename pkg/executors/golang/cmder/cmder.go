@@ -47,7 +47,7 @@ func (rc *RootCmd) TryExecute(args []string) error {
 		&cobra.Command{
 			Hidden: true,
 			Use:    "lsjson",
-			RunE: func(cmd *cobra.Command, args []string) error {
+			Run: func(cmd *cobra.Command, args []string) {
 				actions := executer.NewActions()
 				for _, cmd := range rc.Cmds {
 					args := make([]executer.ActionArg, 0)
@@ -65,16 +65,16 @@ func (rc *RootCmd) TryExecute(args []string) error {
 
 				rawJson, err := json.Marshal(actions)
 				if err != nil {
-					return err
+					log.Fatal(err)
 				}
 
 				// Prints the commands and args as json to stdout
 				_, err = fmt.Printf("%s", string(rawJson))
 				if err != nil {
-					return err
+					log.Fatal(err)
 				}
 
-				return nil
+				return
 			},
 		},
 	)
@@ -85,9 +85,9 @@ func (rc *RootCmd) TryExecute(args []string) error {
 
 		cobracmd := &cobra.Command{
 			Use: cmd.Name,
-			RunE: func(cobracmd *cobra.Command, args []string) error {
+			Run: func(cobracmd *cobra.Command, args []string) {
 				if err := cobracmd.ParseFlags(args); err != nil {
-					return err
+					log.Fatal(err)
 				}
 
 				inputs := make([]reflect.Value, 0, len(cmd.Args)+1)
@@ -101,19 +101,19 @@ func (rc *RootCmd) TryExecute(args []string) error {
 					Call(inputs)
 
 				if len(returnValues) == 0 {
-					return nil
+					return
 				}
 
 				for _, val := range returnValues {
 					if val.Type().Implements(reflect.TypeOf((*error)(nil)).Elem()) {
 						err, ok := val.Interface().(error)
 						if ok && err != nil {
-							return err
+							log.Fatal(err)
 						}
 					}
 				}
 
-				return nil
+				return
 			},
 		}
 		for i, arg := range cmd.Args {
