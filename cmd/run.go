@@ -177,9 +177,10 @@ func newRunSubCommand(
 	}
 
 	cmd := &cobra.Command{
-		Use:   script,
-		Short: value.Description,
-		Long:  value.Description,
+		Use:          script,
+		Short:        value.Description,
+		Long:         value.Description,
+		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if *interactiveArg {
 				uii.Verboseln("Running using interactive mode!")

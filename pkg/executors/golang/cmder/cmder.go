@@ -3,6 +3,7 @@ package cmder
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -10,6 +11,10 @@ import (
 
 	"github.com/lunarway/shuttle/pkg/executors/golang/executer"
 	"github.com/spf13/cobra"
+)
+
+var (
+	ErrNoHelp = errors.New("cmd failed with exit 1")
 )
 
 type RootCmd struct {
@@ -30,7 +35,12 @@ func (rc *RootCmd) AddCmds(cmd ...*Cmd) *RootCmd {
 
 func (rc *RootCmd) Execute() {
 	if err := rc.TryExecute(os.Args[1:]); err != nil {
-		log.Fatalf("%v\n", err)
+		if errors.Is(err, ErrNoHelp) {
+			os.Exit(1)
+		} else {
+			log.Fatalf("%v\n", err)
+		}
+
 	}
 }
 
@@ -47,7 +57,7 @@ func (rc *RootCmd) TryExecute(args []string) error {
 		&cobra.Command{
 			Hidden: true,
 			Use:    "lsjson",
-			RunE: func(cmd *cobra.Command, args []string) error {
+			Run: func(cmd *cobra.Command, args []string) {
 				actions := executer.NewActions()
 				for _, cmd := range rc.Cmds {
 					args := make([]executer.ActionArg, 0)
@@ -65,16 +75,16 @@ func (rc *RootCmd) TryExecute(args []string) error {
 
 				rawJson, err := json.Marshal(actions)
 				if err != nil {
-					return err
+					log.Fatal(err)
 				}
 
 				// Prints the commands and args as json to stdout
 				_, err = fmt.Printf("%s", string(rawJson))
 				if err != nil {
-					return err
+					log.Fatal(err)
 				}
 
-				return nil
+				return
 			},
 		},
 	)
@@ -87,7 +97,8 @@ func (rc *RootCmd) TryExecute(args []string) error {
 			Use: cmd.Name,
 			RunE: func(cobracmd *cobra.Command, args []string) error {
 				if err := cobracmd.ParseFlags(args); err != nil {
-					return err
+					log.Println(err)
+					return ErrNoHelp
 				}
 
 				inputs := make([]reflect.Value, 0, len(cmd.Args)+1)
@@ -108,7 +119,8 @@ func (rc *RootCmd) TryExecute(args []string) error {
 					if val.Type().Implements(reflect.TypeOf((*error)(nil)).Elem()) {
 						err, ok := val.Interface().(error)
 						if ok && err != nil {
-							return err
+							log.Println(err)
+							return ErrNoHelp
 						}
 					}
 				}

@@ -21,7 +21,7 @@ func TestCmderWithError(t *testing.T) {
 
 	err := cmder.NewRoot().AddCmds(testFunc).TryExecute(args)
 
-	assert.ErrorContains(t, err, "some-error")
+	assert.ErrorIs(t, err, cmder.ErrNoHelp)
 }
 
 func TestCmderWithNoError(t *testing.T) {
@@ -63,7 +63,7 @@ func TestCmderWithMultipeReturnsErroring(t *testing.T) {
 
 	err := cmder.NewRoot().AddCmds(testFunc).TryExecute(args)
 
-	assert.ErrorContains(t, err, "some-error")
+	assert.ErrorIs(t, err, cmder.ErrNoHelp)
 }
 
 func TestCmderWithMultipeReturnsErroringInAnyPlace(t *testing.T) {
@@ -77,5 +77,5 @@ func TestCmderWithMultipeReturnsErroringInAnyPlace(t *testing.T) {
 
 	err := cmder.NewRoot().AddCmds(testFunc).TryExecute(args)
 
-	assert.ErrorContains(t, err, "some-error")
+	assert.ErrorIs(t, err, cmder.ErrNoHelp)
 }
