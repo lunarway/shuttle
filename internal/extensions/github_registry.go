@@ -125,7 +125,7 @@ func (gc *githubClient) UpsertFile(ctx context.Context, shuttleExtensionsFile *s
 		downloadLink := registryExtensionDownloadLink{
 			Architecture: arch,
 			Os:           os,
-			Url:          releaseAsset.DownloadUrl,
+			Url:          releaseAsset.Url,
 			Provider:     "github-release",
 		}
 
@@ -192,6 +192,7 @@ func (gc *githubClient) GetRelease(ctx context.Context, shuttleExtensionsFile *s
 
 type githubReleaseAsset struct {
 	DownloadUrl string `json:"browser_download_url"`
+	Url         string `json:"url"`
 }
 
 func (gra *githubReleaseAsset) ParseDownloadLink(name string) (arch string, os string, err error) {

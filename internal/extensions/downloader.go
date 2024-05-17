@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -48,13 +50,17 @@ func (d *gitHubReleaseDownloader) Download(ctx context.Context, dest string) err
 		bearer = accessToken
 	} else if accessToken := os.Getenv("GITHUB_ACCESS_TOKEN"); accessToken != "" {
 		bearer = accessToken
+	} else if accessToken, ok := getToken(); ok {
+		bearer = accessToken
 	}
 
 	if bearer == "" {
 		return errors.New("failed to find a valid authorization token for github. Please make sure you're logged into github-cli (gh), or have followed the setup documentation")
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", bearer))
+	req.Header.Add("Authorization", fmt.Sprintf("token %s", bearer))
+	req.Header.Add("Accept", "application/octet-stream")
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -77,4 +83,19 @@ func (d *gitHubReleaseDownloader) Download(ctx context.Context, dest string) err
 	}
 
 	return nil
+}
+
+func getToken() (string, bool) {
+	tokenRaw, err := exec.Command("gh", "auth", "token").Output()
+	if err != nil {
+		return "", false
+	}
+
+	token := string(tokenRaw)
+
+	if token != "" {
+		return strings.TrimSpace(token), false
+	}
+
+	return "", false
 }
