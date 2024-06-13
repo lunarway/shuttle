@@ -51,7 +51,6 @@ func addExtensions(rootCmd *cobra.Command) error {
 				GroupID:            "extensions",
 				DisableFlagParsing: true,
 				RunE: func(cmd *cobra.Command, args []string) error {
-
 					extCmd := exec.CommandContext(cmd.Context(), extension.FullPath(), args...)
 
 					extCmd.Stdout = os.Stdout
