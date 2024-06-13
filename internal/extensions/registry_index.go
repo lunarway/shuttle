@@ -19,6 +19,7 @@ type (
 		Os           string `json:"os"`
 		Url          string `json:"url"`
 		Checksum     string `json:"checksum"`
+		Provider     string `json:"provider"`
 	}
 
 	registryExtension struct {
@@ -35,7 +36,7 @@ func newRegistryIndex(registryPath string) *registryIndex {
 	}
 }
 
-func (r *registryIndex) getExtensions(ctx context.Context) ([]registryExtension, error) {
+func (r *registryIndex) getExtensions(_ context.Context) ([]registryExtension, error) {
 	contents, err := os.ReadDir(r.getIndexPath())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list index in registry: %s, %w", r.getIndexPath(), err)
