@@ -150,6 +150,7 @@ func newExtInitCmd(globalConfig *extGlobalConfig) *cobra.Command {
 func newExtPublishCmd(globalConfig *extGlobalConfig) *cobra.Command {
 	var version string
 
+	// Publish can either be called by a user to rollback an extension, or by CI to automatically publish an extension.
 	cmd := &cobra.Command{
 		Use:   "publish",
 		Short: "Publishes the current extension to a registry",
