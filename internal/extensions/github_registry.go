@@ -24,9 +24,9 @@ func (g *gitHubRegistry) Publish(ctx context.Context, extFile *shuttleExtensions
 		return err
 	}
 
-	sha, err := g.client.GetFile(ctx, extFile)
+	sha, err := g.client.GetFileSHA(ctx, extFile)
 	if err != nil {
-		log.Printf("failed to find file: %s", err.Error())
+		// TODO: Send error as a debug to log file somewhere
 		// Ignore file as it probably means that the file wasn't there
 	}
 
@@ -34,18 +34,7 @@ func (g *gitHubRegistry) Publish(ctx context.Context, extFile *shuttleExtensions
 		return err
 	}
 
-	log.Println("done")
 	return nil
-}
-
-// Get isn't implemented yet for GitHubRegistry
-func (*gitHubRegistry) Get(ctx context.Context) error {
-	panic("unimplemented")
-}
-
-// Update isn't implemented yet for GitHubRegistry
-func (*gitHubRegistry) Update(ctx context.Context) error {
-	panic("unimplemented")
 }
 
 func newGitHubRegistry() (Registry, error) {
@@ -65,15 +54,9 @@ type githubClient struct {
 }
 
 func newGitHubClient() (*githubClient, error) {
-	var token string
-	if accessToken := os.Getenv("SHUTTLE_EXTENSIONS_GITHUB_ACCESS_TOKEN"); accessToken != "" {
-		token = accessToken
-	} else if accessToken := os.Getenv("GITHUB_ACCESS_TOKEN"); accessToken != "" {
-		token = accessToken
-	}
-
-	if token == "" {
-		return nil, errors.New("GITHUB_ACCESS_TOKEN was not set")
+	token, err := getGithubToken()
+	if err != nil {
+		return nil, err
 	}
 
 	return &githubClient{
@@ -82,7 +65,7 @@ func newGitHubClient() (*githubClient, error) {
 	}, nil
 }
 
-func (gc *githubClient) GetFile(ctx context.Context, shuttleExtensionsFile *shuttleExtensionsFile) (string, error) {
+func (gc *githubClient) GetFileSHA(ctx context.Context, shuttleExtensionsFile *shuttleExtensionsFile) (string, error) {
 	owner, repo, ok := strings.Cut(*shuttleExtensionsFile.Registry.GitHub, "/")
 	if !ok {
 		return "", fmt.Errorf("failed to find owner and repo in registry: %s", *shuttleExtensionsFile.Registry.GitHub)

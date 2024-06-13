@@ -29,7 +29,7 @@ type shuttleExtensionsFile struct {
 	Registry shuttleExtensionsRegistry `json:"registry" yaml:"registry"`
 }
 
-func getExtensionsFile(ctx context.Context) (*shuttleExtensionsFile, error) {
+func getExtensionsFile(_ context.Context) (*shuttleExtensionsFile, error) {
 	templateFileContent, err := os.ReadFile("shuttle.template.yaml")
 	if err != nil {
 		return nil, fmt.Errorf("failed to find shuttle.template.yaml: %w", err)

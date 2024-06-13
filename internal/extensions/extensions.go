@@ -98,7 +98,7 @@ func (e *ExtensionsManager) Publish(ctx context.Context, version string) error {
 		return err
 	}
 
-	registry, err := NewRegistry("github", "", e.globalStore)
+	registry, err := newGitHubRegistry()
 	if err != nil {
 		return err
 	}

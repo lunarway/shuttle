@@ -29,15 +29,3 @@ func NewRegistryFromCombined(registry string, globalStore *global.GlobalStore) (
 		return nil, fmt.Errorf("registry type was not valid: %s", registryType)
 	}
 }
-
-// NewRegistry is a shim for concrete implementations of the registries, such as gitRegistry
-func NewRegistry(registryType string, registryUrl string, globalStore *global.GlobalStore) (Registry, error) {
-	switch registryType {
-	case "git":
-		return newGitRegistry(registryUrl, globalStore), nil
-	case "github":
-		return newGitHubRegistry()
-	default:
-		return nil, fmt.Errorf("registry type was not valid: %s", registryType)
-	}
-}
