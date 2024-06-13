@@ -18,16 +18,12 @@ type Extension struct {
 }
 
 func newExtensionFromRegistry(globalStore *global.GlobalStore, registryExtension *registryExtension) (*Extension, error) {
-	os := runtime.GOOS
-	arch := runtime.GOARCH
-
 	return &Extension{
-		os:          os,
-		arch:        arch,
+		os:          runtime.GOOS,
+		arch:        runtime.GOARCH,
 		globalStore: globalStore,
 		remote:      registryExtension,
 	}, nil
-
 }
 
 func (e *Extension) Ensure(ctx context.Context) error {
