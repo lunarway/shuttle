@@ -37,6 +37,16 @@ func (g *gitHubRegistry) Publish(ctx context.Context, extFile *shuttleExtensions
 	return nil
 }
 
+// Get isn't implemented yet for GitHubRegistry
+func (*gitHubRegistry) Get(ctx context.Context) error {
+	panic("unimplemented")
+}
+
+// Update isn't implemented yet for GitHubRegistry
+func (*gitHubRegistry) Update(ctx context.Context) error {
+	panic("unimplemented")
+}
+
 func newGitHubRegistry() (Registry, error) {
 	client, err := newGitHubClient()
 	if err != nil {
