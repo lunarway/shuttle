@@ -50,36 +50,51 @@ func newGitRegistry(url string, globalStore *global.GlobalStore) Registry {
 func (g *gitRegistry) fetchGitRepository(ctx context.Context) error {
 	registry := getRegistryPath(g.globalStore)
 
-	cmd := exec.CommandContext(ctx, "git", "pull")
-
-	cmd.Dir = registry
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-
-	return cmd.Wait()
+	return g.executeGit(ctx, "git", gitOptions{
+		args: []string{
+			"pull",
+		},
+		dir: registry,
+	})
 }
 
 func (g *gitRegistry) cloneGitRepository(ctx context.Context) error {
 	registry := getRegistryPath(g.globalStore)
 
-	cmd := exec.CommandContext(ctx, "git", "clone", g.url, registry)
+	return g.executeGit(ctx, "git", gitOptions{
+		args: []string{
+			"clone",
+			g.url,
+			registry,
+		},
+	})
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-
-	return cmd.Wait()
 }
 
 func (g *gitRegistry) registryClonedAlready() bool {
 	registry := getRegistryPath(g.globalStore)
 
 	return exists(path.Join(registry, ".git"))
+}
+
+type gitOptions struct {
+	args []string
+	dir  string
+}
+
+func (g *gitRegistry) executeGit(ctx context.Context, name string, gitOptions gitOptions) error {
+	cmd := exec.CommandContext(ctx, name, gitOptions.args...)
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if gitOptions.dir != "" {
+		cmd.Dir = gitOptions.dir
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	return cmd.Wait()
 }
