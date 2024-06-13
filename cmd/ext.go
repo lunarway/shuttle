@@ -13,7 +13,7 @@ type extGlobalConfig struct {
 	registry string
 }
 
-func (c *extGlobalConfig) Registry() (string, bool) {
+func (c *extGlobalConfig) getRegistry() (string, bool) {
 	if c.registry != "" {
 		return c.registry, true
 	}
@@ -69,7 +69,7 @@ func newExtUpdateCmd(globalConfig *extGlobalConfig) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			extManager := extensions.NewExtensionsManager(global.NewGlobalStore())
 
-			registry, ok := globalConfig.Registry()
+			registry, ok := globalConfig.getRegistry()
 			if !ok {
 				return errors.New("registry is not set")
 			}
