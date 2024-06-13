@@ -16,6 +16,11 @@ type gitRegistry struct {
 	globalStore *global.GlobalStore
 }
 
+// Publish isn't implemented yet for gitRegistry
+func (*gitRegistry) Publish(ctx context.Context, extFile *shuttleExtensionsFile, version string) error {
+	panic("unimplemented")
+}
+
 func (*gitRegistry) Get(ctx context.Context) error {
 	panic("unimplemented")
 }

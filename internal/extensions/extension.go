@@ -35,7 +35,8 @@ func (e *Extension) Ensure(ctx context.Context) error {
 
 	binaryPath := path.Join(extensionsCachePath, binaryName)
 	if exists(binaryPath) {
-		return nil
+		// TODO: do a checksum chck
+		//return nil
 	}
 
 	downloadLink := e.getRemoteBinaryDownloadLink()
@@ -55,8 +56,24 @@ func (e *Extension) Ensure(ctx context.Context) error {
 	return nil
 }
 
+func (e *Extension) Name() string {
+	return e.remote.Name
+}
+
+func (e *Extension) Version() string {
+	return e.remote.Version
+}
+
+func (e *Extension) Description() string {
+	return e.remote.Description
+}
+
 func (e *Extension) getExtensionBinaryName() string {
 	return e.remote.Name
+}
+
+func (e *Extension) FullPath() string {
+	return path.Join(getExtensionsCachePath(e.globalStore), e.Name())
 }
 
 func (e *Extension) getRemoteBinaryDownloadLink() *registryExtensionDownloadLink {
