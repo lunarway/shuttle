@@ -35,7 +35,8 @@ func (e *Extension) Ensure(ctx context.Context) error {
 
 	binaryPath := path.Join(extensionsCachePath, binaryName)
 	if exists(binaryPath) {
-		return nil
+		// TODO: do a checksum chck
+		//return nil
 	}
 
 	downloadLink := e.getRemoteBinaryDownloadLink()

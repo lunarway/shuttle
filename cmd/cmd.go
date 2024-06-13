@@ -161,7 +161,7 @@ func initializedRootFromArgs(stdout, stderr io.Writer, args []string) (*cobra.Co
 
 	rootCmd.AddCommand(newExtCmd())
 	if err := addExtensions(rootCmd); err != nil {
-		return nil, nil, fmt.Errorf("failed to register extensions: %w", err)
+		uii.Verboseln("failed to register extensions: %s", err.Error())
 	}
 
 	if isInRepoContext() {

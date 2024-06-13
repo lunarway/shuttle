@@ -2,9 +2,9 @@ package extensions
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -42,29 +42,30 @@ func (d *gitHubReleaseDownloader) Download(ctx context.Context, dest string) err
 		return err
 	}
 
-	var bearer string
-	if accessToken := os.Getenv("SHUTTLE_EXTENSIONS_GITHUB_ACCESS_TOKEN"); accessToken != "" {
-		bearer = accessToken
-	} else if accessToken := os.Getenv("GITHUB_ACCESS_TOKEN"); accessToken != "" {
-		bearer = accessToken
+	bearer, err := getGithubToken()
+	if err != nil {
+		return err
 	}
 
-	if bearer == "" {
-		return errors.New("failed to find a valid authorization token for github. Please make sure you're logged into github-cli (gh), or have followed the setup documentation")
-	}
+	req.Header.Add("Authorization", fmt.Sprintf("token %s", bearer))
+	req.Header.Add("Accept", "application/octet-stream")
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", bearer))
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
+	if err := os.RemoveAll(dest); err != nil {
+		log.Printf("failed to remove extension before downloading new: %s, please try again", err.Error())
+	}
+
 	extensionBinary, err := os.Create(dest)
 	if err != nil {
 		return err
 	}
 	defer extensionBinary.Close()
+	extensionBinary.Chmod(0o755)
 
 	if _, err := io.Copy(extensionBinary, resp.Body); err != nil {
 		return err
