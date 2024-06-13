@@ -25,7 +25,7 @@ func newExtCmd() *cobra.Command {
 func newExtInstallCmd(extManager *extensions.ExtensionsManager) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:  "install",
-		Long: "Install ensures that extensions already known about are downloaded and available",
+		Long: "Install ensures that extensions are downloaded and available",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
