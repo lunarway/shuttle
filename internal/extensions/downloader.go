@@ -2,6 +2,7 @@ package extensions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -34,7 +35,6 @@ func newGitHubReleaseDownloader(downloadLink *registryExtensionDownloadLink) Dow
 
 func (d *gitHubReleaseDownloader) Download(ctx context.Context, dest string) error {
 	client := http.DefaultClient
-
 	client.Timeout = time.Second * 60
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.link.Url, nil)
@@ -42,12 +42,18 @@ func (d *gitHubReleaseDownloader) Download(ctx context.Context, dest string) err
 		return err
 	}
 
+	var bearer string
 	if accessToken := os.Getenv("SHUTTLE_EXTENSIONS_GITHUB_ACCESS_TOKEN"); accessToken != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+		bearer = accessToken
 	} else if accessToken := os.Getenv("GITHUB_ACCESS_TOKEN"); accessToken != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+		bearer = accessToken
 	}
 
+	if bearer == "" {
+		return errors.New("failed to find a valid authorization token for github. Please make sure you're logged into github-cli (gh), or have followed the setup documentation")
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", bearer))
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
