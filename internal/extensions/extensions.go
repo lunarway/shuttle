@@ -25,17 +25,58 @@ func (e *ExtensionsManager) Init(ctx context.Context) error {
 
 // GetAll will return all known and installed extensions
 func (e *ExtensionsManager) GetAll(ctx context.Context) ([]Extension, error) {
-	return nil, nil
+	registry := getRegistryPath(e.globalStore)
+
+	index := newRegistryIndex(registry)
+
+	registryExtensions, err := index.getExtensions(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to install extensions, could not get extensions from index: %w", err)
+	}
+
+	extensions := make([]Extension, 0)
+	for _, registryExtension := range registryExtensions {
+		registryExtension := registryExtension
+
+		extension, err := newExtensionFromRegistry(e.globalStore, &registryExtension)
+		if err != nil {
+			return nil, err
+		}
+
+		if extension != nil {
+			extensions = append(extensions, *extension)
+		}
+	}
+
+	return extensions, nil
 }
 
 // Install will ensure that all known extensions are installed and ready for use
 func (e *ExtensionsManager) Install(ctx context.Context) error {
+	registry := getRegistryPath(e.globalStore)
+	index := newRegistryIndex(registry)
+	extensions, err := index.getExtensions(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to install extensions, could not get extensions from index: %w", err)
+	}
+
+	for _, registryExtension := range extensions {
+		extension, err := newExtensionFromRegistry(e.globalStore, &registryExtension)
+		if err != nil {
+			return err
+		}
+
+		if err := extension.Ensure(ctx); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 // Update will fetch the latest extensions from a registry and install them afterwards so that they're ready for use
 func (e *ExtensionsManager) Update(ctx context.Context, registry string) error {
-	reg, err := NewRegistry(registry, e.globalStore)
+	reg, err := NewRegistryFromCombined(registry, e.globalStore)
 	if err != nil {
 		return fmt.Errorf("failed to update extensions: %w", err)
 	}
@@ -45,6 +86,24 @@ func (e *ExtensionsManager) Update(ctx context.Context, registry string) error {
 	}
 
 	if err := e.Install(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *ExtensionsManager) Publish(ctx context.Context, version string) error {
+	extensionsFile, err := getExtensionsFile(ctx)
+	if err != nil {
+		return err
+	}
+
+	registry, err := newGitHubRegistry()
+	if err != nil {
+		return err
+	}
+
+	if err := registry.Publish(ctx, extensionsFile, version); err != nil {
 		return err
 	}
 
