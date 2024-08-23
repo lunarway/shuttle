@@ -157,7 +157,7 @@ func newRunSubCommand(
 				}
 
 			} else if *inputArgs[arg.Name] == "" && arg.Required && *validateArgs {
-				return fmt.Errorf("Error: required flag(s) \"%s\" not set", argName(arg.Name))
+				return fmt.Errorf("required flag(s) \"%s\" not set", argName(arg.Name))
 			}
 		}
 
