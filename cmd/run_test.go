@@ -64,9 +64,9 @@ func TestRun(t *testing.T) {
 			name:      "script fails when required argument is missing",
 			input:     args("-p", "testdata/project", "run", "required_arg"),
 			stdoutput: "",
-			erroutput: `Error: Error: required flag(s) "foo" not set
+			erroutput: `Error: required flag(s) "foo" not set
 `,
-			err: errors.New(`Error: required flag(s) "foo" not set`),
+			err: errors.New(`required flag(s) "foo" not set`),
 		},
 		{
 			name:      "script succeeds with required argument",
