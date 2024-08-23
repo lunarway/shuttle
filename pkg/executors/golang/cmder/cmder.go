@@ -95,6 +95,10 @@ func (rc *RootCmd) TryExecute(args []string) error {
 
 		cobracmd := &cobra.Command{
 			Use: cmd.Name,
+
+			// We don't want to show the full usage, instead just show the error
+			SilenceUsage: true,
+
 			RunE: func(cobracmd *cobra.Command, args []string) error {
 				if err := cobracmd.ParseFlags(args); err != nil {
 					log.Println(err)
