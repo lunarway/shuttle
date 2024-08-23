@@ -1,3 +1,4 @@
+version: 2
 builds:
   - env:
       - CGO_ENABLED=0
@@ -7,7 +8,6 @@ builds:
     goarch:
       - amd64
       - arm64
-      - "386"
     ldflags:
       - "-s -w -X github.com/lunarway/shuttle/cmd.version={{.Version}} -X github.com/lunarway/shuttle/cmd.commit={{.Commit}}"
 
@@ -26,4 +26,4 @@ release:
   name_template: "v{{.Version}}"
 
 changelog:
-  skip: true
+  disable: true
