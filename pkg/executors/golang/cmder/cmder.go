@@ -40,7 +40,6 @@ func (rc *RootCmd) Execute() {
 		} else {
 			log.Fatalf("%v\n", err)
 		}
-
 	}
 }
 
@@ -123,7 +122,7 @@ func (rc *RootCmd) TryExecute(args []string) error {
 					if val.Type().Implements(reflect.TypeOf((*error)(nil)).Elem()) {
 						err, ok := val.Interface().(error)
 						if ok && err != nil {
-							log.Println(err)
+							fmt.Fprintln(cobracmd.ErrOrStderr(), err)
 							return ErrNoHelp
 						}
 					}
@@ -133,8 +132,8 @@ func (rc *RootCmd) TryExecute(args []string) error {
 			},
 		}
 		for i, arg := range cmd.Args {
-			cobracmd.PersistentFlags().StringVar(&parameters[i], arg.Name, "", "")
-			_ = cobracmd.MarkPersistentFlagRequired(arg.Name)
+			cobracmd.Flags().StringVar(&parameters[i], arg.Name, "", "")
+			_ = cobracmd.MarkFlagRequired(arg.Name)
 		}
 
 		rootcmd.AddCommand(cobracmd)
