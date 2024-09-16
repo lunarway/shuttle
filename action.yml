@@ -1,12 +1,14 @@
-name: 'Install Shuttle'
-description: 'Installs Lunar Shuttle'
+name: "Install Shuttle"
+description: "Installs Lunar Shuttle"
 runs:
   using: "composite"
   steps:
     - run: |
+        set -e
+
         if [ "$(uname)" == "Darwin" ]; then
             mkdir -p ~/bin
-            
+
             if [[ $(uname -m) == 'arm64' ]]; then
                 curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | awk -F'/' '{print $NF}')/shuttle-darwin-arm64
                 chmod +x shuttle-darwin-arm64
