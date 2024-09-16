@@ -161,7 +161,7 @@ func GetGitPlan(
 
 		var cloneArg string
 		if parsedGitPlan.Protocol == "https" {
-			cloneToken := os.GetEnv("HTTPS_ACCESS_TOKEN")
+			cloneToken := os.Getenv("GIT_CLONE_TOKEN")
 			if cloneToken == "" {
 				cloneArg = "https://" + parsedGitPlan.Repository
 			} else {
