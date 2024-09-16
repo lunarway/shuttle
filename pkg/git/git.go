@@ -161,7 +161,12 @@ func GetGitPlan(
 
 		var cloneArg string
 		if parsedGitPlan.Protocol == "https" {
-			cloneArg = "https://" + parsedGitPlan.Repository
+			cloneToken := os.GetEnv("HTTPS_ACCESS_TOKEN")
+			if cloneToken == "" {
+				cloneArg = "https://" + parsedGitPlan.Repository
+			} else {
+				cloneArg = "https://" + cloneToken + ":" + parsedGitPlan.Repository
+			}
 		} else if parsedGitPlan.Protocol == "ssh" {
 			cloneArg = parsedGitPlan.User + "@" + parsedGitPlan.Repository
 		} else {

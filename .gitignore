@@ -4,3 +4,4 @@ vendor/
 shuttle
 .shuttle
 .idea
+.DS_Store
