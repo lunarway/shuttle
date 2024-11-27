@@ -160,14 +160,19 @@ func GetGitPlan(
 		}
 
 		var cloneArg string
+		cloneToken := os.Getenv("SHUTTLE_GIT_TOKEN")
 		if parsedGitPlan.Protocol == "https" {
-			cloneToken := os.Getenv("SHUTTLE_GIT_TOKEN")
 			if cloneToken == "" {
 				cloneArg = "https://" + parsedGitPlan.Repository
 			} else {
 				cloneArg = fmt.Sprintf("https://%s@%s", cloneToken, parsedGitPlan.Repository)
+				uii.Verboseln("Found clone token in env. Overriding clone path to %s", cloneArg)
 			}
 		} else if parsedGitPlan.Protocol == "ssh" {
+			if cloneToken != "" {
+				uii.Verboseln("Found clone token in env, but shuttle path was ssh-based. This override will not work.")
+			}
+			
 			cloneArg = parsedGitPlan.User + "@" + parsedGitPlan.Repository
 		} else {
 			panic(fmt.Sprintf("Unknown protocol '%s'", parsedGitPlan.Protocol))
