@@ -21,10 +21,11 @@ runs:
 
             echo "~/bin/" >> $GITHUB_PATH
             export PATH=$PATH:~/bin
-            shuttle version
         elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
             curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | grep -o '[^/]*$')/shuttle-linux-amd64
             chmod +x shuttle-linux-amd64
             mv shuttle-linux-amd64 /usr/local/bin/shuttle
         fi
+
+        shuttle version --skip-pull
       shell: bash
