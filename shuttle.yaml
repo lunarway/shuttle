@@ -2,7 +2,7 @@ plan: false
 vars:
   service: shuttle
   domain: developer-productivity
-  squad: aura
+  squad: esa
 
 scripts:
   build:
