@@ -436,3 +436,279 @@ func TestTmplGetFiles(t *testing.T) {
 		})
 	}
 }
+
+func TestTmplGetJsonValueByKeys(t *testing.T) {
+	type input struct {
+		path string
+		data interface{}
+	}
+	tt := []struct {
+		name   string
+		input  input
+		output interface{}
+	}{
+		{
+			name: "nil input",
+			input: input{
+				path: "user.name",
+				data: nil,
+			},
+			output: nil,
+		},
+		{
+			name: "empty JSON string",
+			input: input{
+				path: "user.name",
+				data: "",
+			},
+			output: nil,
+		},
+		{
+			name: "invalid JSON string",
+			input: input{
+				path: "user.name",
+				data: "{invalid json}",
+			},
+			output: nil,
+		},
+		{
+			name: "valid JSON string with nested object",
+			input: input{
+				path: "user.name",
+				data: `{"user":{"name":"John","age":30}}`,
+			},
+			output: "John",
+		},
+		{
+			name: "valid JSON string with array access",
+			input: input{
+				path: "users.0.name",
+				data: `{"users":[{"name":"Alice","age":25},{"name":"Bob","age":35}]}`,
+			},
+			output: "Alice",
+		},
+		{
+			name: "valid JSON string with deep nesting",
+			input: input{
+				path: "config.database.host",
+				data: `{"config":{"database":{"host":"localhost","port":5432},"cache":{"enabled":true}}}`,
+			},
+			output: "localhost",
+		},
+		{
+			name: "valid JSON string with number value",
+			input: input{
+				path: "user.age",
+				data: `{"user":{"name":"John","age":30}}`,
+			},
+			output: float64(30), // JSON numbers are parsed as float64
+		},
+		{
+			name: "valid JSON string with boolean value",
+			input: input{
+				path: "config.cache.enabled",
+				data: `{"config":{"database":{"host":"localhost"},"cache":{"enabled":true}}}`,
+			},
+			output: true,
+		},
+		{
+			name: "non-existent path in JSON string",
+			input: input{
+				path: "user.email",
+				data: `{"user":{"name":"John","age":30}}`,
+			},
+			output: nil,
+		},
+		{
+			name: "already parsed JSON data (map)",
+			input: input{
+				path: "user.name",
+				data: map[string]interface{}{
+					"user": map[string]interface{}{
+						"name": "Jane",
+						"age":  28,
+					},
+				},
+			},
+			output: "Jane",
+		},
+		{
+			name: "already parsed JSON data with nested map",
+			input: input{
+				path: "config.database.port",
+				data: map[string]interface{}{
+					"config": map[string]interface{}{
+						"database": map[string]interface{}{
+							"host": "localhost",
+							"port": 5432,
+						},
+					},
+				},
+			},
+			output: 5432,
+		},
+		{
+			name: "array access in parsed data",
+			input: input{
+				path: "items.1",
+				data: map[string]interface{}{
+					"items": []interface{}{"first", "second", "third"},
+				},
+			},
+			output: "second",
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			output := TmplGetJsonValueByKeys(tc.input.path, tc.input.data)
+			assert.Equal(t, tc.output, output, "output does not match the expected")
+		})
+	}
+}
+
+func TestTmplJsonPath(t *testing.T) {
+	type input struct {
+		jsonString string
+		path       string
+	}
+	tt := []struct {
+		name   string
+		input  input
+		output interface{}
+	}{
+		{
+			name: "empty JSON string",
+			input: input{
+				jsonString: "",
+				path:       "user.name",
+			},
+			output: nil,
+		},
+		{
+			name: "invalid JSON string",
+			input: input{
+				jsonString: "{invalid json}",
+				path:       "user.name",
+			},
+			output: nil,
+		},
+		{
+			name: "valid JSON string with nested object",
+			input: input{
+				jsonString: `{"user":{"name":"John","age":30}}`,
+				path:       "user.name",
+			},
+			output: "John",
+		},
+		{
+			name: "valid JSON string with array access",
+			input: input{
+				jsonString: `{"users":[{"name":"Alice","age":25},{"name":"Bob","age":35}]}`,
+				path:       "users.0.name",
+			},
+			output: "Alice",
+		},
+		{
+			name: "valid JSON string with deep nesting",
+			input: input{
+				jsonString: `{"config":{"database":{"host":"localhost","port":5432},"cache":{"enabled":true}}}`,
+				path:       "config.database.host",
+			},
+			output: "localhost",
+		},
+		{
+			name: "valid JSON string with number value",
+			input: input{
+				jsonString: `{"user":{"name":"John","age":30}}`,
+				path:       "user.age",
+			},
+			output: float64(30), // JSON numbers are parsed as float64
+		},
+		{
+			name: "valid JSON string with boolean value",
+			input: input{
+				jsonString: `{"config":{"database":{"host":"localhost"},"cache":{"enabled":true}}}`,
+				path:       "config.cache.enabled",
+			},
+			output: true,
+		},
+		{
+			name: "valid JSON string with null value",
+			input: input{
+				jsonString: `{"user":{"name":"John","email":null}}`,
+				path:       "user.email",
+			},
+			output: nil,
+		},
+		{
+			name: "non-existent path in JSON string",
+			input: input{
+				jsonString: `{"user":{"name":"John","age":30}}`,
+				path:       "user.email",
+			},
+			output: nil,
+		},
+		{
+			name: "array access with index out of bounds",
+			input: input{
+				jsonString: `{"items":["first","second"]}`,
+				path:       "items.5",
+			},
+			output: nil,
+		},
+		{
+			name: "complex nested structure",
+			input: input{
+				jsonString: `{"data":{"users":[{"id":1,"profile":{"name":"Alice","settings":{"theme":"dark"}}},{"id":2,"profile":{"name":"Bob","settings":{"theme":"light"}}}]}}`,
+				path:       "data.users.1.profile.settings.theme",
+			},
+			output: "light",
+		},
+		{
+			name: "empty object",
+			input: input{
+				jsonString: `{}`,
+				path:       "any.path",
+			},
+			output: nil,
+		},
+		{
+			name: "array at root level",
+			input: input{
+				jsonString: `[{"name":"first"},{"name":"second"}]`,
+				path:       "0.name",
+			},
+			output: "first",
+		},
+		{
+			name: "string value at root level",
+			input: input{
+				jsonString: `"simple string"`,
+				path:       "",
+			},
+			output: "simple string",
+		},
+		{
+			name: "number value at root level",
+			input: input{
+				jsonString: `42`,
+				path:       "",
+			},
+			output: float64(42),
+		},
+		{
+			name: "boolean value at root level",
+			input: input{
+				jsonString: `true`,
+				path:       "",
+			},
+			output: true,
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			output := TmplJsonPath(tc.input.jsonString, tc.input.path)
+			assert.Equal(t, tc.output, output, "output does not match the expected")
+		})
+	}
+}

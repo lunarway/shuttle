@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -22,22 +23,24 @@ func GetFuncMap() template.FuncMap {
 	f := sprig.TxtFuncMap()
 
 	extra := template.FuncMap{
-		"get":            TmplGet,
-		"string":         TmplString,
-		"array":          TmplArray,
-		"objectArray":    TmplObjectArray,
-		"strConst":       TmplStrConst,
-		"int":            TmplInt,
-		"is":             TmplIs,
-		"isnt":           TmplIsnt,
-		"toYaml":         TmplToYaml,
-		"fromYaml":       TmplFromYaml,
-		"getFiles":       TmplGetFiles,
-		"getFileContent": TmplGetFileContent,
-		"fileExists":     TmplFileExists,
-		"trim":           strings.TrimSpace,
-		"upperFirst":     TmplUpperFirst,
-		"rightPad":       TmplRightPad,
+		"get":                TmplGet,
+		"string":             TmplString,
+		"array":               TmplArray,
+		"objectArray":         TmplObjectArray,
+		"strConst":            TmplStrConst,
+		"int":                 TmplInt,
+		"is":                  TmplIs,
+		"isnt":                TmplIsnt,
+		"toYaml":              TmplToYaml,
+		"fromYaml":            TmplFromYaml,
+		"getFiles":            TmplGetFiles,
+		"getFileContent":      TmplGetFileContent,
+		"fileExists":          TmplFileExists,
+		"trim":                strings.TrimSpace,
+		"upperFirst":          TmplUpperFirst,
+		"rightPad":            TmplRightPad,
+		"getJsonValueByKeys":  TmplGetJsonValueByKeys,
+		"jsonPath":            TmplJsonPath,
 	}
 
 	for k, v := range extra {
@@ -48,6 +51,11 @@ func GetFuncMap() template.FuncMap {
 }
 
 func TmplGet(path string, input interface{}) interface{} {
+	// If path is empty, return the input itself
+	if path == "" {
+		return input
+	}
+
 	if !strings.Contains(path, ".") {
 		return getInner(path, input)
 	}
@@ -213,6 +221,44 @@ func TmplGetFiles(directoryPath string) []os.FileInfo {
 	return files
 }
 
+// TmplGetJsonValueByKeys extracts a value from JSON data using dot-notation keys.
+// It works similarly to TmplGet but is specifically designed for JSON data structures.
+func TmplGetJsonValueByKeys(path string, input interface{}) interface{} {
+	if input == nil {
+		return nil
+	}
+
+	// If input is a string, try to parse it as JSON
+	var jsonData interface{}
+	switch v := input.(type) {
+	case string:
+		err := json.Unmarshal([]byte(v), &jsonData)
+		if err != nil {
+			return nil
+		}
+	default:
+		jsonData = input
+	}
+
+	return TmplGet(path, jsonData)
+}
+
+// TmplJsonPath parses a JSON string and extracts a value using a path expression.
+// The path uses dot-notation to navigate through the JSON structure.
+func TmplJsonPath(jsonString string, path string) interface{} {
+	if jsonString == "" {
+		return nil
+	}
+
+	var jsonData interface{}
+	err := json.Unmarshal([]byte(jsonString), &jsonData)
+	if err != nil {
+		return nil
+	}
+
+	return TmplGet(path, jsonData)
+}
+
 func getInner(property string, input interface{}) interface{} {
 	switch t := input.(type) {
 	default:
@@ -230,12 +276,39 @@ func getInner(property string, input interface{}) interface{} {
 		values := input.(map[string]string)
 		return values[property]
 	case []interface{}:
+		// Handle array access by index
+		if index, err := parseIndex(property); err == nil && index >= 0 && index < len(t) {
+			return t[index]
+		}
 		return nil
 	case string:
+		// Handle string access by index
+		if index, err := parseIndex(property); err == nil && index >= 0 && index < len(t) {
+			return string(t[index])
+		}
 		return nil
 	case bool:
 		return nil
 	case int:
 		return nil
+	case float64:
+		return nil
 	}
+}
+
+// parseIndex attempts to parse a string as an integer index
+func parseIndex(s string) (int, error) {
+	if s == "" {
+		return 0, fmt.Errorf("empty string")
+	}
+	
+	// Simple integer parsing
+	var index int
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return 0, fmt.Errorf("not a number")
+		}
+		index = index*10 + int(r-'0')
+	}
+	return index, nil
 }
