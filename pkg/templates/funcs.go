@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -282,9 +283,13 @@ func getInner(property string, input interface{}) interface{} {
 		}
 		return nil
 	case string:
-		// Handle string access by index
-		if index, err := parseIndex(property); err == nil && index >= 0 && index < len(t) {
-			return string(t[index])
+		// Handle string access by Unicode character index
+		if index, err := parseIndex(property); err == nil && index >= 0 {
+			// Convert to rune slice for proper Unicode character indexing
+			runes := []rune(t)
+			if index < len(runes) {
+				return string(runes[index])
+			}
 		}
 		return nil
 	case bool:
@@ -297,18 +302,23 @@ func getInner(property string, input interface{}) interface{} {
 }
 
 // parseIndex attempts to parse a string as an integer index
+// Returns an error if the string is not a valid non-negative integer
+// or if the integer would overflow
 func parseIndex(s string) (int, error) {
 	if s == "" {
 		return 0, fmt.Errorf("empty string")
 	}
 	
-	// Simple integer parsing
-	var index int
-	for _, r := range s {
-		if r < '0' || r > '9' {
-			return 0, fmt.Errorf("not a number")
-		}
-		index = index*10 + int(r-'0')
+	// Use strconv.Atoi for safe parsing with overflow detection
+	index, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, fmt.Errorf("not a valid integer: %v", err)
 	}
+	
+	// Ensure non-negative index
+	if index < 0 {
+		return 0, fmt.Errorf("negative index not allowed")
+	}
+	
 	return index, nil
 }
