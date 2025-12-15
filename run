@@ -1,3 +1,2 @@
-#!/bin/bash
-go build
-./shuttle "$@"
+#!/usr/bin/env bash
+go build && ./shuttle "$@"

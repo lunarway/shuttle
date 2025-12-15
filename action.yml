@@ -6,25 +6,28 @@ runs:
     - run: |
         set -e
 
+        VERSION=$(curl -fLso /dev/null -w '%{url_effective}' https://github.com/lunarway/shuttle/releases/latest) || { echo "Failed to fetch latest release version" >&2; exit 1; }
+        VERSION=${VERSION##*/}
+
         if [ "$(uname)" == "Darwin" ]; then
             mkdir -p ~/bin
 
             if [[ $(uname -m) == 'arm64' ]]; then
-                curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | awk -F'/' '{print $NF}')/shuttle-darwin-arm64
+                curl -fLO https://github.com/lunarway/shuttle/releases/download/${VERSION}/shuttle-darwin-arm64
                 chmod +x shuttle-darwin-arm64
                 mv shuttle-darwin-arm64 ~/bin/shuttle
             else
-                curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | awk -F'/' '{print $NF}')/shuttle-darwin-amd64
+                curl -fLO https://github.com/lunarway/shuttle/releases/download/${VERSION}/shuttle-darwin-amd64
                 chmod +x shuttle-darwin-amd64
                 mv shuttle-darwin-amd64 ~/bin/shuttle
             fi
 
             echo "~/bin/" >> $GITHUB_PATH
             export PATH=$PATH:~/bin
-            shuttle version
         elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-            curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | grep -o '[^/]*$')/shuttle-linux-amd64
+            curl -fLO https://github.com/lunarway/shuttle/releases/download/${VERSION}/shuttle-linux-amd64
             chmod +x shuttle-linux-amd64
             mv shuttle-linux-amd64 /usr/local/bin/shuttle
         fi
+        shuttle version
       shell: bash
