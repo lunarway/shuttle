@@ -27,6 +27,10 @@ type ShuttleScriptArgs struct {
 	Name        string `yaml:"name"`
 	Required    bool   `yaml:"required"`
 	Description string `yaml:"description"`
+	// Type optionally describes the kind of argument. When set to "bool" the
+	// flag can be passed without an explicit value (e.g. "--silent" is treated
+	// as "--silent=true"). Empty defaults to a string argument.
+	Type string `yaml:"type"`
 }
 
 func (a ShuttleScriptArgs) String() string {

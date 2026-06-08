@@ -19,7 +19,7 @@ func TestLs(t *testing.T) {
 		{
 			name:      "list one action",
 			input:     args("-p", "testdata/project", "ls"),
-			stdoutput: "Available Scripts:\n  exit_0         \n  exit_1         \n  hello_stderr   \n  hello_stdout   \n  required_arg   \n",
+			stdoutput: "Available Scripts:\n  bool_arg       \n  exit_0         \n  exit_1         \n  hello_stderr   \n  hello_stdout   \n  required_arg   \n",
 			erroutput: "",
 			err:       nil,
 		},

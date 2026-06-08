@@ -219,6 +219,11 @@ func newRunSubCommand(
 	for _, arg := range value.Args {
 		arg := arg
 		cmd.Flags().StringVar(inputArgs[arg.Name], argName(arg.Name), "", arg.Description)
+		// Bool-typed args may be passed without an explicit value, e.g.
+		// "--silent" is treated as "--silent=true".
+		if arg.Type == "bool" {
+			cmd.Flags().Lookup(argName(arg.Name)).NoOptDefVal = "true"
+		}
 	}
 
 	return cmd
