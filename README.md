@@ -57,9 +57,20 @@ scripts:
       - shell: docker -f $plan/Dockerfile build -t $(shuttle get docker.image):$tag
   test:
     description: Run test for the project
+    args:
+      - name: silent
+        type: bool
+        description: If set, suppresses verbose output
     actions:
       - shell: go test
 ```
+
+Script arguments are strings by default and require a value, e.g.
+`shuttle run build --tag v1`. An argument with `type: bool` may be passed
+without an explicit value, so `shuttle run test --silent` is equivalent to
+`shuttle run test --silent=true`. Use `--silent=false` to set it to false;
+the space-separated form (`--silent true`) does not assign a value to
+bool-typed args.
 
 The `plan.yaml` is located at the root of the plan directory which is located
 elsewhere of the actual project using it. The plan directory can be locally

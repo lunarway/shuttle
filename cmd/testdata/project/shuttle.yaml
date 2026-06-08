@@ -25,3 +25,9 @@ scripts:
         required: true
     actions:
       - shell: echo $foo
+  bool_arg:
+    args:
+      - name: silent
+        type: bool
+    actions:
+      - shell: echo "silent=[$silent]"
