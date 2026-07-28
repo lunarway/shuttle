@@ -6,28 +6,29 @@ runs:
     - run: |
         set -e
 
-        VERSION=$(curl -fLso /dev/null -w '%{url_effective}' https://github.com/lunarway/shuttle/releases/latest) || { echo "Failed to fetch latest release version" >&2; exit 1; }
-        VERSION=${VERSION##*/}
+        case "$(uname -m)" in
+            arm64|aarch64) arch=arm64 ;;
+            x86_64|amd64)  arch=amd64 ;;
+            *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+        esac
 
-        if [ "$(uname)" == "Darwin" ]; then
-            mkdir -p ~/bin
+        case "$(uname -s)" in
+            Darwin) os=darwin ;;
+            Linux)  os=linux ;;
+            *) echo "Unsupported operating system: $(uname -s)" >&2; exit 1 ;;
+        esac
 
-            if [[ $(uname -m) == 'arm64' ]]; then
-                curl -fLO https://github.com/lunarway/shuttle/releases/download/${VERSION}/shuttle-darwin-arm64
-                chmod +x shuttle-darwin-arm64
-                mv shuttle-darwin-arm64 ~/bin/shuttle
-            else
-                curl -fLO https://github.com/lunarway/shuttle/releases/download/${VERSION}/shuttle-darwin-amd64
-                chmod +x shuttle-darwin-amd64
-                mv shuttle-darwin-amd64 ~/bin/shuttle
-            fi
+        curl -fsSLo shuttle https://github.com/lunarway/shuttle/releases/latest/download/shuttle-$os-$arch
+        chmod +x shuttle
 
-            echo "~/bin/" >> $GITHUB_PATH
-            export PATH=$PATH:~/bin
-        elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-            curl -fLO https://github.com/lunarway/shuttle/releases/download/${VERSION}/shuttle-linux-amd64
-            chmod +x shuttle-linux-amd64
-            mv shuttle-linux-amd64 /usr/local/bin/shuttle
+        if [ "$os" == "darwin" ]; then
+            mkdir -p "$HOME/bin"
+            mv shuttle "$HOME/bin/shuttle"
+            echo "$HOME/bin" >> $GITHUB_PATH
+            export PATH="$HOME/bin:$PATH"
+        else
+            mv shuttle /usr/local/bin/shuttle
         fi
+
         shuttle version
       shell: bash
