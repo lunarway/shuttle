@@ -204,6 +204,25 @@ export SHUTTLE_CACHE_DURATION_MIN=60 # Cache a plan for 60 minutes
 This feature caches pr. repo, as such the cache isn't shared between working
 repositories.
 
+#### Skipping the pull
+
+Every shuttle invocation pulls the plan again, which is wasted time in CI where
+the plan was just cloned and cannot have changed during the job. Shuttle
+therefore skips pulling an already cloned plan when the `CI` environment
+variable is set, as most CI systems do.
+
+Use `SHUTTLE_SKIP_PULL` to control this explicitly. It takes precedence over
+`CI`, so it can also force pulling back on:
+
+```bash
+export SHUTTLE_SKIP_PULL=true  # never pull an already cloned plan
+export SHUTTLE_SKIP_PULL=false # always pull, even when CI is set
+```
+
+The `--skip-pull` flag does the same for a single invocation. Note that none of
+these prevent the initial clone; a plan that isn't available locally yet is
+always cloned.
+
 ### Overloading the plan
 
 It is possible to overload the plan specified in `shuttle.yaml` file by using
