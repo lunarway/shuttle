@@ -205,7 +205,7 @@ func compileWithDagger(ctx context.Context, ui *ui.UI, shuttlelocaldir string) (
 	if err != nil {
 		return "", fmt.Errorf("could not export dagger shuttle actions binary, err: %w", err)
 	}
-	if !exported {
+	if exported == "" {
 		return "", fmt.Errorf("failed to export binary")
 	}
 

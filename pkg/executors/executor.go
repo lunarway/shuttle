@@ -102,7 +102,7 @@ func validateArguments(
 			fmt.Fprintf(&s, " %s\n", e)
 		}
 		fmt.Fprintf(&s, "\n%s", expectedArgumentsHelp(command, scriptArgs))
-		return nil, errors.NewExitCode(2, s.String())
+		return nil, errors.NewExitCode(2, "%s", s.String())
 	}
 	return namedArgs, nil
 }
