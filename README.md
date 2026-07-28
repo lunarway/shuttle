@@ -223,11 +223,14 @@ chmod +x shuttle
 sudo mv shuttle /usr/local/bin/shuttle
 ```
 
-To install for your user only, without `sudo`, put it in a directory on your
-`PATH` such as `~/.local/bin` instead:
+To install for your user only, without `sudo`, move it to `~/.local/bin`
+instead. Unlike `/usr/local/bin` that directory is not on the `PATH` by
+default, so add it if it isn't already:
 
 ```console
+mkdir -p ~/.local/bin
 mv shuttle ~/.local/bin/shuttle
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
 ```
 
 ### Linux
