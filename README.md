@@ -24,6 +24,7 @@
 - [Features](#features)
 - [Documentation](#documentation)
 - [Installing](#installing)
+- [Building from source](#building-from-source)
 - [Functions](#functions)
 - [Release History](#release-history)
 
@@ -219,28 +220,43 @@ Following arguments are supported
 
 ### Mac OS
 
+On an Apple Silicon Mac (M1 and newer) use the `arm64` binary, on an Intel Mac
+use the `amd64` one:
+
 ```console
-curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | grep -o '[^/]*$')/shuttle-darwin-amd64
-chmod +x shuttle-darwin-amd64
-sudo mv shuttle-darwin-amd64 /usr/local/bin/shuttle
+# Apple Silicon
+curl -Lo shuttle https://github.com/lunarway/shuttle/releases/latest/download/shuttle-darwin-arm64
+
+# Intel
+curl -Lo shuttle https://github.com/lunarway/shuttle/releases/latest/download/shuttle-darwin-amd64
+
+chmod +x shuttle
+sudo mv shuttle /usr/local/bin/shuttle
 ```
 
-#### Mac OS Sonoma (broke grep)
-
-Use ripgrep instead (rg)
+To install for your user only, without `sudo`, move it to `~/.local/bin`
+instead. Unlike `/usr/local/bin` that directory is not on the `PATH` by
+default, so add it if it isn't already:
 
 ```console
-curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | rg -o '[^/]*$')/shuttle-darwin-amd64
-chmod +x shuttle-darwin-amd64
-sudo mv shuttle-darwin-amd64 /usr/local/bin/shuttle
+mkdir -p ~/.local/bin
+mv shuttle ~/.local/bin/shuttle
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
 ```
 
 ### Linux
 
+On `x86_64` use the `amd64` binary, on `aarch64` use the `arm64` one:
+
 ```console
-curl -LO https://github.com/lunarway/shuttle/releases/download/$(curl -Lso /dev/null -w %{url_effective} https://github.com/lunarway/shuttle/releases/latest | grep -o '[^/]*$')/shuttle-linux-amd64
-chmod +x shuttle-linux-amd64
-sudo mv shuttle-linux-amd64 /usr/local/bin/shuttle
+# x86_64
+curl -Lo shuttle https://github.com/lunarway/shuttle/releases/latest/download/shuttle-linux-amd64
+
+# aarch64
+curl -Lo shuttle https://github.com/lunarway/shuttle/releases/latest/download/shuttle-linux-arm64
+
+chmod +x shuttle
+sudo mv shuttle /usr/local/bin/shuttle
 ```
 
 ### GitHub Actions
@@ -253,6 +269,54 @@ workflow:
 ```
 
 After this point you can use shuttle in the scripts in your workflow job.
+
+## Building from source
+
+Building requires [Go](https://go.dev/dl/) (see `go.mod` for the minimum
+version). The simplest build produces a `shuttle` binary for your current
+platform:
+
+```console
+go build
+# or, with shuttle itself
+shuttle run build
+```
+
+To include version information as reported by `shuttle version`, set the
+`ldflags` used by the release build:
+
+```console
+CGO_ENABLED=0 go build \
+  -ldflags "-s -w -X github.com/lunarway/shuttle/cmd.version=$(git describe --tags) -X github.com/lunarway/shuttle/cmd.commit=$(git rev-parse HEAD)" \
+  -o shuttle .
+```
+
+### Cross compiling
+
+Set `GOOS` and `GOARCH` to build for another platform, eg. macOS and Linux:
+
+```console
+GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o shuttle-darwin-arm64 .
+GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -o shuttle-darwin-amd64 .
+GOOS=linux  GOARCH=amd64 CGO_ENABLED=0 go build -o shuttle-linux-amd64 .
+```
+
+Note that macOS binaries built this way are not code signed or notarized, so
+Gatekeeper blocks them when copied to another machine. Clear the quarantine
+attribute to run them:
+
+```console
+xattr -d com.apple.quarantine shuttle-darwin-arm64
+```
+
+### All release artifacts
+
+Releases are built with [GoReleaser](https://goreleaser.com) based on
+`.goreleaser.yml`. To build all supported platforms locally into `dist/`:
+
+```console
+goreleaser build --snapshot --clean
+```
 
 ## Functions
 
