@@ -298,7 +298,7 @@ func gitCmd(command string, dir string, uii *ui.UI) error {
 		if status.Error != nil {
 			errorMessage += fmt.Sprintf("Message: %v\n", status.Error.Error())
 		}
-		return errors.NewExitCode(4, errorMessage)
+		return errors.NewExitCode(4, "%s", errorMessage)
 	}
 	return nil
 }
