@@ -18,7 +18,9 @@ runs:
             *) echo "Unsupported operating system: $(uname -s)" >&2; exit 1 ;;
         esac
 
-        curl -fsSLo shuttle https://github.com/lunarway/shuttle/releases/latest/download/shuttle-$os-$arch
+        curl -fsSLo shuttle \
+            --retry 5 --retry-delay 5 --retry-all-errors \
+            https://github.com/lunarway/shuttle/releases/latest/download/shuttle-$os-$arch
         chmod +x shuttle
 
         if [ "$os" == "darwin" ]; then
