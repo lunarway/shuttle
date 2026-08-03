@@ -1,6 +1,6 @@
 module github.com/lunarway/shuttle
 
-go 1.25.0
+go 1.26.1
 
 toolchain go1.26.2
 
@@ -13,19 +13,19 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f
+	golang.org/x/exp v0.0.0-20260727155853-b88d891fe743
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
-	dagger.io/dagger v0.20.6
+	dagger.io/dagger v0.21.8
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/google/uuid v1.6.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/matishsiao/goInfo v0.0.0-20241216093258-66a9250504d6
 	github.com/otiai10/copy v1.14.1
-	golang.org/x/mod v0.35.0
-	golang.org/x/sync v0.20.0
+	golang.org/x/mod v0.38.0
+	golang.org/x/sync v0.22.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -37,6 +37,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.3.0 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/dagger/querybuilder v0.0.0-20260402040506-574a5e81cb59 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
