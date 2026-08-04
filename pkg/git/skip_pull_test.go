@@ -41,9 +41,9 @@ func TestSkipPullFromEnv(t *testing.T) {
 			skipsPull: true,
 		},
 		{
-			name:      "SHUTTLE_SKIP_PULL set but empty is treated as set",
+			name:      "SHUTTLE_SKIP_PULL set but empty is treated as false",
 			skipPull:  strPtr(""),
-			skipsPull: true,
+			skipsPull: false,
 		},
 		{
 			name:      "SHUTTLE_SKIP_PULL takes precedence over CI",
@@ -52,9 +52,9 @@ func TestSkipPullFromEnv(t *testing.T) {
 			skipsPull: false,
 		},
 		{
-			name:      "SHUTTLE_SKIP_PULL with an unparsable value is treated as set",
+			name:      "SHUTTLE_SKIP_PULL with an unparsable value is treated as false",
 			skipPull:  strPtr("yes-please"),
-			skipsPull: true,
+			skipsPull: false,
 		},
 	}
 

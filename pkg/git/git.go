@@ -40,12 +40,12 @@ func skipPullFromEnv(uii *ui.UI) bool {
 	if v, ok := os.LookupEnv(skipPullKey); ok {
 		skip, err := strconv.ParseBool(v)
 		if err != nil {
-			// An unparsable value is treated as set, matching how CI systems
-			// tend to use env vars as mere presence flags.
-			uii.Verboseln("%s is not a boolean, treating '%s' as true", skipPullKey, v)
-			return true
+			uii.Verboseln("%s is not a boolean, treating '%s' as false", skipPullKey, v)
+			return false
 		}
-		uii.Verboseln("Skipping git plan pulling because %s=%s", skipPullKey, v)
+		if skip {
+			uii.Verboseln("Skipping git plan pulling because %s=%s", skipPullKey, v)
+		}
 		return skip
 	}
 
