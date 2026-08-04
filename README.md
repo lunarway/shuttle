@@ -264,8 +264,8 @@ sudo mv shuttle /usr/local/bin/shuttle
 Shuttle can be installed on your GitHub Runner by adding this line to your
 workflow:
 
-```
-- use: lunarway/shuttle
+```yaml
+- uses: lunarway/shuttle
 ```
 
 After this point you can use shuttle in the scripts in your workflow job.
