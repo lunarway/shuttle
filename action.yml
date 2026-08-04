@@ -1,14 +1,5 @@
 name: "Install Shuttle"
 description: "Installs Lunar Shuttle"
-inputs:
-  lifecycle:
-    description: "Prepare the plan at this lifecycle, eg. experimental or stable. Skips prepare when empty."
-    required: false
-    default: ""
-outputs:
-  shuttle_plan_sha:
-    description: "The SHA of the prepared shuttle plan. Empty when lifecycle is not set."
-    value: ${{ steps.prepare.outputs.shuttle_plan_sha }}
 runs:
   using: "composite"
   steps:
@@ -42,15 +33,4 @@ runs:
         fi
 
         shuttle version
-      shell: bash
-
-    - id: prepare
-      if: inputs.lifecycle != ''
-      run: |
-        set -euo pipefail
-
-        shuttle prepare --plan "#${{ inputs.lifecycle }}"
-
-        shuttle_plan_sha=$(git -C .shuttle/plan rev-parse HEAD)
-        echo "shuttle_plan_sha=${shuttle_plan_sha}" >> $GITHUB_OUTPUT
       shell: bash

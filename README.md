@@ -270,22 +270,6 @@ workflow:
 
 After this point you can use shuttle in the scripts in your workflow job.
 
-Set the `lifecycle` input to also prepare the plan, which saves a separate
-`shuttle prepare` step. The SHA of the prepared plan is exposed as the
-`shuttle_plan_sha` output:
-
-```yaml
-- uses: lunarway/shuttle
-  id: shuttle
-  with:
-    lifecycle: stable
-
-- run: echo "prepared plan ${{ steps.shuttle.outputs.shuttle_plan_sha }}"
-```
-
-Note that preparing the plan requires the repository to be checked out first,
-as shuttle reads the `shuttle.yaml` file in the working directory.
-
 ## Building from source
 
 Building requires [Go](https://go.dev/dl/) (see `go.mod` for the minimum
