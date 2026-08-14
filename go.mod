@@ -24,7 +24,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/matishsiao/goInfo v0.0.0-20241216093258-66a9250504d6
 	github.com/otiai10/copy v1.14.1
-	golang.org/x/mod v0.38.0
+	golang.org/x/mod v0.40.0
 	golang.org/x/sync v0.22.0
 	gopkg.in/yaml.v2 v2.4.0
 )
