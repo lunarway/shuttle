@@ -29,6 +29,34 @@ var gitRegex = regexp.MustCompile(
 
 const cacheDurationMinKey = "SHUTTLE_CACHE_DURATION_MIN"
 
+const skipPullKey = "SHUTTLE_SKIP_PULL"
+
+// skipPullFromEnv reports whether plan pulling should be skipped based on the
+// environment. SHUTTLE_SKIP_PULL is the explicit opt in and takes precedence,
+// so it can also force pulling back on with a falsy value. Otherwise CI is
+// honoured, as CI jobs start from a fresh clone and pulling the plan again on
+// every shuttle invocation only costs time.
+func skipPullFromEnv(uii *ui.UI) bool {
+	if v, ok := os.LookupEnv(skipPullKey); ok {
+		skip, err := strconv.ParseBool(v)
+		if err != nil {
+			uii.Verboseln("%s is not a boolean, treating '%s' as false", skipPullKey, v)
+			return false
+		}
+		if skip {
+			uii.Verboseln("Skipping git plan pulling because %s=%s", skipPullKey, v)
+		}
+		return skip
+	}
+
+	if os.Getenv("CI") != "" {
+		uii.Verboseln("Skipping git plan pulling because CI is set")
+		return true
+	}
+
+	return false
+}
+
 func ParsePlan(plan string) Plan {
 	if !gitRegex.MatchString(plan) {
 		return Plan{
@@ -121,6 +149,9 @@ func GetGitPlan(
 				uii.Verboseln("Skipping git plan pulling")
 				return planPath, nil
 			}
+			if skipPullFromEnv(uii) {
+				return planPath, nil
+			}
 			valid, err := cacheIsValid(planPath)
 			if err != nil {
 				return "", err
@@ -172,7 +203,7 @@ func GetGitPlan(
 			if cloneToken != "" {
 				uii.Verboseln("Found clone token in env, but shuttle path was ssh-based. This override will not work.")
 			}
-			
+
 			cloneArg = parsedGitPlan.User + "@" + parsedGitPlan.Repository
 		} else {
 			panic(fmt.Sprintf("Unknown protocol '%s'", parsedGitPlan.Protocol))
