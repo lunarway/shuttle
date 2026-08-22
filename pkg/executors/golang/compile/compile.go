@@ -228,7 +228,7 @@ func goInstalled() bool {
 func getGolangImage() string {
 	const (
 		// renovate: datasource=docker depName=golang
-		golangImageVersion = "1.26.6"
+		golangImageVersion = "1.27.0"
 	)
 
 	golangImage := fmt.Sprintf("golang:%s", golangImageVersion)
