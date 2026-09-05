@@ -14,7 +14,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20260727155853-b88d891fe743
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -26,7 +26,6 @@ require (
 	github.com/otiai10/copy v1.14.1
 	golang.org/x/mod v0.40.0
 	golang.org/x/sync v0.22.0
-	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
