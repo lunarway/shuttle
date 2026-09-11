@@ -6,7 +6,7 @@ import (
 	"path"
 
 	"github.com/lunarway/shuttle/pkg/config"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type ShuttleContext struct {
