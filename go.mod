@@ -13,18 +13,18 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/exp v0.0.0-20260908205506-85c1c2202aba
+	golang.org/x/exp v0.0.0-20261009195045-ca0d7ba23607
 )
 
 require (
-	dagger.io/dagger v0.21.9
+	dagger.io/dagger v0.21.10
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/google/uuid v1.6.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/matishsiao/goInfo v0.0.0-20241216093258-66a9250504d6
 	github.com/otiai10/copy v1.14.1
-	golang.org/x/mod v0.41.0
-	golang.org/x/sync v0.23.0
+	golang.org/x/mod v0.42.0
+	golang.org/x/sync v0.24.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
