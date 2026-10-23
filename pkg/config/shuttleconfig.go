@@ -81,6 +81,8 @@ func (c *ShuttleProjectContext) Setup(
 		return nil, err
 	}
 
+	c.Config.Variables = mergeVariables(c.Config.Variables, c.Plan.Vars)
+
 	c.Scripts = make(map[string]ShuttlePlanScript)
 	for scriptName, script := range c.Plan.Scripts {
 		c.Scripts[scriptName] = script
@@ -89,6 +91,41 @@ func (c *ShuttleProjectContext) Setup(
 		c.Scripts[scriptName] = script
 	}
 	return c, nil
+}
+
+func mergeVariables(project DynamicYaml, plan DynamicYaml) DynamicYaml {
+	if len(plan) == 0 {
+		return project
+	}
+
+	merged := make(DynamicYaml, len(project)+len(plan))
+	for key, value := range plan {
+		merged[key] = value
+	}
+	for key, value := range project {
+		merged[key] = mergeVariableValues(value, plan[key])
+	}
+	return merged
+}
+
+func mergeVariableValues(project interface{}, plan interface{}) interface{} {
+	projectMap, ok := project.(map[interface{}]interface{})
+	if !ok {
+		return project
+	}
+	planMap, ok := plan.(map[interface{}]interface{})
+	if !ok {
+		return project
+	}
+
+	merged := make(map[interface{}]interface{}, len(projectMap)+len(planMap))
+	for key, value := range planMap {
+		merged[key] = value
+	}
+	for key, value := range projectMap {
+		merged[key] = mergeVariableValues(value, planMap[key])
+	}
+	return merged
 }
 
 // getConf loads the ShuttleConfig from yaml file in the project path

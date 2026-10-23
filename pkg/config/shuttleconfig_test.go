@@ -112,3 +112,62 @@ func TestShuttleConfig_getConf(t *testing.T) {
 		})
 	}
 }
+
+func TestMergeVariables(t *testing.T) {
+	tt := []struct {
+		name    string
+		project DynamicYaml
+		plan    DynamicYaml
+		output  DynamicYaml
+	}{
+		{
+			name:    "no plan variables",
+			project: DynamicYaml{"service": "shuttle"},
+			plan:    nil,
+			output:  DynamicYaml{"service": "shuttle"},
+		},
+		{
+			name:    "no project variables",
+			project: nil,
+			plan:    DynamicYaml{"language": "go"},
+			output:  DynamicYaml{"language": "go"},
+		},
+		{
+			name:    "project overrides plan",
+			project: DynamicYaml{"language": "rust"},
+			plan:    DynamicYaml{"language": "go", "shared": "var"},
+			output:  DynamicYaml{"language": "rust", "shared": "var"},
+		},
+		{
+			name: "nested maps are merged",
+			project: DynamicYaml{
+				"docker": map[interface{}]interface{}{"image": "project-image"},
+			},
+			plan: DynamicYaml{
+				"docker": map[interface{}]interface{}{
+					"image": "plan-image",
+					"tag":   "plan-tag",
+				},
+			},
+			output: DynamicYaml{
+				"docker": map[interface{}]interface{}{
+					"image": "project-image",
+					"tag":   "plan-tag",
+				},
+			},
+		},
+		{
+			name:    "project scalar replaces plan map",
+			project: DynamicYaml{"docker": "none"},
+			plan: DynamicYaml{
+				"docker": map[interface{}]interface{}{"image": "plan-image"},
+			},
+			output: DynamicYaml{"docker": "none"},
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.output, mergeVariables(tc.project, tc.plan))
+		})
+	}
+}

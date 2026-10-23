@@ -48,6 +48,20 @@ func TestGet(t *testing.T) {
 			erroutput: "",
 			err:       nil,
 		},
+		{
+			name: "falls back to plan variables",
+			input: args(
+				"--project",
+				"./testdata/project-local/service",
+				"--plan",
+				"./testdata/project-local/plan",
+				"get",
+				"language",
+			),
+			stdoutput: "go",
+			erroutput: "Using overloaded plan ./testdata/project-local/plan\n",
+			err:       nil,
+		},
 	}
 	executeTestCases(t, testCases)
 }
