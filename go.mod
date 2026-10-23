@@ -7,24 +7,24 @@ toolchain go1.26.2
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/cli/safeexec v1.0.1
-	github.com/go-cmd/cmd v1.4.3
+	github.com/go-cmd/cmd v1.4.4
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/exp v0.0.0-20260908205506-85c1c2202aba
+	golang.org/x/exp v0.0.0-20261014143641-f0251eb4aa3e
 )
 
 require (
-	dagger.io/dagger v0.21.9
+	dagger.io/dagger v0.21.11
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/google/uuid v1.6.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/matishsiao/goInfo v0.0.0-20241216093258-66a9250504d6
 	github.com/otiai10/copy v1.14.1
-	golang.org/x/mod v0.41.0
-	golang.org/x/sync v0.23.0
+	golang.org/x/mod v0.42.0
+	golang.org/x/sync v0.24.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -54,9 +54,9 @@ require (
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.32 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/otel v1.41.0 // indirect
-	go.opentelemetry.io/otel/metric v1.41.0 // indirect
-	go.opentelemetry.io/otel/trace v1.41.0 // indirect
+	go.opentelemetry.io/otel v1.43.0 // indirect
+	go.opentelemetry.io/otel/metric v1.43.0 // indirect
+	go.opentelemetry.io/otel/trace v1.43.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
