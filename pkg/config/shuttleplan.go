@@ -12,7 +12,7 @@ import (
 	"github.com/lunarway/shuttle/pkg/errors"
 	"github.com/lunarway/shuttle/pkg/git"
 	"github.com/lunarway/shuttle/pkg/ui"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // ShuttlePlanScript is a ShuttlePlan sub-element
