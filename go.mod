@@ -25,7 +25,7 @@ require (
 	github.com/otiai10/copy v1.14.1
 	golang.org/x/mod v0.43.0
 	golang.org/x/sync v0.25.0
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
